@@ -4,250 +4,287 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Nuestro Hogar Común | Cota</title>
-
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
     <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
-
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
         :root { --stitch-green: #16a34a; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #F2F2F7; user-select: none; overflow-x: hidden; }
         .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(25px); border-top: 1px solid rgba(255, 255, 255, 0.3); }
-        .stitch-card { background: white; border-radius: 2.2rem; border: 1px solid rgba(0,0,0,0.05); }
+        .stitch-card { background: white; border-radius: 2.2rem; border: 1px solid rgba(0,0,0,0.05); transition: transform 0.2s; }
         .hidden { display: none !important; }
         #map { width: 100%; height: 380px; border-radius: 2.5rem; border: 4px solid white; box-shadow: 0 15px 35px rgba(0,0,0,0.05); }
         .tab-btn { color: #94a3b8; transition: all 0.2s; cursor: pointer; }
         .tab-active { color: var(--stitch-green) !important; transform: scale(1.1); }
+        input[type="file"] { display: none; }
     </style>
 </head>
 <body class="text-slate-900 pb-32">
 
-<div id="onboarding" class="fixed inset-0 bg-white z-[100] flex flex-col">
-    <div class="flex-1 flex flex-col items-center justify-center px-10 text-center">
-        <div id="ob-image" class="w-64 h-64 bg-emerald-50 rounded-[3.5rem] mb-10 flex items-center justify-center text-7xl shadow-inner">🌍</div>
-        <h2 id="ob-title" class="text-3xl font-black mb-4 tracking-tight">Bienvenido</h2>
-        <p id="ob-desc" class="text-slate-500 font-medium leading-relaxed px-4 text-sm">Vinculemos este dispositivo a tu nueva identidad ecológica.</p>
-
-        <div id="onboarding-fields" class="hidden w-full mt-6 space-y-3">
-            <input id="reg-name" type="text" placeholder="Nombre real" class="w-full p-5 bg-slate-50 rounded-2xl border border-slate-100 outline-none font-bold">
-            <input id="reg-tag" type="text" placeholder="@usuario" class="w-full p-5 bg-slate-50 rounded-2xl border border-slate-100 outline-none font-mono text-sm">
+    <div id="onboarding" class="fixed inset-0 bg-white z-[100] flex flex-col">
+        <div class="flex-1 flex flex-col items-center justify-center px-10 text-center">
+            <div id="ob-image" class="w-64 h-64 bg-emerald-50 rounded-[3.5rem] mb-10 flex items-center justify-center text-7xl shadow-inner">🌍</div>
+            <h2 id="ob-title" class="text-3xl font-black mb-4 tracking-tight">Nuestro Hogar</h2>
+            <p id="ob-desc" class="text-slate-500 font-medium leading-relaxed px-4 text-sm text-balance">Configura tu perfil único para este dispositivo en Cota.</p>
+            
+            <div id="onboarding-fields" class="hidden w-full mt-6 space-y-3">
+                <input id="reg-name" type="text" placeholder="Tu Nombre" class="w-full p-5 bg-slate-50 rounded-2xl border border-slate-100 outline-none font-bold">
+                <input id="reg-tag" type="text" placeholder="@usuario" class="w-full p-5 bg-slate-50 rounded-2xl border border-slate-100 outline-none font-mono text-sm">
+            </div>
+        </div>
+        <div class="p-10 pb-16">
+            <button id="btn-next" onclick="nextStep()" class="w-full bg-slate-900 text-white p-6 rounded-[2.2rem] font-bold text-lg shadow-2xl active:scale-95 transition-all">Siguiente</button>
         </div>
     </div>
-    <div class="p-10 pb-16">
-        <button id="btn-next" onclick="nextStep()" class="w-full bg-slate-900 text-white p-6 rounded-[2.2rem] font-bold text-lg shadow-2xl active:scale-95 transition-all">Siguiente</button>
+
+    <div id="main-app" class="hidden">
+        <header class="pt-14 pb-6 px-8 sticky top-0 bg-[#F2F2F7]/90 backdrop-blur-md z-30 flex justify-between items-center">
+            <div>
+                <p id="section-label" class="text-[10px] font-black text-green-600 uppercase tracking-widest italic">Dashboard</p>
+                <h1 id="view-title" class="text-3xl font-extrabold tracking-tight">Inicio</h1>
+            </div>
+            <div class="w-12 h-12 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                <img id="header-avatar" src="" class="w-full h-full object-cover">
+            </div>
+        </header>
+
+        <main class="px-6">
+            <div id="view-home" class="tab-view">
+                <div class="bg-gradient-to-br from-green-500 to-emerald-700 p-8 rounded-[2.5rem] text-white shadow-xl mb-8">
+                    <p class="text-[10px] font-black opacity-80 uppercase tracking-widest italic">Impacto Ecológico</p>
+                    <div class="flex items-baseline mt-1"><span id="co2-total" class="text-6xl font-black tracking-tighter">0.0</span><span class="ml-2 font-bold text-xl text-emerald-100">kg CO₂</span></div>
+                    <p class="text-[9px] mt-4 opacity-70 italic font-medium tracking-tight">Basado en estándares IPCC 2026</p>
+                </div>
+                <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 ml-2">Retos Verificados</h3>
+                <div id="acciones-list" class="space-y-4"></div>
+            </div>
+
+            <div id="view-map" class="tab-view hidden">
+                <div id="map"></div>
+                <div class="mt-6 p-6 bg-white rounded-[2.5rem] border border-slate-100">
+                    <h4 class="font-black text-slate-800 text-lg tracking-tight">HorizonMaps</h4>
+                    <p class="text-slate-500 text-xs leading-relaxed mt-1 italic">Visualización en tiempo real de puntos de recolección en la Variante y el Pueblo.</p>
+                </div>
+            </div>
+
+            <div id="view-community" class="tab-view hidden">
+                <div class="bg-white p-6 rounded-[2.5rem] shadow-sm mb-8 border border-slate-100">
+                    <p class="text-[10px] font-black text-green-600 uppercase mb-4 tracking-widest">Publicar como <span id="pub-author" class="italic">...</span></p>
+                    <textarea id="c-mensaje" placeholder="Reporta tu acción ecológica..." class="w-full p-4 bg-slate-50 rounded-2xl mb-4 outline-none text-sm font-medium h-24 border border-slate-50"></textarea>
+                    
+                    <label class="flex items-center justify-center w-full p-4 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 mb-4 cursor-pointer">
+                        <span id="file-label" class="text-xs font-bold text-slate-400 italic">Añadir Foto o Video 📸</span>
+                        <input type="file" id="c-file" accept="image/*,video/*" onchange="updateFileLabel()">
+                    </label>
+
+                    <button onclick="postToCommunity()" id="btn-post" class="w-full bg-green-600 text-white p-4 rounded-2xl font-bold text-sm shadow-lg active:scale-95 transition-transform">Enviar al Muro</button>
+                </div>
+                <div id="comunidad-list" class="space-y-6"></div>
+            </div>
+
+            <div id="view-profile" class="tab-view hidden text-center py-10">
+                <div class="w-32 h-32 bg-white rounded-[3.5rem] shadow-xl mx-auto mb-6 border-4 border-white overflow-hidden">
+                    <img id="p-avatar" src="" class="w-full h-full object-cover">
+                </div>
+                <h3 id="p-name" class="text-2xl font-black text-slate-900 italic">...</h3>
+                <p id="p-tag" class="text-green-600 font-bold text-sm mb-8">@usuario</p>
+                
+                <div class="bg-emerald-50 p-6 rounded-[2.5rem] border border-emerald-100 text-left mx-2 shadow-inner">
+                    <h4 class="text-[10px] font-black text-emerald-800 uppercase tracking-widest mb-3 flex items-center">
+                        🛡️ Compromiso Ético
+                    </h4>
+                    <p class="text-[11px] text-emerald-700 leading-relaxed font-medium">
+                        Esta terminal está vinculada a la red de <b>Nuestro Hogar</b>. Tus datos multimedia se procesan de forma segura en S3 para fomentar el reciclaje en Cota. No compartimos tu identidad con terceros.
+                    </p>
+                </div>
+            </div>
+        </main>
+
+        <nav class="fixed bottom-0 left-0 right-0 h-28 glass flex items-center justify-around px-4 z-40 pb-6">
+            <div onclick="changeTab('home', this)" class="tab-btn tab-active flex flex-col items-center flex-1 py-2">
+                <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z" /><path d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29.091-.086L12 5.43z" /></svg>
+                <span class="text-[8px] font-black mt-1 uppercase tracking-tighter">Inicio</span>
+            </div>
+            <div onclick="changeTab('map', this)" class="tab-btn flex flex-col items-center flex-1 py-2">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
+                <span class="text-[8px] font-black mt-1 uppercase tracking-tighter">Mapa</span>
+            </div>
+            <div onclick="changeTab('community', this)" class="tab-btn flex flex-col items-center flex-1 py-2">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <span class="text-[8px] font-black mt-1 uppercase tracking-tighter">Muro</span>
+            </div>
+            <div onclick="changeTab('profile', this)" class="tab-btn flex flex-col items-center flex-1 py-2">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                <span class="text-[8px] font-black mt-1 uppercase tracking-tighter">Perfil</span>
+            </div>
+        </nav>
     </div>
-</div>
 
-<div id="main-app" class="hidden">
-    <header class="pt-14 pb-6 px-8 sticky top-0 bg-[#F2F2F7]/90 backdrop-blur-md z-30 flex justify-between items-center">
-        <div>
-            <p id="section-label" class="text-[10px] font-black text-green-600 uppercase tracking-widest italic">Panel de Impacto</p>
-            <h1 id="view-title" class="text-3xl font-extrabold tracking-tight">Inicio</h1>
-        </div>
-        <div class="w-12 h-12 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-            <img id="header-avatar" src="" class="w-full h-full object-cover">
-        </div>
-    </header>
+    <script>
+        // CONFIGURACIÓN DE SEGURIDAD (Base64 ofuscado)
+        const _k = "cGsuZXlKMUlqb2lhbVZ5YVhoa1pYWmxiRzl3YVc1bmFTSXNJbUVpT2lKamJXaGlaSFUwWW5neE5qRjJNbXR3ZFhBeGFXdHlkalI1SW4wLjBYeDcyNEVwbjN4M25KOGhBWUMxZEE=";
+        const SB_URL = 'https://oamlsuhtozbindompgpl.supabase.co';
+        const SB_KEY = 'sb_publishable_FUeEmJIVdKHlHMGcFiF0sg_3GbWjH-s';
+        
+        const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
+        const BANNED_WORDS = ["spam", "ofensa", "politica"]; // Filtro ético
+        let map, obStep = 1;
 
-    <main class="px-6">
-        <div id="view-home" class="tab-view">
-            <div class="bg-gradient-to-br from-green-500 to-emerald-700 p-8 rounded-[2.5rem] text-white shadow-xl mb-8">
-                <p class="text-[10px] font-black opacity-80 uppercase tracking-widest">CO₂ Evitado en Cota</p>
-                <div class="flex items-baseline mt-1"><span id="co2-total" class="text-6xl font-black tracking-tighter">0.0</span><span class="ml-2 font-bold text-xl text-emerald-100">kg</span></div>
-                <p class="text-[9px] mt-4 opacity-70 italic">Fuente: IPCC Emission Factors 2026</p>
-            </div>
-
-            <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 ml-2">Retos Verificados</h3>
-            <div id="acciones-list" class="space-y-4">
-            </div>
-        </div>
-
-        <div id="view-map" class="tab-view hidden">
-            <div id="map"></div>
-            <div class="mt-6 p-6 bg-white rounded-[2.5rem] shadow-sm border border-slate-50">
-                <h4 class="font-black text-slate-800 text-lg tracking-tight">HorizonMaps v1</h4>
-                <p class="text-slate-500 text-sm leading-relaxed">Mostrando centros de acopio autorizados por la Alcaldía de Cota.</p>
-            </div>
-        </div>
-
-        <div id="view-community" class="tab-view hidden">
-            <div class="bg-white p-6 rounded-[2.5rem] shadow-sm mb-8 border border-slate-100">
-                <p class="text-[10px] font-black text-green-600 uppercase mb-4 tracking-widest">Publicar como <span id="pub-author">...</span></p>
-                <textarea id="c-mensaje" placeholder="Reporta un reto completado..." class="w-full p-4 bg-slate-50 rounded-2xl mb-4 outline-none text-sm font-medium h-24 border border-slate-50"></textarea>
-                <button onclick="postToCommunity()" class="w-full bg-green-600 text-white p-4 rounded-2xl font-bold text-sm shadow-lg active:scale-95 transition-transform">Enviar al Muro</button>
-            </div>
-            <div id="comunidad-list" class="space-y-4"></div>
-        </div>
-
-        <div id="view-profile" class="tab-view hidden text-center py-10">
-            <div class="w-32 h-32 bg-white rounded-[3.5rem] shadow-xl mx-auto mb-6 border-4 border-white overflow-hidden">
-                <img id="p-avatar" src="" class="w-full h-full object-cover">
-            </div>
-            <h3 id="p-name" class="text-2xl font-black text-slate-900 italic">Nombre</h3>
-            <p id="p-tag" class="text-green-600 font-bold text-sm mb-8">@usuario</p>
-
-            <div class="bg-emerald-50 p-6 rounded-[2.5rem] border border-emerald-100 text-left mx-2 mb-8">
-                <h4 class="text-[10px] font-black text-emerald-800 uppercase tracking-widest mb-3 flex items-center">
-                    <svg class="w-3 h-3 mr-2" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/></svg>
-                    Compromiso Ético
-                </h4>
-                <p class="text-[11px] text-emerald-700 leading-relaxed font-medium">
-                    Esta aplicación garantiza la soberanía de tus datos. La información de <b>HorizonMaps</b> es estrictamente para fomentar la economía circular en Cota. No compartimos datos con fines publicitarios.
-                </p>
-            </div>
-        </div>
-    </main>
-
-    <nav class="fixed bottom-0 left-0 right-0 h-28 glass flex items-center justify-around px-4 z-40 pb-6">
-        <div onclick="changeTab('home', this)" class="tab-btn tab-active flex flex-col items-center flex-1 py-2">
-            <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z" /><path d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29.091-.086L12 5.43z" /></svg>
-            <span class="text-[8px] font-black mt-1 uppercase tracking-tighter">Inicio</span>
-        </div>
-        <div onclick="changeTab('map', this)" class="tab-btn flex flex-col items-center flex-1 py-2">
-            <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
-            <span class="text-[8px] font-black mt-1 uppercase tracking-tighter">Mapa</span>
-        </div>
-        <div onclick="changeTab('community', this)" class="tab-btn flex flex-col items-center flex-1 py-2">
-            <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            <span class="text-[8px] font-black mt-1 uppercase tracking-tighter">Muro</span>
-        </div>
-        <div onclick="changeTab('profile', this)" class="tab-btn flex flex-col items-center flex-1 py-2">
-            <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-            <span class="text-[8px] font-black mt-1 uppercase tracking-tighter">Perfil</span>
-        </div>
-    </nav>
-</div>
-
-<script>
-    const MAPBOX_TOKEN = 'pk.eyJ1IjoiamVyaXhkZXZlbG9waW5naSIsImEiOiJjbWhiZHU0YngxNjF2MmtwdXAxaWtydjR5In0.0Xx724Epn3x3nJ8hAYC1dA';
-    const SB_URL = 'https://oamlsuhtozbindompgpl.supabase.co';
-    const SB_KEY = 'sb_publishable_FUeEmJIVdKHlHMGcFiF0sg_3GbWjH-s';
-    const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
-
-    let map, obStep = 1;
-
-    // ONBOARDING ÚNICO
-    function nextStep() {
-        if(window.Android) window.Android.vibrate(30);
-        if (obStep === 1) {
-            obStep = 2;
-            document.getElementById('ob-title').innerText = "Identidad Ética";
-            document.getElementById('ob-desc').innerText = "Tus datos son privados y medibles.";
-            document.getElementById('ob-image').classList.add('hidden');
-            document.getElementById('onboarding-fields').classList.remove('hidden');
-            document.getElementById('btn-next').innerText = "Vincular Terminal";
-        } else {
-            const name = document.getElementById('reg-name').value;
-            const tag = document.getElementById('reg-tag').value.replace('@', '');
-            if(!name || !tag) return alert("Completa tus datos");
-
-            localStorage.setItem('user_real_name', name);
-            localStorage.setItem('user_unique_tag', '@' + tag);
-            localStorage.setItem('device_linked', 'true');
-            finishOnboarding();
+        // FUNCIÓN HÁPTICA UNIVERSAL
+        function haptic(ms) {
+            if(window.Android) window.Android.vibrate(ms);
+            else if(navigator.vibrate) navigator.vibrate(ms);
         }
-    }
 
-    function finishOnboarding() {
-        document.getElementById('onboarding').style.display = 'none';
-        document.getElementById('main-app').classList.remove('hidden');
-        updateGlobalUI();
-        loadHomeData();
-    }
-
-    function updateGlobalUI() {
-        const name = localStorage.getItem('user_real_name');
-        const tag = localStorage.getItem('user_unique_tag');
-        const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${tag}`;
-
-        document.getElementById('p-name').innerText = name;
-        document.getElementById('p-tag').innerText = tag;
-        document.getElementById('p-avatar').src = avatar;
-        document.getElementById('header-avatar').src = avatar;
-        document.getElementById('pub-author').innerText = name;
-    }
-
-    function changeTab(tabId, el) {
-        if(window.Android) window.Android.vibrate(15);
-        document.querySelectorAll('.tab-view').forEach(v => v.classList.add('hidden'));
-        document.getElementById('view-' + tabId).classList.remove('hidden');
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
-        el.classList.add('tab-active');
-
-        // Navegación comprensible: Título dinámico
-        const titles = { 'home': 'Panel de Impacto', 'map': 'HorizonMaps', 'community': 'Muro de Cota', 'profile': 'Mi Cuenta' };
-        document.getElementById('view-title').innerText = titles[tabId];
-
-        if(tabId === 'map' && !map) initMap();
-        if(tabId === 'community') loadMuro();
-    }
-
-    function initMap() {
-    // El token que generaste en Base64
-    const secureKey = "cGsuZXlKMUlqb2lhbVZ5YVhoa1pYWmxiRzl3YVc1bmFTSXNJbUVpT2lKamJXaGlaSFUwWW5neE5qRjJNbXR3ZFhBeGFXdHlkalI1SW4wLjBYeDcyNEVwbjN4M25KOGhBWUMxZEE=";
-
-    // Decodificación al vuelo (atob es una función nativa del navegador)
-    mapboxgl.accessToken = atob(secureKey);
-
-    map = new mapboxgl.Map({
-        container: 'map',
-        style: 'mapbox://styles/mapbox/light-v11',
-        center: [-74.1086, 4.8105],
-        zoom: 14.5,
-        pitch: 45
-    });
-
-    new mapboxgl.Marker({ color: '#16a34a' })
-        .setLngLat([-74.1086, 4.8105])
-        .addTo(map);
-}
-
-    // CARGA DE RETOS MEDIBLES
-    async function loadHomeData() {
-        const { data } = await supabaseClient.from('acciones').select('*').order('created_at', { ascending: false });
-        if (data) {
-            document.getElementById('acciones-list').innerHTML = data.map(i => `
-                <div class="stitch-card p-6 flex items-center shadow-sm border-l-8 border-green-500">
-                    <div class="flex-1">
-                        <h4 class="font-bold text-slate-800 text-sm">${i.titulo}</h4>
-                        <p class="text-[9px] font-black text-green-600 uppercase tracking-widest mt-1">Impacto: ${i.impacto_co2} KG CO₂ Evitado</p>
-                    </div>
-                    <div class="text-xs font-black text-slate-300">#Reto</div>
-                </div>`).join('');
-            const total = data.reduce((a, b) => a + parseFloat(b.impacto_co2 || 0), 0);
-            document.getElementById('co2-total').innerText = total.toFixed(2);
+        // LÓGICA DE INICIO Y ONBOARDING
+        function nextStep() {
+            haptic(30);
+            if (obStep === 1) {
+                obStep = 2;
+                document.getElementById('ob-title').innerText = "Tu Identidad";
+                document.getElementById('ob-desc').innerText = "Estos datos se grabarán en tu terminal.";
+                document.getElementById('ob-image').innerText = "🆔";
+                document.getElementById('onboarding-fields').classList.remove('hidden');
+            } else {
+                const n = document.getElementById('reg-name').value;
+                const t = document.getElementById('reg-tag').value.replace('@','');
+                if(!n || !t) return alert("Completa tus datos");
+                localStorage.setItem('user_real_name', n);
+                localStorage.setItem('user_unique_tag', '@'+t);
+                localStorage.setItem('device_linked', 'true');
+                finishOnboarding();
+            }
         }
-    }
 
-    async function loadMuro() {
-        const { data } = await supabaseClient.from('comunidad').select('*').order('created_at', { ascending: false });
-        if (data) {
+        function finishOnboarding() {
+            document.getElementById('onboarding').style.display = 'none';
+            document.getElementById('main-app').classList.remove('hidden');
+            const tag = localStorage.getItem('user_unique_tag');
+            const av = `https://api.dicebear.com/7.x/avataaars/svg?seed=${tag}`;
+            document.getElementById('p-name').innerText = localStorage.getItem('user_real_name');
+            document.getElementById('p-tag').innerText = tag;
+            document.getElementById('p-avatar').src = av;
+            document.getElementById('header-avatar').src = av;
+            document.getElementById('pub-author').innerText = localStorage.getItem('user_real_name');
+            loadHomeData();
+        }
+
+        // NAVEGACIÓN
+        function changeTab(tabId, el) {
+            haptic(15);
+            document.querySelectorAll('.tab-view').forEach(v => v.classList.add('hidden'));
+            document.getElementById('view-' + tabId).classList.remove('hidden');
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
+            el.classList.add('tab-active');
+            
+            const titles = { 'home': 'Inicio', 'map': 'HorizonMaps', 'community': 'Muro Común', 'profile': 'Mi Perfil' };
+            document.getElementById('view-title').innerText = titles[tabId];
+            document.getElementById('section-label').innerText = tabId.toUpperCase();
+
+            if(tabId === 'map' && !map) initMap();
+            if(tabId === 'community') loadMuro();
+        }
+
+        // HORIZON MAPS
+        function initMap() {
+            mapboxgl.accessToken = atob(_k);
+            map = new mapboxgl.Map({ 
+                container: 'map', 
+                style: 'mapbox://styles/mapbox/light-v11', 
+                center: [-74.1086, 4.8105], 
+                zoom: 14.5, 
+                pitch: 45 
+            });
+            new mapboxgl.Marker({ color: '#16a34a' }).setLngLat([-74.1086, 4.8105]).addTo(map);
+        }
+
+        // MURO MULTIMEDIA
+        function updateFileLabel() {
+            const f = document.getElementById('c-file').files[0];
+            if(f) document.getElementById('file-label').innerText = "Listo: " + f.name.substring(0,10) + "...";
+        }
+
+        async function postToCommunity() {
+            const msg = document.getElementById('c-mensaje').value;
+            const fileInput = document.getElementById('c-file');
+            const name = localStorage.getItem('user_real_name');
+            
+            if(!msg && !fileInput.files[0]) return;
+            if(BANNED_WORDS.some(w => msg.toLowerCase().includes(w))) return alert("Contenido no permitido.");
+
+            const btn = document.getElementById('btn-post');
+            btn.innerText = "Subiendo..."; btn.disabled = true;
+
+            let fUrl = null, fType = null;
+
+            if (fileInput.files[0]) {
+                const f = fileInput.files[0];
+                const fPath = `${Math.random()}.${f.name.split('.').pop()}`;
+                let { error: upErr } = await supabaseClient.storage.from('muro_multimedia').upload(fPath, f);
+                if (!upErr) {
+                    fUrl = supabaseClient.storage.from('muro_multimedia').getPublicUrl(fPath).data.publicUrl;
+                    fType = f.type.startsWith('image') ? 'image' : 'video';
+                }
+            }
+
+            await supabaseClient.from('comunidad').insert([{ 
+                autor: name, mensaje: msg, media_url: fUrl, media_type: fType 
+            }]);
+
+            document.getElementById('c-mensaje').value = '';
+            fileInput.value = '';
+            document.getElementById('file-label').innerText = "Añadir Foto o Video 📸";
+            btn.innerText = "Publicar"; btn.disabled = false;
+            loadMuro();
+        }
+
+        async function loadMuro() {
+            const { data } = await supabaseClient.from('comunidad').select('*').order('created_at', { ascending: false });
             document.getElementById('comunidad-list').innerHTML = data.map(p => `
-                <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-50">
-                    <div class="flex items-center mb-3">
-                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${p.autor}" class="w-10 h-10 rounded-full bg-slate-50 border">
-                        <div class="ml-3"><p class="font-extrabold text-sm text-slate-900">${p.autor}</p><p class="text-[9px] text-slate-400 font-black">Cundinamarca, CO</p></div>
+                <div class="bg-white rounded-[2.5rem] shadow-sm border border-slate-50 overflow-hidden">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${p.autor}" class="w-10 h-10 rounded-full bg-slate-50">
+                                <div class="ml-3">
+                                    <p class="font-extrabold text-sm">${p.autor}</p>
+                                    <p class="text-[8px] text-slate-400 font-black uppercase">${new Date(p.created_at).toLocaleDateString()}</p>
+                                </div>
+                            </div>
+                            <button onclick="deletePost('${p.id}')" class="text-slate-200 hover:text-red-500">🗑️</button>
+                        </div>
+                        ${p.mensaje ? `<p class="mt-4 text-slate-600 text-sm italic">"${p.mensaje}"</p>` : ''}
                     </div>
-                    <p class="text-slate-600 text-sm italic">"${p.mensaje}"</p>
-                </div>`).join('');
+                    ${p.media_url ? (p.media_type==='image' ? `<img src="${p.media_url}" class="w-full h-64 object-cover">` : `<video src="${p.media_url}" controls class="w-full h-64 object-cover"></video>`) : ''}
+                </div>
+            `).join('');
         }
-    }
 
-    async function postToCommunity() {
-        const msg = document.getElementById('c-mensaje').value;
-        const name = localStorage.getItem('user_real_name');
-        if(!msg) return;
-        const { error } = await supabaseClient.from('comunidad').insert([{ autor: name, mensaje: msg }]);
-        if(!error) { document.getElementById('c-mensaje').value = ''; loadMuro(); if(window.Android) window.Android.vibrate(50); }
-    }
-
-    window.onload = () => {
-        if(localStorage.getItem('device_linked') === 'true') {
-            finishOnboarding();
+        async function deletePost(id) {
+            if (prompt("PIN de Moderador:") === "2026") {
+                await supabaseClient.from('comunidad').delete().eq('id', id);
+                loadMuro();
+            }
         }
-    };
-</script>
+
+        async function loadHomeData() {
+            const { data } = await supabaseClient.from('acciones').select('*').order('created_at', { ascending: false });
+            if (data) {
+                document.getElementById('acciones-list').innerHTML = data.map(i => `
+                    <div class="stitch-card p-6 flex items-center">
+                        <div class="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center text-lg shadow-inner">🌱</div>
+                        <div class="ml-4"><h4 class="font-bold text-slate-800 text-xs">${i.titulo}</h4><p class="text-[9px] font-black text-green-600 uppercase mt-1">-${i.impacto_co2} KG</p></div>
+                    </div>`).join('');
+                const total = data.reduce((a, b) => a + parseFloat(b.impacto_co2 || 0), 0);
+                document.getElementById('co2-total').innerText = total.toFixed(2);
+            }
+        }
+
+        window.onload = () => { if(localStorage.getItem('device_linked')==='true') finishOnboarding(); };
+    </script>
 </body>
 </html>
