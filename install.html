@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instalar App | Nuestro Hogar Común</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+body {
+    font-family: system-ui;
+    background: #f0f4f0;
+}
+.card {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+}
+.btn {
+    background: #16a34a;
+    color: white;
+    padding: 1rem;
+    border-radius: 1rem;
+    font-weight: bold;
+    width: 100%;
+}
+</style>
+</head>
+
+<body class="p-5">
+
+<div class="max-w-md mx-auto space-y-4">
+
+    <!-- HEADER -->
+    <div class="text-center">
+        <h1 class="text-2xl font-black">Instalar la App 🌿</h1>
+        <p class="text-sm text-gray-500">Guía fácil paso a paso</p>
+    </div>
+
+    <!-- PASO 1 -->
+    <div class="card">
+        <h2 class="font-black mb-2">1. Descargar la app</h2>
+        <p class="text-sm text-gray-600 mb-3">
+            Presiona el botón para descargar la aplicación en tu celular.
+        </p>
+
+        <button onclick="downloadApp()" class="btn">
+            Descargar APK 📥
+        </button>
+    </div>
+
+    <!-- PASO 2 -->
+    <div class="card">
+        <h2 class="font-black mb-2">2. Permitir instalación</h2>
+        <p class="text-sm text-gray-600">
+            Si aparece un mensaje de seguridad:
+            <br><br>
+            👉 Pulsa <b>"Configuración"</b><br>
+            👉 Activa <b>"Permitir desde esta fuente"</b><br>
+            👉 Regresa
+        </p>
+    </div>
+
+    <!-- PASO 3 -->
+    <div class="card">
+        <h2 class="font-black mb-2">3. Instalar</h2>
+        <p class="text-sm text-gray-600">
+            Abre el archivo descargado y pulsa <b>"Instalar"</b>.
+        </p>
+    </div>
+
+    <!-- PASO 4 -->
+    <div class="card">
+        <h2 class="font-black mb-2">4. Abrir la app</h2>
+        <p class="text-sm text-gray-600">
+            Una vez instalada, pulsa <b>"Abrir"</b> y listo 🎉
+        </p>
+    </div>
+
+    <!-- BOTÓN FINAL -->
+    <button onclick="downloadApp()" class="btn">
+        Descargar ahora 🚀
+    </button>
+
+</div>
+
+<script>
+const APK_URL = "https://release-assets.githubusercontent.com/github-production-release-asset/1216227793/a3f639a5-edab-4320-b62f-70650a700a34?sp=r&sv=2018-11-09&sr=b&spr=https&se=2026-04-20T18%3A30%3A58Z&rscd=attachment%3B+filename%3DOurCommonHome_1.1.apk&rsct=application%2Fvnd.android.package-archive&skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0&sktid=398a6654-997b-47e9-b12b-9515b896b4de&skt=2026-04-20T17%3A30%3A33Z&ske=2026-04-20T18%3A30%3A58Z&sks=b&skv=2018-11-09&sig=Lo8IfxMRPDMWSd%2FtQZg1V0TNZZY84YLdraGdW7cbvso%3D&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc3NjcwNzI3NCwibmJmIjoxNzc2NzA2OTc0LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.r1BK9Ee2irKojlJUSmhxQpDOR3xAQJrBHkPZV8Najiw&response-content-disposition=attachment%3B%20filename%3DOurCommonHome_1.1.apk&response-content-type=application%2Fvnd.android.package-archive";
+
+function downloadApp() {
+    window.location.href = APK_URL;
+}
+
+// redirección automática después de 3 segundos
+setTimeout(() => {
+    window.location.href = APK_URL;
+}, 3000);
+</script>
+
+</body>
+</html>
