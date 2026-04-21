@@ -70,6 +70,11 @@
         .diagnostic-log { font-family: 'Courier New', monospace; font-size: 0.7rem; color: #78350f; background: #fffbeb; padding: 0.75rem; border-radius: 0.5rem; max-height: 200px; overflow-y: auto; line-height: 1.5; }
         .emergency-btn { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border-radius: 1rem; font-weight: 800; padding: 0.85rem; border: none; cursor: pointer; width: 100%; font-size: 0.85rem; margin-top: 0.5rem; }
         .emergency-btn:active { transform: scale(0.96); }
+        
+        /* Email verification banner */
+        .verify-banner { background: linear-gradient(135deg, #dbeafe, #eff6ff); border: 2px solid #3b82f6; border-radius: 1rem; padding: 1rem; margin-bottom: 1rem; text-align: center; }
+        .verify-banner h4 { color: #1d4ed8; font-weight: 800; font-size: 0.9rem; margin-bottom: 0.5rem; }
+        .verify-banner p { color: #3b82f6; font-size: 0.8rem; }
     </style>
 </head>
 <body class="text-slate-900 pb-32">
@@ -79,6 +84,13 @@
     <div class="w-28 h-28 bg-green-50 rounded-[2.5rem] mb-6 flex items-center justify-center text-6xl shadow-inner">🌿</div>
     <h1 class="text-3xl font-black mb-2 tracking-tight">Nuestro Hogar Común</h1>
     <p class="text-slate-500 font-medium text-sm mb-6 text-center max-w-xs">Comunidad ecológica de Cota. Retos, mapa y muro verde.</p>
+    
+    <!-- EMAIL VERIFICATION BANNER -->
+    <div id="verify-banner" class="verify-banner hidden w-full max-w-sm">
+        <h4>📩 Verifica tu correo</h4>
+        <p>Te enviamos un enlace a <b id="verify-email"></b>.<br>Haz clic en el enlace para activar tu cuenta.</p>
+        <button onclick="resendVerification()" class="btn-green mt-2 text-xs">Reenviar email</button>
+    </div>
     
     <!-- DIAGNOSTIC PANEL -->
     <div id="diagnostic-panel" class="diagnostic-panel hidden w-full max-w-sm">
@@ -346,50 +358,36 @@
 <div id="emergency-sql-modal" class="modal-overlay hidden" onclick="toggleEmergencySQL(event)">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
         <div class="flex justify-between items-center mb-4">
-            <h3 class="font-black text-lg text-red-600">🆘 SQL de Emergencia — Fix Error 500</h3>
+            <h3 class="font-black text-lg text-red-600">🆘 Configuración Supabase</h3>
             <button onclick="toggleEmergencySQL()" class="text-slate-400 font-bold text-sm p-2">Cerrar</button>
         </div>
         
         <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
-            <p class="text-xs text-red-700 font-bold mb-2">⚠️ INSTRUCCIONES:</p>
+            <p class="text-xs text-red-700 font-bold mb-2">⚠️ CONFIGURAR URL DE REDIRECCIÓN:</p>
             <ol class="text-xs text-red-600 space-y-1 list-decimal list-inside">
-                <li>Abre <b>Supabase Dashboard</b> → <b>SQL Editor</b></li>
-                <li>Pega TODO este SQL</li>
-                <li>Ejecuta (Run)</li>
-                <li>Vuelve a intentar registrarte</li>
+                <li>Ve a <b>Supabase Dashboard</b> → <b>Authentication</b> → <b>URL Configuration</b></li>
+                <li>En <b>Site URL</b> pon tu dominio real (ej: https://tudominio.com)</li>
+                <li>En <b>Redirect URLs</b> añade tu dominio</li>
+                <li>Guarda cambios</li>
             </ol>
         </div>
 
         <div class="code-block" style="font-size:0.6rem; line-height:1.5; max-height:300px; overflow-y:auto;">
 -- ============================================================
--- FIX ERROR 500: "Database error saving new user"
--- Causa: Trigger en auth.users falla al insertar en profiles
+-- FIX: Añadir columnas faltantes a profiles
 -- ============================================================
 
--- 1. CREAR TABLA profiles (si no existe)
-CREATE TABLE IF NOT EXISTS public.profiles (
-    id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    name text,
-    email text,
-    avatar_url text,
-    role text DEFAULT 'user',
-    created_at timestamptz DEFAULT now(),
-    updated_at timestamptz DEFAULT now()
-);
+-- 1. AÑADIR COLUMNAS FALTANTES
+ALTER TABLE public.profiles 
+ADD COLUMN IF NOT EXISTS created_at timestamptz DEFAULT now(),
+ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
 
--- 2. ELIMINAR TRIGGERS PROBLEMÁTICOS (todos en auth.users)
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-DROP TRIGGER IF EXISTS on_new_user ON auth.users;
-DROP TRIGGER IF EXISTS signup_copy ON auth.users;
-DROP TRIGGER IF EXISTS on_auth_user_created_create_public_user_record ON auth.users;
+-- 2. VERIFICAR columnas
+SELECT column_name, data_type 
+FROM information_schema.columns 
+WHERE table_name = 'profiles';
 
--- 3. ELIMINAR FUNCIONES ANTIGUAS
-DROP FUNCTION IF EXISTS public.handle_new_user() CASCADE;
-DROP FUNCTION IF EXISTS public.handle_new_user() CASCADE;
-
--- 4. CREAR FUNCIÓN SEGURA CON SECURITY DEFINER
--- SECURITY DEFINER permite que el trigger acceda a tablas 
--- fuera del schema auth usando los privilegios del creador
+-- 3. RECREAR FUNCIÓN DEL TRIGGER
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -411,51 +409,18 @@ BEGIN
 END;
 $$;
 
--- 5. CREAR TRIGGER LIMPIO
+-- 4. RECREAR TRIGGER
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW
   EXECUTE FUNCTION public.handle_new_user();
 
--- 6. HABILITAR RLS Y CREAR POLÍTICAS BÁSICAS
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-
--- Política: cualquiera puede ver perfiles
-DROP POLICY IF EXISTS "Allow select all" ON public.profiles;
-CREATE POLICY "Allow select all"
-  ON public.profiles FOR SELECT
-  TO authenticated, anon
-  USING (true);
-
--- Política: usuarios solo pueden actualizar su propio perfil
-DROP POLICY IF EXISTS "Allow update own" ON public.profiles;
-CREATE POLICY "Allow update own"
-  ON public.profiles FOR UPDATE
-  TO authenticated
-  USING (auth.uid() = id);
-
--- Política: usuarios solo pueden insertar su propio perfil
-DROP POLICY IF EXISTS "Allow insert own" ON public.profiles;
-CREATE POLICY "Allow insert own"
-  ON public.profiles FOR INSERT
-  TO authenticated
-  WITH CHECK (auth.uid() = id);
-
--- 7. VERIFICAR QUE TODO ESTÉ CORRECTO
-SELECT 'profiles table OK' as status;
-SELECT 'trigger OK' as status;
+-- 5. VERIFICAR
+SELECT 'Configuración completa' as status;
         </div>
         
-        <button onclick="copyEmergencySQL()" class="btn-primary mt-4" style="background:#16a34a;">📋 Copiar SQL al portapapeles</button>
-        
-        <div class="mt-4 p-3 bg-amber-50 rounded-xl border border-amber-200">
-            <p class="text-xs text-amber-700 font-bold">💡 Si sigue fallando después de esto:</p>
-            <ul class="text-xs text-amber-600 mt-1 space-y-1 list-disc list-inside">
-                <li>Ve a <b>Supabase Dashboard → Logs → Auth</b></li>
-                <li>Busca el error exacto del trigger</li>
-                <li>Pega el error aquí para diagnóstico avanzado</li>
-            </ul>
-        </div>
+        <button onclick="copyEmergencySQL()" class="btn-primary mt-4" style="background:#16a34a;">📋 Copiar SQL</button>
     </div>
 </div>
 
@@ -470,15 +435,20 @@ SELECT 'trigger OK' as status;
             <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">Paso 1</p><p>Ve a <a href="https://supabase.com" target="_blank" class="text-green-600 font-bold">supabase.com</a></p></div>
             <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">Paso 2</p><p>Crea un proyecto nuevo</p></div>
             <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">Paso 3</p><p>Copia URL y anon key</p></div>
-            <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">Paso 4 · SQL</p>
-                <div class="code-block mt-2">create table profiles (id uuid primary key references auth.users(id), name text, avatar_url text, role text default 'user');</div>
+            <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">Paso 4 · Configurar URL</p>
+                <p class="text-xs text-slate-500">Authentication → URL Configuration → Site URL</p>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    // CONFIG
+    // ============================================================
+    // CONFIG - CAMBIA ESTA URL A TU DOMINIO REAL
+    // ============================================================
+    const SITE_URL = 'https://tudominio.com'; // ← CAMBIA ESTO A TU DOMINIO REAL
+    // const SITE_URL = 'http://localhost:3000'; // Para desarrollo local
+    
     const MAPBOX_TOKEN = 'pk.eyJ1IjoiamVyaXhkZXZlbG9waW5naSIsImEiOiJjbWhiZHU0YngxNjF2MmtwdXAxaWtydjR5In0.0Xx724Epn3x3nJ8hAYC1dA';
     const SB_URL = 'https://oamlsuhtozbindompgpl.supabase.co';
     const SB_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hbWxzdWh0b3piaW5kb21wZ3BsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2OTkyMTUsImV4cCI6MjA5MTI3NTIxNX0.nYCJeJT2riBaXGRvaDiOxaIwGEt2o-Dl4Gn-ZrLtT3U';
@@ -489,6 +459,7 @@ SELECT 'trigger OK' as status;
     let isOwner = false;
     let adminLogs = [];
     let diagnosticLogs = [];
+    let pendingEmail = null;
 
     const COLLECTION_POINTS = [
         { name: 'Centro de Acopio Municipal', coords: [-74.1086, 4.8105], type: 'municipal', color: '#16a34a', desc: 'Cra. 3 #5-20, Cota. Lun–Vie 8am–5pm' },
@@ -526,54 +497,21 @@ SELECT 'trigger OK' as status;
         const logContainer = document.getElementById('diagnostic-log');
         logContainer.innerHTML = '';
         
-        logDiagnostic('🔍 Iniciando diagnóstico completo...', 'info');
+        logDiagnostic('🔍 Iniciando diagnóstico...', 'info');
+        logDiagnostic(`Site URL configurada: ${SITE_URL}`, 'info');
         
-        // 1. Verificar conexión básica
         try {
             const start = performance.now();
             const { data, error } = await db.from('profiles').select('count', { count: 'exact', head: true });
             const duration = (performance.now() - start).toFixed(0);
             
             if (error) {
-                logDiagnostic(`❌ Tabla profiles INACCESIBLE: ${error.message}`, 'error');
-                if (error.message.includes('does not exist') || error.code === '42P01') {
-                    logDiagnostic('⚠️ CRÍTICO: La tabla profiles NO EXISTE', 'error');
-                    logDiagnostic('💡 SOLUCIÓN: Ejecuta el SQL de Emergencia', 'warn');
-                }
+                logDiagnostic(`❌ Tabla profiles: ${error.message}`, 'error');
             } else {
                 logDiagnostic(`✅ Tabla profiles OK (${duration}ms)`, 'info');
             }
         } catch (e) {
-            logDiagnostic(`❌ Error crítico: ${e.message}`, 'error');
-        }
-        
-        // 2. Verificar auth
-        try {
-            const { data: { session }, error } = await db.auth.getSession();
-            if (error) {
-                logDiagnostic(`❌ Auth error: ${error.message}`, 'error');
-            } else if (session) {
-                logDiagnostic(`✅ Sesión activa: ${session.user.email}`, 'info');
-            } else {
-                logDiagnostic('ℹ️ No hay sesión activa', 'info');
-            }
-        } catch (e) {
-            logDiagnostic(`❌ Auth check failed: ${e.message}`, 'error');
-        }
-        
-        // 3. Verificar tablas adicionales
-        const tables = ['acciones', 'comunidad'];
-        for (const table of tables) {
-            try {
-                const { error } = await db.from(table).select('count', { count: 'exact', head: true });
-                if (error) {
-                    logDiagnostic(`⚠️ Tabla ${table}: ${error.message}`, 'warn');
-                } else {
-                    logDiagnostic(`✅ Tabla ${table} OK`, 'info');
-                }
-            } catch (e) {
-                logDiagnostic(`❌ Error tabla ${table}: ${e.message}`, 'error');
-            }
+            logDiagnostic(`❌ Error: ${e.message}`, 'error');
         }
         
         logDiagnostic('✅ Diagnóstico completado.', 'info');
@@ -584,9 +522,13 @@ SELECT 'trigger OK' as status;
         try {
             db = supabase.createClient(SB_URL, SB_ANON_KEY);
             logDiagnostic('✅ Cliente Supabase inicializado', 'info');
+            logDiagnostic(`Site URL: ${SITE_URL}`, 'info');
         } catch(e) {
             logDiagnostic(`❌ Fallo inicialización: ${e.message}`, 'error');
         }
+        
+        // Verificar si hay token de confirmación en la URL
+        await handleEmailConfirmation();
         
         try {
             const { data: { session } } = await db.auth.getSession();
@@ -600,7 +542,43 @@ SELECT 'trigger OK' as status;
         }
     };
 
-    // ==================== AUTH REPARADO ====================
+    // ==================== EMAIL CONFIRMATION HANDLER ====================
+    
+    async function handleEmailConfirmation() {
+        // Verificar si hay tokens de confirmación en la URL
+        const hash = window.location.hash;
+        const query = window.location.search;
+        
+        if (hash.includes('access_token') || hash.includes('refresh_token') || 
+            query.includes('token') || query.includes('type=signup')) {
+            
+            logDiagnostic('🔍 Detectado posible confirmación de email en URL', 'info');
+            
+            try {
+                const { data: { session }, error } = await db.auth.getSession();
+                
+                if (error) {
+                    logDiagnostic(`❌ Error procesando confirmación: ${error.message}`, 'error');
+                    return;
+                }
+                
+                if (session) {
+                    currentUser = session.user;
+                    logDiagnostic(`✅ Email confirmado, sesión activa: ${session.user.email}`, 'info');
+                    showToast('¡Email confirmado! Bienvenido 🎉');
+                    
+                    // Limpiar URL
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    
+                    await initUserData();
+                }
+            } catch (e) {
+                logDiagnostic(`❌ Error en confirmación: ${e.message}`, 'error');
+            }
+        }
+    }
+
+    // ==================== AUTH ====================
     
     async function login() {
         const email = document.getElementById('auth-email').value.trim();
@@ -611,7 +589,7 @@ SELECT 'trigger OK' as status;
             return;
         }
 
-        logDiagnostic(`🔑 Intentando login: ${email}`, 'info');
+        logDiagnostic(`🔑 Login: ${email}`, 'info');
 
         try {
             const { data, error } = await db.auth.signInWithPassword({ email, password: pass });
@@ -643,125 +621,106 @@ SELECT 'trigger OK' as status;
             return;
         }
 
-        logDiagnostic(`📝 Iniciando registro: ${email}`, 'info');
+        logDiagnostic(`📝 Registro: ${email}`, 'info');
+        pendingEmail = email;
 
         try {
-            // PASO 1: Intentar login primero
-            logDiagnostic('Paso 1: Verificando si usuario existe...', 'info');
-            const { data: loginData, error: loginError } = await db.auth.signInWithPassword({ 
-                email, 
-                password: pass 
-            });
-            
+            // Intentar login primero
+            const { data: loginData } = await db.auth.signInWithPassword({ email, password: pass });
             if (loginData?.user) {
-                logDiagnostic('✅ Usuario existente, login automático', 'info');
                 currentUser = loginData.user;
                 showToast('¡Bienvenido de vuelta! 👋');
                 await initUserData();
                 return;
             }
 
-            // PASO 2: Crear nueva cuenta
-            logDiagnostic('Paso 2: Creando cuenta en Supabase Auth...', 'info');
+            // Crear cuenta con emailRedirectTo correcto
+            logDiagnostic(`📝 Signup con redirect: ${SITE_URL}`, 'info');
             const { data, error } = await db.auth.signUp({ 
                 email, 
                 password: pass,
                 options: {
-                    emailRedirectTo: window.location.origin,
+                    emailRedirectTo: SITE_URL, // ← URL correcta para confirmación
                     data: { name: '' }
                 }
             });
             
             if (error) {
-                logDiagnostic(`❌ Signup error: ${error.message} (code: ${error.code || 'none'}, status: ${error.status || 'none'})`, 'error');
-                console.error('Signup full error:', error);
-                
-                // ANÁLISIS ESPECÍFICO DEL ERROR 500
-                if (error.status === 500 || error.status === 0 || error.message?.includes('Database error saving new user')) {
-                    logDiagnostic('🔴 ERROR 500 CONFIRMADO', 'error');
-                    logDiagnostic('Causa: Trigger en auth.users falla', 'error');
-                    
-                    alert(`❌ ERROR 500: Database error saving new user
-
-El usuario NO EXISTE pero Supabase falló al crearlo.
-
-🔴 CAUSA DEFINITIVA:
-Un trigger en auth.users intenta insertar datos en 
-la tabla "profiles" pero FALLA por una de estas razones:
-
-1. ❌ La tabla "profiles" NO EXISTE
-2. ❌ El trigger referencia una columna que NO EXISTE
-3. ❌ El trigger NO tiene SECURITY DEFINER
-4. ❌ RLS bloquea la inserción
-5. ❌ Un constraint (foreign key, NOT NULL) es violado
-
-✅ SOLUCIÓN INMEDIATA:
-1. Haz clic en el botón "🆘 SQL de Emergencia"
-2. Copia el SQL
-3. Ve a Supabase Dashboard → SQL Editor
-4. Pega y ejecuta
-5. Vuelve aquí e intenta registrarte de nuevo
-
-📋 También puedes verificar logs en:
-Supabase Dashboard → Logs → Auth`);
-                    
-                    document.getElementById('diagnostic-panel').classList.remove('hidden');
-                    return;
-                }
-                
-                if (error.message?.includes('already registered') || error.code === 'user_already_exists') {
-                    alert('Este email ya está registrado. Usa "Entrar".');
-                    return;
-                }
-                
+                logDiagnostic(`❌ Signup error: ${error.message}`, 'error');
                 alert('Error: ' + error.message);
                 return;
             }
             
             if (data?.user) {
                 currentUser = data.user;
-                logDiagnostic(`✅ Usuario creado en auth.users: ${data.user.id}`, 'info');
+                logDiagnostic(`✅ Usuario creado: ${data.user.id}`, 'info');
                 
-                // PASO 3: Crear perfil manualmente (fallback si trigger falló)
-                logDiagnostic('Paso 3: Verificando perfil en tabla profiles...', 'info');
-                const { data: profileData, error: profileError } = await db
-                    .from('profiles')
-                    .select('*')
-                    .eq('id', data.user.id)
-                    .single();
-                
-                if (profileError || !profileData) {
-                    logDiagnostic('⚠️ Perfil no creado por trigger, creando manualmente...', 'warn');
-                    const { error: insertError } = await db.from('profiles').upsert({
-                        id: data.user.id,
-                        name: '',
-                        email: data.user.email,
-                        role: 'user',
-                        created_at: new Date().toISOString(),
-                        updated_at: new Date().toISOString()
-                    });
-                    
-                    if (insertError) {
-                        logDiagnostic(`❌ Error creando perfil manual: ${insertError.message}`, 'error');
-                    } else {
-                        logDiagnostic('✅ Perfil creado manualmente', 'info');
-                    }
-                } else {
-                    logDiagnostic('✅ Perfil creado por trigger correctamente', 'info');
-                }
-                
+                // Si no hay sesión, requiere confirmación de email
                 if (!data.session) {
-                    showToast('Cuenta creada. Revisa tu correo 📩');
-                    showOnboarding();
+                    logDiagnostic('📩 Requiere confirmación de email', 'info');
+                    showVerificationBanner(email);
+                    
+                    // Crear perfil manualmente de todos modos
+                    await createProfileAfterSignup(data.user);
                 } else {
                     showToast('Cuenta creada exitosamente 🎉');
                     await initUserData();
                 }
             }
-            
         } catch (e) {
-            logDiagnostic(`❌ Exception en registro: ${e.message}`, 'error');
+            logDiagnostic(`❌ Exception: ${e.message}`, 'error');
             alert('Error inesperado: ' + e.message);
+        }
+    }
+
+    async function createProfileAfterSignup(user) {
+        try {
+            const { error } = await db.from('profiles').upsert({
+                id: user.id,
+                name: '',
+                email: user.email,
+                role: 'user',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            });
+            
+            if (error) {
+                logDiagnostic(`⚠️ Perfil manual: ${error.message}`, 'warn');
+            } else {
+                logDiagnostic('✅ Perfil creado manualmente', 'info');
+            }
+        } catch (e) {
+            logDiagnostic(`❌ Error perfil manual: ${e.message}`, 'error');
+        }
+    }
+
+    function showVerificationBanner(email) {
+        document.getElementById('verify-email').innerText = email;
+        document.getElementById('verify-banner').classList.remove('hidden');
+        document.getElementById('diagnostic-panel').classList.add('hidden');
+    }
+
+    async function resendVerification() {
+        if (!pendingEmail) {
+            pendingEmail = document.getElementById('auth-email').value.trim();
+        }
+        
+        try {
+            const { error } = await db.auth.resend({
+                type: 'signup',
+                email: pendingEmail,
+                options: {
+                    emailRedirectTo: SITE_URL
+                }
+            });
+            
+            if (error) {
+                alert('Error: ' + error.message);
+            } else {
+                showToast('Email reenviado 📩');
+            }
+        } catch (e) {
+            alert('Error: ' + e.message);
         }
     }
 
@@ -826,7 +785,6 @@ Supabase Dashboard → Logs → Auth`);
             const { data: profile, error } = await db.from('profiles').select('*').eq('id', currentUser.id).single();
             
             if (error) {
-                logDiagnostic(`⚠️ Perfil no encontrado: ${error.message}`, 'warn');
                 if (error.code === 'PGRST116') {
                     await createDefaultProfile();
                     return;
@@ -845,7 +803,6 @@ Supabase Dashboard → Logs → Auth`);
                 showOnboarding();
             }
         } catch (e) {
-            logDiagnostic(`❌ Error initUserData: ${e.message}`, 'error');
             showOnboarding();
         }
     }
@@ -862,16 +819,13 @@ Supabase Dashboard → Logs → Auth`);
             });
             
             if (error) {
-                logDiagnostic(`❌ Error creando perfil default: ${error.message}`, 'error');
                 showOnboarding();
             } else {
-                logDiagnostic('✅ Perfil default creado', 'info');
                 localStorage.setItem('user_real_name', currentUser.email.split('@')[0]);
                 localStorage.setItem('user_unique_tag', currentUser.email.split('@')[0].toLowerCase());
                 enterApp();
             }
         } catch (e) {
-            logDiagnostic(`❌ Exception creando perfil: ${e.message}`, 'error');
             showOnboarding();
         }
     }
@@ -904,14 +858,10 @@ Supabase Dashboard → Logs → Auth`);
                 }, { onConflict: 'id' });
 
                 if (error) {
-                    logDiagnostic(`❌ Error guardando perfil: ${error.message}`, 'error');
                     showToast('Error al guardar: ' + error.message);
                     return;
                 }
-                
-                logDiagnostic('✅ Perfil guardado en onboarding', 'info');
             } catch (e) {
-                logDiagnostic(`❌ Exception en onboarding: ${e.message}`, 'error');
                 showToast('Error de conexión');
                 return;
             }
@@ -923,6 +873,7 @@ Supabase Dashboard → Logs → Auth`);
     
     function enterApp() {
         document.getElementById('auth-screen').classList.add('hidden');
+        document.getElementById('verify-banner').classList.add('hidden');
         document.getElementById('onboarding').classList.add('hidden');
         document.getElementById('main-app').classList.remove('hidden');
         updateGlobalUI();
