@@ -3,12 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Nuestro Hogar Común | Cota</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
-    <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+    
+    <script src="https://cdn.tailwindcss.com?v=2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2?v=2"></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css?v=2' rel='stylesheet' />
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js?v=2'></script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
         :root { --green: #16a34a; }
@@ -71,19 +76,30 @@
         .emergency-btn { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border-radius: 1rem; font-weight: 800; padding: 0.85rem; border: none; cursor: pointer; width: 100%; font-size: 0.85rem; margin-top: 0.5rem; }
         .emergency-btn:active { transform: scale(0.96); }
         
-        /* Email verification banner */
         .verify-banner { background: linear-gradient(135deg, #dbeafe, #eff6ff); border: 2px solid #3b82f6; border-radius: 1rem; padding: 1rem; margin-bottom: 1rem; text-align: center; }
         .verify-banner h4 { color: #1d4ed8; font-weight: 800; font-size: 0.9rem; margin-bottom: 0.5rem; }
         .verify-banner p { color: #3b82f6; font-size: 0.8rem; }
+        
+        .cache-purge-banner { background: linear-gradient(135deg, #fee2e2, #fef2f2); border: 2px solid #ef4444; border-radius: 1rem; padding: 1rem; margin-bottom: 1rem; text-align: center; }
+        .cache-purge-banner h4 { color: #dc2626; font-weight: 800; font-size: 0.9rem; margin-bottom: 0.5rem; }
+        .cache-purge-banner p { color: #ef4444; font-size: 0.75rem; }
     </style>
 </head>
 <body class="text-slate-900 pb-32">
+
+<!-- CACHE PURGE BANNER -->
+<div id="cache-purge-banner" class="cache-purge-banner hidden fixed top-0 left-0 right-0 z-[999] mx-4 mt-4">
+    <h4>🧹 Purga de caché detectada</h4>
+    <p>Se limpió caché viejo. Recarga la página para aplicar cambios.</p>
+    <button onclick="hardReload()" class="btn-red mt-2 text-xs">Recargar forzada (Ctrl+F5)</button>
+</div>
 
 <!-- ==================== AUTH SCREEN ==================== -->
 <div id="auth-screen" class="fixed inset-0 bg-[#F0F4F0] z-[100] flex flex-col items-center justify-center p-6 overflow-y-auto">
     <div class="w-28 h-28 bg-green-50 rounded-[2.5rem] mb-6 flex items-center justify-center text-6xl shadow-inner">🌿</div>
     <h1 class="text-3xl font-black mb-2 tracking-tight">Nuestro Hogar Común</h1>
-    <p class="text-slate-500 font-medium text-sm mb-6 text-center max-w-xs">Comunidad ecológica de Cota. Retos, mapa y muro verde.</p>
+    <p class="text-slate-500 font-medium text-sm mb-2 text-center max-w-xs">Comunidad ecológica de Cota. Retos, mapa y muro verde.</p>
+    <p id="version-tag" class="text-[10px] text-slate-400 font-mono mb-4">v2.0.0</p>
     
     <!-- EMAIL VERIFICATION BANNER -->
     <div id="verify-banner" class="verify-banner hidden w-full max-w-sm">
@@ -113,7 +129,11 @@
         </button>
         
         <button onclick="toggleEmergencySQL()" class="emergency-btn">
-            🆘 SQL de Emergencia (Fix Error 500)
+            🆘 SQL de Emergencia
+        </button>
+        
+        <button onclick="forcePurgeAll()" class="w-full p-3 rounded-xl border-2 border-red-200 text-red-600 font-bold text-xs active:scale-95 transition-transform bg-red-50">
+            🧹 Forzar purga TOTAL de caché
         </button>
         
         <div class="owner-section">
@@ -130,20 +150,21 @@
     <button onclick="toggleGuide()" class="mt-6 text-xs font-bold text-slate-400 uppercase tracking-widest">Guía Supabase ⚙️</button>
 </div>
 
-<!-- ==================== ONBOARDING ==================== -->
-<div id="onboarding" class="fixed inset-0 bg-white z-[100] flex flex-col hidden">
+<!-- ==================== PROFILE SETUP (Legacy Account Creator) ==================== -->
+<div id="profile-setup" class="fixed inset-0 bg-white z-[100] flex flex-col hidden">
     <div class="flex-1 flex flex-col items-center justify-center px-8 text-center">
         <div class="w-28 h-28 bg-green-50 rounded-[2.5rem] mb-8 flex items-center justify-center text-6xl shadow-inner">👤</div>
-        <h2 class="text-3xl font-black mb-3 tracking-tight">Tu identidad ecológica</h2>
-        <p class="text-slate-500 font-medium leading-relaxed text-sm max-w-xs">Completa tu perfil para la comunidad de Cota.</p>
+        <h2 class="text-3xl font-black mb-3 tracking-tight">Completa tu perfil</h2>
+        <p class="text-slate-500 font-medium leading-relaxed text-sm max-w-xs">Solo necesitamos tu nombre y un usuario para la comunidad de Cota.</p>
         <div class="w-full mt-8 space-y-3 max-w-sm">
-            <input id="reg-name" type="text" placeholder="Tu nombre real" class="input-field">
-            <input id="reg-tag" type="text" placeholder="@usuario (sin espacios)" class="input-field" style="font-family:monospace">
+            <input id="setup-name" type="text" placeholder="Tu nombre real" class="input-field">
+            <input id="setup-tag" type="text" placeholder="@usuario (sin espacios)" class="input-field" style="font-family:monospace">
         </div>
     </div>
     <div class="p-8 pb-12 max-w-sm mx-auto w-full">
-        <p class="text-center text-xs text-slate-400 font-bold mb-4 uppercase tracking-widest">Paso 1 de 1</p>
-        <button class="btn-primary" onclick="finishOnboarding()">Crear mi perfil</button>
+        <p class="text-center text-xs text-slate-400 font-bold mb-4 uppercase tracking-widest">Perfil de Cota</p>
+        <button class="btn-primary" onclick="saveProfileSetup()">Guardar mi perfil</button>
+        <button onclick="skipProfileSetup()" class="w-full mt-3 text-xs text-slate-400 font-bold">Omitir por ahora</button>
     </div>
 </div>
 
@@ -366,28 +387,19 @@
             <p class="text-xs text-red-700 font-bold mb-2">⚠️ CONFIGURAR URL DE REDIRECCIÓN:</p>
             <ol class="text-xs text-red-600 space-y-1 list-decimal list-inside">
                 <li>Ve a <b>Supabase Dashboard</b> → <b>Authentication</b> → <b>URL Configuration</b></li>
-                <li>En <b>Site URL</b> pon tu dominio real (ej: https://tudominio.com)</li>
+                <li>En <b>Site URL</b> pon tu dominio real</li>
                 <li>En <b>Redirect URLs</b> añade tu dominio</li>
                 <li>Guarda cambios</li>
             </ol>
         </div>
 
         <div class="code-block" style="font-size:0.6rem; line-height:1.5; max-height:300px; overflow-y:auto;">
--- ============================================================
--- FIX: Añadir columnas faltantes a profiles
--- ============================================================
-
--- 1. AÑADIR COLUMNAS FALTANTES
+-- Añadir columnas faltantes a profiles
 ALTER TABLE public.profiles 
 ADD COLUMN IF NOT EXISTS created_at timestamptz DEFAULT now(),
 ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
 
--- 2. VERIFICAR columnas
-SELECT column_name, data_type 
-FROM information_schema.columns 
-WHERE table_name = 'profiles';
-
--- 3. RECREAR FUNCIÓN DEL TRIGGER
+-- Recrear función del trigger
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -396,28 +408,17 @@ SET search_path = public
 AS $$
 BEGIN
   INSERT INTO public.profiles (id, name, email, role, created_at, updated_at)
-  VALUES (
-    new.id, 
-    COALESCE(new.raw_user_meta_data->>'name', ''), 
-    new.email, 
-    'user',
-    now(),
-    now()
-  )
+  VALUES (new.id, COALESCE(new.raw_user_meta_data->>'name', ''), new.email, 'user', now(), now())
   ON CONFLICT (id) DO NOTHING;
   RETURN new;
 END;
 $$;
 
--- 4. RECREAR TRIGGER
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW
   EXECUTE FUNCTION public.handle_new_user();
-
--- 5. VERIFICAR
-SELECT 'Configuración completa' as status;
         </div>
         
         <button onclick="copyEmergencySQL()" class="btn-primary mt-4" style="background:#16a34a;">📋 Copiar SQL</button>
@@ -435,24 +436,21 @@ SELECT 'Configuración completa' as status;
             <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">Paso 1</p><p>Ve a <a href="https://supabase.com" target="_blank" class="text-green-600 font-bold">supabase.com</a></p></div>
             <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">Paso 2</p><p>Crea un proyecto nuevo</p></div>
             <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">Paso 3</p><p>Copia URL y anon key</p></div>
-            <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">Paso 4 · Configurar URL</p>
-                <p class="text-xs text-slate-500">Authentication → URL Configuration → Site URL</p>
-            </div>
         </div>
     </div>
 </div>
 
 <script>
     // ============================================================
-    // CONFIG - CAMBIA ESTA URL A TU DOMINIO REAL
+    // CONFIG
     // ============================================================
-    const SITE_URL = 'https://anonymus-devop.github.io/OurCommonHome/'; // ← CAMBIA ESTO A TU DOMINIO REAL
-    // const SITE_URL = 'http://localhost:3000'; // Para desarrollo local
+    const APP_VERSION = '2.0.2';
+    const SITE_URL = window.location.origin;
     
     const MAPBOX_TOKEN = 'pk.eyJ1IjoiamVyaXhkZXZlbG9waW5naSIsImEiOiJjbWhiZHU0YngxNjF2MmtwdXAxaWtydjR5In0.0Xx724Epn3x3nJ8hAYC1dA';
     const SB_URL = 'https://oamlsuhtozbindompgpl.supabase.co';
     const SB_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hbWxzdWh0b3piaW5kb21wZ3BsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2OTkyMTUsImV4cCI6MjA5MTI3NTIxNX0.nYCJeJT2riBaXGRvaDiOxaIwGEt2o-Dl4Gn-ZrLtT3U';
-    const MASTER_OWNER_KEY = 'AdminOur2026**';
+    const MASTER_OWNER_KEY = 'CotaOwner2024**';
 
     let db, map, cameraStream, capturedPhotoData, cameraMode = 'post';
     let currentUser = null;
@@ -469,6 +467,87 @@ SELECT 'Configuración completa' as status;
         { name: 'Centro de Acopio Rozo', coords: [-74.1115, 4.8088], type: 'municipal', color: '#16a34a', desc: 'Vereda Rozo, Cota. Jue y Sáb 7am–1pm' },
         { name: 'Punto Verde Siberia', coords: [-74.1023, 4.8155], type: 'verde', color: '#3b82f6', desc: 'Vía Siberia, cerca al portón. 24 horas' },
     ];
+
+    // ============================================================
+    // CACHE PURGE
+    // ============================================================
+    
+    (function purgeCache() {
+        const savedVersion = localStorage.getItem('app_version');
+        const versionTag = document.getElementById('version-tag');
+        if (versionTag) versionTag.innerText = `v${APP_VERSION}`;
+        
+        if (savedVersion && savedVersion !== APP_VERSION) {
+            console.log(`[CACHE] Versión cambiada: ${savedVersion} → ${APP_VERSION}. Limpiando...`);
+            localStorage.clear();
+            sessionStorage.clear();
+            localStorage.setItem('app_version', APP_VERSION);
+            
+            const banner = document.getElementById('cache-purge-banner');
+            if (banner) banner.classList.remove('hidden');
+        } else {
+            localStorage.setItem('app_version', APP_VERSION);
+        }
+        
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                registrations.forEach(reg => {
+                    console.log('[CACHE] Unregistering SW:', reg.scope);
+                    reg.unregister();
+                });
+            });
+        }
+        
+        if ('caches' in window) {
+            caches.keys().then(names => {
+                names.forEach(name => {
+                    console.log('[CACHE] Deleting cache:', name);
+                    caches.delete(name);
+                });
+            });
+        }
+        
+        const originalFetch = window.fetch;
+        window.fetch = function(...args) {
+            const url = args[0];
+            if (typeof url === 'string' && url.includes(window.location.hostname)) {
+                const separator = url.includes('?') ? '&' : '?';
+                args[0] = `${url}${separator}_v=${APP_VERSION}&_t=${Date.now()}`;
+            }
+            return originalFetch.apply(this, args);
+        };
+    })();
+
+    function hardReload() {
+        window.location.href = window.location.href.split('?')[0] + '?_purge=' + Date.now();
+    }
+
+    function forcePurgeAll() {
+        if (!confirm('¿Borrar TODO el caché, localStorage, sessionStorage y cookies?')) return;
+        
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        document.cookie.split(';').forEach(cookie => {
+            const [name] = cookie.split('=');
+            document.cookie = `${name.trim()}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+        });
+        
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                registrations.forEach(reg => reg.unregister());
+            });
+        }
+        
+        if ('caches' in window) {
+            caches.keys().then(names => {
+                names.forEach(name => caches.delete(name));
+            });
+        }
+        
+        showToast('🧹 Todo limpiado. Recargando...');
+        setTimeout(() => hardReload(), 1000);
+    }
 
     // ==================== DIAGNÓSTICO ====================
     
@@ -497,8 +576,7 @@ SELECT 'Configuración completa' as status;
         const logContainer = document.getElementById('diagnostic-log');
         logContainer.innerHTML = '';
         
-        logDiagnostic('🔍 Iniciando diagnóstico...', 'info');
-        logDiagnostic(`Site URL configurada: ${SITE_URL}`, 'info');
+        logDiagnostic(`🔍 v${APP_VERSION} | Site: ${SITE_URL}`, 'info');
         
         try {
             const start = performance.now();
@@ -506,9 +584,9 @@ SELECT 'Configuración completa' as status;
             const duration = (performance.now() - start).toFixed(0);
             
             if (error) {
-                logDiagnostic(`❌ Tabla profiles: ${error.message}`, 'error');
+                logDiagnostic(`❌ profiles: ${error.message}`, 'error');
             } else {
-                logDiagnostic(`✅ Tabla profiles OK (${duration}ms)`, 'info');
+                logDiagnostic(`✅ profiles OK (${duration}ms)`, 'info');
             }
         } catch (e) {
             logDiagnostic(`❌ Error: ${e.message}`, 'error');
@@ -521,59 +599,53 @@ SELECT 'Configuración completa' as status;
     window.onload = async () => {
         try {
             db = supabase.createClient(SB_URL, SB_ANON_KEY);
-            logDiagnostic('✅ Cliente Supabase inicializado', 'info');
-            logDiagnostic(`Site URL: ${SITE_URL}`, 'info');
+            logDiagnostic(`✅ Supabase OK | v${APP_VERSION}`, 'info');
         } catch(e) {
-            logDiagnostic(`❌ Fallo inicialización: ${e.message}`, 'error');
+            logDiagnostic(`❌ Init failed: ${e.message}`, 'error');
         }
         
-        // Verificar si hay token de confirmación en la URL
         await handleEmailConfirmation();
         
         try {
             const { data: { session } } = await db.auth.getSession();
             if (session) {
                 currentUser = session.user;
-                logDiagnostic(`✅ Sesión restaurada: ${session.user.email}`, 'info');
+                logDiagnostic(`✅ Sesión: ${session.user.email}`, 'info');
                 await initUserData();
             }
         } catch (e) {
-            logDiagnostic(`❌ Error verificando sesión: ${e.message}`, 'error');
+            logDiagnostic(`❌ Session check: ${e.message}`, 'error');
         }
     };
 
-    // ==================== EMAIL CONFIRMATION HANDLER ====================
+    // ==================== EMAIL CONFIRMATION ====================
     
     async function handleEmailConfirmation() {
-        // Verificar si hay tokens de confirmación en la URL
         const hash = window.location.hash;
         const query = window.location.search;
         
         if (hash.includes('access_token') || hash.includes('refresh_token') || 
             query.includes('token') || query.includes('type=signup')) {
             
-            logDiagnostic('🔍 Detectado posible confirmación de email en URL', 'info');
+            logDiagnostic('🔍 Confirmación de email detectada', 'info');
             
             try {
                 const { data: { session }, error } = await db.auth.getSession();
                 
                 if (error) {
-                    logDiagnostic(`❌ Error procesando confirmación: ${error.message}`, 'error');
+                    logDiagnostic(`❌ Confirm error: ${error.message}`, 'error');
                     return;
                 }
                 
                 if (session) {
                     currentUser = session.user;
-                    logDiagnostic(`✅ Email confirmado, sesión activa: ${session.user.email}`, 'info');
-                    showToast('¡Email confirmado! Bienvenido 🎉');
-                    
-                    // Limpiar URL
+                    logDiagnostic(`✅ Email confirmado: ${session.user.email}`, 'info');
+                    showToast('¡Email confirmado! 🎉');
                     window.history.replaceState({}, document.title, window.location.pathname);
-                    
                     await initUserData();
                 }
             } catch (e) {
-                logDiagnostic(`❌ Error en confirmación: ${e.message}`, 'error');
+                logDiagnostic(`❌ Confirm exception: ${e.message}`, 'error');
             }
         }
     }
@@ -594,16 +666,16 @@ SELECT 'Configuración completa' as status;
         try {
             const { data, error } = await db.auth.signInWithPassword({ email, password: pass });
             if (error) {
-                logDiagnostic(`❌ Login error: ${error.message}`, 'error');
+                logDiagnostic(`❌ Login: ${error.message}`, 'error');
                 alert(error.message);
                 return;
             }
             currentUser = data.user;
-            logDiagnostic(`✅ Login exitoso`, 'info');
+            logDiagnostic(`✅ Login OK`, 'info');
             await initUserData();
         } catch (e) {
-            logDiagnostic(`❌ Login exception: ${e.message}`, 'error');
-            alert('Error inesperado: ' + e.message);
+            logDiagnostic(`❌ Login exc: ${e.message}`, 'error');
+            alert('Error: ' + e.message);
         }
     }
 
@@ -617,7 +689,7 @@ SELECT 'Configuración completa' as status;
         }
         
         if (pass.length < 6) {
-            alert('La contraseña debe tener al menos 6 caracteres');
+            alert('Mínimo 6 caracteres');
             return;
         }
 
@@ -625,28 +697,25 @@ SELECT 'Configuración completa' as status;
         pendingEmail = email;
 
         try {
-            // Intentar login primero
             const { data: loginData } = await db.auth.signInWithPassword({ email, password: pass });
             if (loginData?.user) {
                 currentUser = loginData.user;
-                showToast('¡Bienvenido de vuelta! 👋');
+                showToast('¡Bienvenido! 👋');
                 await initUserData();
                 return;
             }
 
-            // Crear cuenta con emailRedirectTo correcto
-            logDiagnostic(`📝 Signup con redirect: ${SITE_URL}`, 'info');
             const { data, error } = await db.auth.signUp({ 
                 email, 
                 password: pass,
                 options: {
-                    emailRedirectTo: SITE_URL, // ← URL correcta para confirmación
+                    emailRedirectTo: SITE_URL,
                     data: { name: '' }
                 }
             });
             
             if (error) {
-                logDiagnostic(`❌ Signup error: ${error.message}`, 'error');
+                logDiagnostic(`❌ Signup: ${error.message}`, 'error');
                 alert('Error: ' + error.message);
                 return;
             }
@@ -655,21 +724,18 @@ SELECT 'Configuración completa' as status;
                 currentUser = data.user;
                 logDiagnostic(`✅ Usuario creado: ${data.user.id}`, 'info');
                 
-                // Si no hay sesión, requiere confirmación de email
                 if (!data.session) {
-                    logDiagnostic('📩 Requiere confirmación de email', 'info');
+                    logDiagnostic('📩 Requiere confirmación email', 'info');
                     showVerificationBanner(email);
-                    
-                    // Crear perfil manualmente de todos modos
                     await createProfileAfterSignup(data.user);
                 } else {
-                    showToast('Cuenta creada exitosamente 🎉');
+                    showToast('Cuenta creada 🎉');
                     await initUserData();
                 }
             }
         } catch (e) {
-            logDiagnostic(`❌ Exception: ${e.message}`, 'error');
-            alert('Error inesperado: ' + e.message);
+            logDiagnostic(`❌ Registro exc: ${e.message}`, 'error');
+            alert('Error: ' + e.message);
         }
     }
 
@@ -687,10 +753,10 @@ SELECT 'Configuración completa' as status;
             if (error) {
                 logDiagnostic(`⚠️ Perfil manual: ${error.message}`, 'warn');
             } else {
-                logDiagnostic('✅ Perfil creado manualmente', 'info');
+                logDiagnostic('✅ Perfil creado', 'info');
             }
         } catch (e) {
-            logDiagnostic(`❌ Error perfil manual: ${e.message}`, 'error');
+            logDiagnostic(`❌ Perfil exc: ${e.message}`, 'error');
         }
     }
 
@@ -701,17 +767,13 @@ SELECT 'Configuración completa' as status;
     }
 
     async function resendVerification() {
-        if (!pendingEmail) {
-            pendingEmail = document.getElementById('auth-email').value.trim();
-        }
+        if (!pendingEmail) pendingEmail = document.getElementById('auth-email').value.trim();
         
         try {
             const { error } = await db.auth.resend({
                 type: 'signup',
                 email: pendingEmail,
-                options: {
-                    emailRedirectTo: SITE_URL
-                }
+                options: { emailRedirectTo: SITE_URL }
             });
             
             if (error) {
@@ -780,18 +842,22 @@ SELECT 'Configuración completa' as status;
         location.reload();
     }
 
+    // ==================== PROFILE SETUP (Legacy - no auth) ====================
+
     async function initUserData() {
         try {
             const { data: profile, error } = await db.from('profiles').select('*').eq('id', currentUser.id).single();
             
             if (error) {
                 if (error.code === 'PGRST116') {
-                    await createDefaultProfile();
+                    // Perfil no existe, mostrar setup
+                    showProfileSetup();
                     return;
                 }
             }
             
             if (profile?.name) {
+                // Perfil completo, entrar a la app
                 localStorage.setItem('user_real_name', profile.name);
                 localStorage.setItem('user_unique_tag', profile.name.toLowerCase().replace(/\s+/g, '_'));
                 if (profile.role === 'owner' || localStorage.getItem('is_owner') === 'true') {
@@ -800,81 +866,77 @@ SELECT 'Configuración completa' as status;
                 }
                 enterApp();
             } else {
-                showOnboarding();
+                // Perfil existe pero sin nombre, mostrar setup
+                showProfileSetup();
             }
         } catch (e) {
-            showOnboarding();
-        }
-    }
-    
-    async function createDefaultProfile() {
-        try {
-            const { error } = await db.from('profiles').upsert({
-                id: currentUser.id,
-                name: currentUser.email.split('@')[0],
-                email: currentUser.email,
-                role: 'user',
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-            });
-            
-            if (error) {
-                showOnboarding();
-            } else {
-                localStorage.setItem('user_real_name', currentUser.email.split('@')[0]);
-                localStorage.setItem('user_unique_tag', currentUser.email.split('@')[0].toLowerCase());
-                enterApp();
-            }
-        } catch (e) {
-            showOnboarding();
+            showProfileSetup();
         }
     }
 
-    function showOnboarding() {
+    function showProfileSetup() {
         document.getElementById('auth-screen').classList.add('hidden');
-        document.getElementById('onboarding').classList.remove('hidden');
+        document.getElementById('verify-banner').classList.add('hidden');
+        document.getElementById('profile-setup').classList.remove('hidden');
     }
 
-    async function finishOnboarding() {
-        const name = document.getElementById('reg-name').value.trim();
-        const rawTag = document.getElementById('reg-tag').value.trim().replace('@', '').replace(/\s+/g, '_').toLowerCase();
+    async function saveProfileSetup() {
+        const name = document.getElementById('setup-name').value.trim();
+        const rawTag = document.getElementById('setup-tag').value.trim().replace('@', '').replace(/\s+/g, '_').toLowerCase();
         
         if (!name || !rawTag) { 
             showToast('Completa tu nombre y usuario'); 
             return; 
         }
         
-        localStorage.setItem('user_real_name', name);
-        localStorage.setItem('user_unique_tag', '@' + rawTag);
-        
-        if (currentUser) {
-            try {
-                const { error } = await db.from('profiles').upsert({ 
-                    id: currentUser.id, 
-                    name: name,
-                    email: currentUser.email,
-                    role: 'user',
-                    updated_at: new Date().toISOString()
-                }, { onConflict: 'id' });
+        if (!currentUser) {
+            showToast('Error: No hay sesión activa');
+            return;
+        }
 
-                if (error) {
-                    showToast('Error al guardar: ' + error.message);
-                    return;
-                }
-            } catch (e) {
-                showToast('Error de conexión');
+        try {
+            // Solo UPDATE al perfil existente, no auth
+            const { error } = await db.from('profiles')
+                .update({ 
+                    name: name,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', currentUser.id);
+
+            if (error) {
+                logDiagnostic(`❌ Error guardando perfil: ${error.message}`, 'error');
+                showToast('Error al guardar: ' + error.message);
                 return;
             }
+            
+            logDiagnostic('✅ Perfil actualizado', 'info');
+            localStorage.setItem('user_real_name', name);
+            localStorage.setItem('user_unique_tag', '@' + rawTag);
+            
+            document.getElementById('profile-setup').classList.add('hidden');
+            enterApp();
+            
+        } catch (e) {
+            logDiagnostic(`❌ Exception guardando perfil: ${e.message}`, 'error');
+            showToast('Error de conexión');
         }
+    }
+
+    function skipProfileSetup() {
+        if (!currentUser) return;
         
-        document.getElementById('onboarding').classList.add('hidden');
+        const defaultName = currentUser.email.split('@')[0];
+        localStorage.setItem('user_real_name', defaultName);
+        localStorage.setItem('user_unique_tag', defaultName.toLowerCase());
+        
+        document.getElementById('profile-setup').classList.add('hidden');
         enterApp();
     }
     
     function enterApp() {
         document.getElementById('auth-screen').classList.add('hidden');
         document.getElementById('verify-banner').classList.add('hidden');
-        document.getElementById('onboarding').classList.add('hidden');
+        document.getElementById('profile-setup').classList.add('hidden');
         document.getElementById('main-app').classList.remove('hidden');
         updateGlobalUI();
         loadHomeData();
@@ -1311,7 +1373,7 @@ SELECT 'Configuración completa' as status;
     function copyEmergencySQL() {
         const sql = document.querySelector('#emergency-sql-modal .code-block').innerText;
         navigator.clipboard.writeText(sql).then(() => {
-            showToast('SQL copiado al portapapeles 📋');
+            showToast('SQL copiado 📋');
         }).catch(() => {
             showToast('Error al copiar');
         });
