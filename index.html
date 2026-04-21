@@ -98,26 +98,94 @@
         .diagnostic-log { font-family: 'Courier New', monospace; font-size: 0.7rem; color: #78350f; background: #fffbeb; padding: 0.75rem; border-radius: 0.5rem; max-height: 200px; overflow-y: auto; line-height: 1.5; }
         
         /* OAuth Consent Screen Styles */
+        /* OAuth Consent Screen Styles - CORREGIDO */
         .consent-screen { background: white; min-height: 100vh; padding: 2rem 1.5rem; }
         .consent-header { text-align: center; margin-bottom: 2rem; }
-        .consent-app-icon { width: 64px; height: 64px; border-radius: 1.5rem; background: linear-gradient(135deg, #16a34a, #22c55e); display: flex; align-items: center; center; justify-content: center; font-size: 2rem; margin: 0 auto 1rem; }
-        .consent-scopes { background: #f8fafc; border-radius: 1rem; padding: 1.25rem; margin: 1.5rem 0; }
-        .consent-scope-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0; border-bottom: 1px solid #e2e8f0; }
+        .consent-app-icon { 
+            width: 64px; 
+            height: 64px; 
+            border-radius: 1.5rem; 
+            background: linear-gradient(135deg, #16a34a, #22c55e); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 2rem; 
+            margin: 0 auto 1rem; 
+        }
+        .consent-scopes { 
+            background: #f8fafc; 
+            border-radius: 1rem; 
+            padding: 1.25rem; 
+            margin: 1.5rem 0; 
+        }
+        .consent-scope-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 0.75rem; 
+            padding: 0.75rem 0; 
+            border-bottom: 1px solid #e2e8f0; 
+        }
         .consent-scope-item:last-child { border-bottom: none; }
-        .consent-scope-icon { width: 36px; height: 36px; border-radius: 0.75rem; background: #dcfce7; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
-        .consent-buttons { display: flex; gap: 0.75rem; margin-top: 2rem; }
+        .consent-scope-icon { 
+            width: 36px; 
+            height: 36px; 
+            border-radius: 0.75rem; 
+            background: #dcfce7; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 1rem; 
+            flex-shrink: 0; 
+        }
+        .consent-buttons { 
+            display: flex; 
+            gap: 0.75rem; 
+            margin-top: 2rem; 
+        }
         .consent-buttons .btn-primary { flex: 1; }
-        .consent-buttons .btn-deny { flex: 1; background: white; color: #64748b; border: 2px solid #e2e8f0; border-radius: 1.5rem; font-weight: 700; padding: 1.1rem 2rem; font-size: 1rem; cursor: pointer; transition: all 0.15s; }
-        .consent-buttons .btn-deny:active { transform: scale(0.97); background: #f8fafc; }
-        .consent-user-info { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: #f0fdf4; border-radius: 1rem; margin-bottom: 1.5rem; }
-        .consent-user-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #16a34a, #22c55e); display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; }
+        .consent-buttons .btn-deny { 
+            flex: 1; 
+            background: white; 
+            color: #64748b; 
+            border: 2px solid #e2e8f0; 
+            border-radius: 1.5rem; 
+            font-weight: 700; 
+            padding: 1.1rem 2rem; 
+            font-size: 1rem; 
+            cursor: pointer; 
+            transition: all 0.15s; 
+        }
+        .consent-buttons .btn-deny:active { 
+            transform: scale(0.97); 
+            background: #f8fafc; 
+        }
+        .consent-user-info { 
+            display: flex; 
+            align-items: center; 
+            gap: 0.75rem; 
+            padding: 1rem; 
+            background: #f0fdf4; 
+            border-radius: 1rem; 
+            margin-bottom: 1.5rem; 
+        }
+        .consent-user-avatar { 
+            width: 40px; 
+            height: 40px; 
+            border-radius: 50%; 
+            background: linear-gradient(135deg, #16a34a, #22c55e); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            color: white; 
+            font-weight: 800; 
+        }
     </style>
 </head>
 <body class="text-slate-900 pb-32">
 
-<!-- ==================== OAUTH CONSENT SCREEN ==================== -->
+<!-- ==================== OAUTH CONSENT SCREEN (CORREGIDO) ==================== -->
 <div id="oauth-consent-screen" class="consent-screen hidden">
-    <div class="max-w-sm mx-auto">
+    <div class="max-w-sm mx-auto pt-12">
         <div class="consent-header">
             <div class="consent-app-icon" id="consent-app-icon">🔐</div>
             <h2 class="text-2xl font-black mb-1" id="consent-app-name">App Solicitante</h2>
@@ -135,15 +203,21 @@
         <div class="consent-scopes">
             <p class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Permisos solicitados</p>
             <div id="consent-scopes-list">
-                <!-- Scopes se renderizan dinámicamente -->
+                <!-- Scopes rendered dynamically -->
             </div>
+        </div>
+        
+        <div id="consent-error" class="hidden bg-red-50 border border-red-200 rounded-xl p-3 mb-4">
+            <p class="text-xs text-red-600 font-bold" id="consent-error-text"></p>
         </div>
         
         <p class="text-xs text-slate-400 text-center mb-4">Puedes revocar este acceso en cualquier momento desde tu perfil.</p>
         
         <div class="consent-buttons">
-            <button class="btn-deny" onclick="denyOAuthConsent()">Denegar</button>
-            <button class="btn-primary" onclick="approveOAuthConsent()">Permitir acceso</button>
+            <button type="button" class="btn-deny" id="btn-deny-oauth" disabled>Denegar</button>
+            <button type="button" class="btn-primary" id="btn-approve-oauth" disabled>
+                <span id="btn-approve-text">Permitir acceso</span>
+            </button>
         </div>
     </div>
 </div>
@@ -520,90 +594,263 @@
     // OAUTH SERVER: CONSENT SCREEN
     // ============================================================
     
-    async function initOAuthConsent() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const authId = urlParams.get('authorization_id');
+// ============================================================
+// OAUTH SERVER: CONSENT SCREEN (CORREGIDO)
+// ============================================================
+
+let oauthAuthorizationId = null;
+let oauthClientInfo = null;
+let oauthSession = null;
+
+async function initOAuthConsent() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const authId = urlParams.get('authorization_id');
+    
+    if (!authId) return false;
+    
+    oauthAuthorizationId = authId;
+    logDiagnostic(`🔐 OAuth consent iniciado: ${authId}`, 'info');
+    
+    // Mostrar loading en botones
+    const approveBtn = document.getElementById('btn-approve-oauth');
+    const denyBtn = document.getElementById('btn-deny-oauth');
+    if (approveBtn) {
+        approveBtn.disabled = true;
+        document.getElementById('btn-approve-text').innerText = 'Cargando...';
+    }
+    if (denyBtn) denyBtn.disabled = true;
+    
+    try {
+        // Verificar si el usuario está autenticado PRIMERO
+        const { data: { session } } = await db.auth.getSession();
         
-        if (!authId) return false; // No es un flujo OAuth
-        
-        oauthAuthorizationId = authId;
-        logDiagnostic(`🔐 OAuth consent iniciado: ${authId}`, 'info');
-        
-        try {
-            // Obtener detalles de la autorización
-            const { data, error } = await db.auth.oauth.getAuthorizationDetails(authId);
-            
-            if (error) {
-                logDiagnostic(`❌ OAuth getAuthorizationDetails: ${error.message}`, 'error');
-                showToast('Error cargando autorización');
-                return true;
-            }
-            
-            oauthClientInfo = data;
-            logDiagnostic(`✅ Cliente OAuth: ${data.client?.name || 'Unknown'}`, 'info');
-            
-            // Verificar si el usuario está autenticado
-            const { data: { session } } = await db.auth.getSession();
-            
-            if (!session) {
-                // Usuario no autenticado — guardar auth_id y redirigir a login
-                logDiagnostic('ℹ️ Usuario no autenticado, redirigiendo a login', 'info');
-                sessionStorage.setItem('pending_oauth_auth_id', authId);
-                showToast('Inicia sesión para continuar');
-                return true;
-            }
-            
-            currentUser = session.user;
-            
-            // Mostrar consent screen
-            renderConsentScreen(data, session.user);
-            return true;
-            
-        } catch (e) {
-            logDiagnostic(`❌ OAuth consent exc: ${e.message}`, 'error`);
-            return true;
+        if (!session) {
+            logDiagnostic('ℹ️ Usuario no autenticado, guardando auth_id y mostrando login', 'info');
+            sessionStorage.setItem('pending_oauth_auth_id', authId);
+            showToast('Inicia sesión para autorizar la aplicación');
+            // No retornar true aquí - dejar que el flujo normal de auth se muestre
+            return false; 
         }
+        
+        oauthSession = session;
+        currentUser = session.user;
+        
+        // Obtener detalles de la autorización
+        logDiagnostic('📡 Llamando getAuthorizationDetails...', 'info');
+        const { data, error } = await db.auth.oauth.getAuthorizationDetails(authId);
+        
+        if (error) {
+            throw new Error(`getAuthorizationDetails: ${error.message}`);
+        }
+        
+        if (!data) {
+            throw new Error('No se recibieron datos de autorización');
+        }
+        
+        oauthClientInfo = data;
+        logDiagnostic(`✅ Cliente OAuth: ${data.client?.name || 'Unknown'}`, 'info');
+        
+        // Mostrar consent screen
+        renderConsentScreen(data, session.user);
+        return true;
+        
+    } catch (e) {
+        logDiagnostic(`❌ OAuth consent exc: ${e.message}`, 'error');
+        showConsentError(e.message);
+        return true; // Es un flujo OAuth pero con error
+    }
+}
+
+function renderConsentScreen(details, user) {
+    // Ocultar todo lo demás
+    document.getElementById('auth-screen').classList.add('hidden');
+    document.getElementById('main-app').classList.add('hidden');
+    document.getElementById('profile-setup').classList.add('hidden');
+    document.getElementById('oauth-consent-screen').classList.remove('hidden');
+    
+    // Info del cliente
+    document.getElementById('consent-app-name').innerText = details.client?.name || 'Aplicación externa';
+    document.getElementById('consent-app-icon').innerText = details.client?.icon || '🔐';
+    
+    // Info del usuario
+    const userName = user.user_metadata?.full_name || 
+                     user.user_metadata?.name || 
+                     user.email?.split('@')[0] || 
+                     'Usuario';
+    document.getElementById('consent-user-name').innerText = userName;
+    document.getElementById('consent-user-email').innerText = user.email || '';
+    document.getElementById('consent-user-avatar').innerText = userName.charAt(0).toUpperCase();
+    
+    // Scopes - NOTA: es "scope" (singular) según la documentación de Supabase [^1^]
+    const scopesList = document.getElementById('consent-scopes-list');
+    // La API devuelve "scope" como string space-separated, no "scopes" como array
+    const scopeString = details.scope || '';
+    const scopes = scopeString.split(' ').filter(s => s.trim());
+    
+    // Si no hay scopes, mostrar defaults
+    if (scopes.length === 0) {
+        scopes.push('openid', 'email', 'profile');
     }
     
-    function renderConsentScreen(details, user) {
-        // Ocultar todo lo demás
-        document.getElementById('auth-screen').classList.add('hidden');
-        document.getElementById('main-app').classList.add('hidden');
-        document.getElementById('oauth-consent-screen').classList.remove('hidden');
-        
-        // Info del cliente
-        document.getElementById('consent-app-name').innerText = details.client?.name || 'Aplicación externa';
-        document.getElementById('consent-app-icon').innerText = details.client?.icon || '🔐';
-        
-        // Info del usuario
-        const userName = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Usuario';
-        document.getElementById('consent-user-name').innerText = userName;
-        document.getElementById('consent-user-email').innerText = user.email;
-        document.getElementById('consent-user-avatar').innerText = userName.charAt(0).toUpperCase();
-        
-        // Scopes
-        const scopesList = document.getElementById('consent-scopes-list');
-        const scopes = details.scopes || ['openid', 'email', 'profile'];
-        
-        const scopeLabels = {
-            'openid': { icon: '🔓', label: 'Identidad básica', desc: 'Acceso a tu ID de usuario' },
-            'email': { icon: '📧', label: 'Correo electrónico', desc: 'Ver tu dirección de email' },
-            'profile': { icon: '👤', label: 'Perfil', desc: 'Ver tu nombre y foto de perfil' },
-            'phone': { icon: '📱', label: 'Teléfono', desc: 'Ver tu número de teléfono' }
-        };
-        
-        scopesList.innerHTML = scopes.map(scope => {
-            const info = scopeLabels[scope] || { icon: '🔒', label: scope, desc: 'Acceso solicitado' };
-            return `
-                <div class="consent-scope-item">
-                    <div class="consent-scope-icon">${info.icon}</div>
-                    <div>
-                        <p class="font-bold text-sm text-slate-800">${info.label}</p>
-                        <p class="text-xs text-slate-500">${info.desc}</p>
-                    </div>
+    const scopeLabels = {
+        'openid': { icon: '🔓', label: 'Identidad básica', desc: 'Acceso a tu ID de usuario' },
+        'email': { icon: '📧', label: 'Correo electrónico', desc: 'Ver tu dirección de email' },
+        'profile': { icon: '👤', label: 'Perfil', desc: 'Ver tu nombre y foto de perfil' },
+        'phone': { icon: '📱', label: 'Teléfono', desc: 'Ver tu número de teléfono' }
+    };
+    
+    scopesList.innerHTML = scopes.map(scope => {
+        const info = scopeLabels[scope] || { icon: '🔒', label: scope, desc: 'Acceso solicitado' };
+        return `
+            <div class="consent-scope-item">
+                <div class="consent-scope-icon">${info.icon}</div>
+                <div>
+                    <p class="font-bold text-sm text-slate-800">${info.label}</p>
+                    <p class="text-xs text-slate-500">${info.desc}</p>
                 </div>
-            `;
-        }).join('');
+            </div>
+        `;
+    }).join('');
+    
+    // Habilitar botones
+    const approveBtn = document.getElementById('btn-approve-oauth');
+    const denyBtn = document.getElementById('btn-deny-oauth');
+    if (approveBtn) {
+        approveBtn.disabled = false;
+        document.getElementById('btn-approve-text').innerText = 'Permitir acceso';
+    }
+    if (denyBtn) denyBtn.disabled = false;
+}
+
+function showConsentError(message) {
+    const errorDiv = document.getElementById('consent-error');
+    const errorText = document.getElementById('consent-error-text');
+    if (errorDiv && errorText) {
+        errorText.innerText = message;
+        errorDiv.classList.remove('hidden');
+    }
+    // Habilitar botón de denegar para que pueda salir
+    const denyBtn = document.getElementById('btn-deny-oauth');
+    if (denyBtn) denyBtn.disabled = false;
+}
+
+async function approveOAuthConsent() {
+    if (!oauthAuthorizationId) {
+        showToast('Error: No hay autorización pendiente');
+        return;
+    }
+    
+    const approveBtn = document.getElementById('btn-approve-oauth');
+    const denyBtn = document.getElementById('btn-deny-oauth');
+    
+    // Deshabilitar botones durante la operación
+    if (approveBtn) {
+        approveBtn.disabled = true;
+        document.getElementById('btn-approve-text').innerText = 'Autorizando...';
+    }
+    if (denyBtn) denyBtn.disabled = true;
+    
+    logDiagnostic('✅ Usuario aprobó OAuth consent', 'info');
+    
+    try {
+        const { data, error } = await db.auth.oauth.approveAuthorization(oauthAuthorizationId);
+        
+        if (error) {
+            throw new Error(error.message);
+        }
+        
+        if (data?.redirect_to) {
+            logDiagnostic(`🔄 Redirecting to: ${data.redirect_to}`, 'info');
+            showToast('Autorización exitosa. Redirigiendo...');
+            window.location.href = data.redirect_to;
+        } else {
+            throw new Error('No redirect URL received');
+        }
+        
+    } catch (e) {
+        logDiagnostic(`❌ approveAuthorization: ${e.message}`, 'error');
+        showConsentError('Error al autorizar: ' + e.message);
+        if (approveBtn) {
+            approveBtn.disabled = false;
+            document.getElementById('btn-approve-text').innerText = 'Permitir acceso';
+        }
+        if (denyBtn) denyBtn.disabled = false;
+    }
+}
+
+async function denyOAuthConsent() {
+    if (!oauthAuthorizationId) {
+        // Si no hay auth_id, simplemente volver al login
+        document.getElementById('oauth-consent-screen').classList.add('hidden');
+        document.getElementById('auth-screen').classList.remove('hidden');
+        return;
+    }
+    
+    const approveBtn = document.getElementById('btn-approve-oauth');
+    const denyBtn = document.getElementById('btn-deny-oauth');
+    
+    if (denyBtn) {
+        denyBtn.disabled = true;
+        denyBtn.innerText = 'Procesando...';
+    }
+    if (approveBtn) approveBtn.disabled = true;
+    
+    logDiagnostic('❌ Usuario denegó OAuth consent', 'info');
+    
+    try {
+        const { data, error } = await db.auth.oauth.denyAuthorization(oauthAuthorizationId);
+        
+        if (error) {
+            console.warn('denyAuthorization error:', error);
+        }
+        
+        if (data?.redirect_to) {
+            window.location.href = data.redirect_to;
+        } else {
+            // Volver a la app principal
+            document.getElementById('oauth-consent-screen').classList.add('hidden');
+            document.getElementById('auth-screen').classList.remove('hidden');
+            showToast('Acceso denegado');
+        }
+        
+    } catch (e) {
+        logDiagnostic(`❌ denyAuthorization exc: ${e.message}`, 'error');
+        document.getElementById('oauth-consent-screen').classList.add('hidden');
+        document.getElementById('auth-screen').classList.remove('hidden');
+    }
+}
+
+// Reanudar OAuth después de login
+async function resumeOAuthAfterLogin() {
+    const pendingAuthId = sessionStorage.getItem('pending_oauth_auth_id');
+    if (!pendingAuthId) return;
+    
+    sessionStorage.removeItem('pending_oauth_auth_id');
+    logDiagnostic(`🔄 Reanudando OAuth después de login: ${pendingAuthId}`, 'info');
+    
+    // Actualizar URL con el authorization_id
+    const url = new URL(window.location.href);
+    url.searchParams.set('authorization_id', pendingAuthId);
+    window.history.replaceState({}, '', url);
+    
+    // Re-inicializar consent
+    await initOAuthConsent();
+}
+
+// ============================================================
+// EVENT LISTENERS (AGREGAR EN DOMContentLoaded)
+// ============================================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    // OAuth consent buttons - usando addEventListener en lugar de onclick inline
+    const btnApprove = document.getElementById('btn-approve-oauth');
+    const btnDeny = document.getElementById('btn-deny-oauth');
+    
+    if (btnApprove) {
+        btnApprove.addEventListener('click', approveOAuthConsent);
+    }
+    if (btnDeny) {
+        btnDeny.addEventListener('click', denyOAuthConsent);
     }
     
     async function approveOAuthConsent() {
