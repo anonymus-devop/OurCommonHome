@@ -268,12 +268,12 @@
                     </div>
                 </div>
             </div>
-            <button onclick="logout()" class="w-full p-4 rounded-2xl border-2 border-red-100 text-red-500 font-bold text-sm active:scale-95 transition-transform bg-red-50">Cerrar sesión</button>
+            <button id="logout-btn" onclick="logoutWithGuard(this)" class="w-full p-4 rounded-2xl border-2 border-red-100 text-red-500 font-bold text-sm active:scale-95 transition-transform bg-red-50">Cerrar sesión</button>
         </div>
     </main>
 
     <!-- Bottom Nav -->
-    <nav class="fixed bottom-0 left-0 right: 0 h-24 glass flex items-center justify-around px-2 z-40 pb-4">
+    <nav class="fixed bottom-0 left-0 right-0 h-24 glass flex items-center justify-around px-2 z-40 pb-4">
         <button onclick="changeTab('home', this)" class="tab-btn tab-active flex flex-col items-center flex-1 py-2 gap-1">
             <svg class="w-6 h-6 transition-transform" fill="currentColor" viewBox="0 0 24 24"><path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z"/><path d="M12 5.432l8.159 8.159c.03.03.061.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198c.03-.028.061-.056.091-.086L12 5.43z"/></svg>
             <span class="text-[9px] font-black uppercase tracking-tight">Inicio</span>
@@ -586,10 +586,60 @@
 
     async function logout() {
         addLog('Logout', currentUser?.email || 'unknown');
-        await db.auth.signOut();
+        
+        try {
+            await db.auth.signOut();
+        } catch(e) {
+            console.warn('Error en signOut:', e);
+        }
+        
+        // Limpiar estado
+        currentUser = null;
+        isOwner = false;
+        
+        // Limpiar storage
         Storage.clear();
-        currentUser = null; isOwner = false;
-        location.reload();
+        
+        // Limpiar UI de admin
+        document.getElementById('admin-badge')?.classList.add('hidden');
+        
+        // Resetear pestaña activa a home
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
+        document.querySelector('.tab-btn')?.classList.add('tab-active');
+        
+        // Ocultar todas las vistas y mostrar home
+        document.querySelectorAll('.tab-view').forEach(v => v.classList.add('hidden'));
+        document.getElementById('view-home')?.classList.remove('hidden');
+        
+        // Cambiar a pantalla de auth
+        document.getElementById('main-app')?.classList.add('hidden');
+        document.getElementById('auth-screen')?.classList.remove('hidden');
+        document.getElementById('onboarding')?.classList.add('hidden');
+        
+        // Detener cámara si está activa
+        stopCamera();
+        
+        // Limpiar inputs de auth
+        document.getElementById('auth-email').value = '';
+        document.getElementById('auth-pass').value = '';
+        document.getElementById('owner-email').value = '';
+        document.getElementById('owner-pass').value = '';
+        document.getElementById('owner-master-key').value = '';
+        
+        // Resetear títulos
+        document.getElementById('section-label').innerText = TAB_META.home.label;
+        document.getElementById('view-title').innerText = TAB_META.home.title;
+        
+        window.scrollTo(0, 0);
+    }
+
+    async function logoutWithGuard(btn) {
+        if (btn.disabled) return;
+        btn.disabled = true;
+        btn.innerText = 'Cerrando sesión...';
+        await logout();
+        btn.disabled = false;
+        btn.innerText = 'Cerrar sesión';
     }
 
     async function initUserData() {
@@ -993,59 +1043,257 @@
         stopCamera();
         document.getElementById('camera-modal').classList.add('hidden');
     }
+    // Continuación del script anterior...
 
-    function stopCamera() {
-        if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; }
-    }
-
-    // ==================== PROFILE ====================
-    async function loadProfileStats() {
-        const name = Storage.get('user_real_name', 'Anónimo');
+    // ==================== INICIALIZACIÓN ====================
+    async function initApp() {
         try {
-            const [res1, res2] = await Promise.all([
-                db.from('acciones').select('impacto_co2'),
-                db.from('comunidad').select('id', { count: 'exact', head: true }).eq('autor', name),
-            ]);
-            const total = (res1.data || []).reduce((a, b) => a + parseFloat(b.impacto_co2 || 0), 0);
-            const posts = res2.count || 0;
-            const nivel = Math.floor(total / 10) + 1;
-            document.getElementById('p-co2').innerText   = total.toFixed(1);
-            document.getElementById('p-posts').innerText = posts;
-            document.getElementById('p-nivel').innerText = nivel;
-        } catch(e) {}
+            db = supabase.createClient(SB_URL, SB_ANON_KEY);
+            checkSession();
+            updateOnlineStatus();
+        } catch (err) {
+            console.error("Error al conectar con Supabase:", err);
+            showToast("Error de conexión con el servidor");
+        }
     }
 
-    // ==================== GUIDE ====================
-    function toggleGuide() {
-        // placeholder — puedes implementar un modal de guía aquí
-        showToast('Guía disponible en la documentación 📖');
+    async function checkSession() {
+        const savedUser = Storage.get('hc_user');
+        const savedOwner = Storage.get('hc_is_owner');
+        
+        if (savedUser) {
+            currentUser = savedUser;
+            isOwner = !!savedOwner;
+            showApp();
+        }
     }
 
-    // ==================== HELPERS ====================
-    function escHtml(str) {
-        return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    // ==================== AUTENTICACIÓN ====================
+    async function login() {
+        const email = document.getElementById('auth-email').value;
+        const pass = document.getElementById('auth-pass').value;
+        
+        if(!email || !pass) return showToast("Completa los campos");
+
+        const { data, error } = await db.from('usuarios').select('*').eq('email', email).eq('password', pass).single();
+        
+        if (error || !data) return showToast("Credenciales incorrectas");
+        
+        currentUser = data;
+        Storage.set('hc_user', data);
+        showApp();
     }
 
-    function getTimeAgo(iso) {
-        if (!iso) return '';
-        const diff = (Date.now() - new Date(iso).getTime()) / 1000;
-        if (diff < 60)    return 'ahora';
-        if (diff < 3600)  return Math.floor(diff / 60)   + 'm';
-        if (diff < 86400) return Math.floor(diff / 3600) + 'h';
-        return Math.floor(diff / 86400) + 'd';
+    async function register() {
+        const email = document.getElementById('auth-email').value;
+        const pass = document.getElementById('auth-pass').value;
+        if(!email.includes('@')) return showToast("Email inválido");
+        
+        document.getElementById('auth-screen').classList.add('hidden');
+        document.getElementById('onboarding').classList.remove('hidden');
     }
 
-    let toastTimeout;
-    function showToast(msg) {
-        clearTimeout(toastTimeout);
-        const existing = document.querySelector('.toast');
-        if (existing) existing.remove();
+    async function finishOnboarding() {
+        const name = document.getElementById('reg-name').value;
+        const tag = document.getElementById('reg-tag').value.replace(/\s/g, '').toLowerCase();
+        const email = document.getElementById('auth-email').value;
+        const pass = document.getElementById('auth-pass').value;
+
+        if(!name || !tag) return showToast("Completa tu perfil");
+
+        const { data, error } = await db.from('usuarios').insert([{
+            nombre: name,
+            username: tag,
+            email: email,
+            password: pass,
+            co2_evitado: 0,
+            nivel: 1
+        }]).select().single();
+
+        if (error) return showToast("Error: El usuario ya existe");
+        
+        currentUser = data;
+        Storage.set('hc_user', data);
+        location.reload();
+    }
+
+    async function loginOwner() {
+        const key = document.getElementById('owner-master-key').value;
+        if (key !== MASTER_OWNER_KEY) return showToast("Master Key incorrecta");
+        
+        // El login de owner es una capa sobre el login normal
+        isOwner = true;
+        Storage.set('hc_is_owner', true);
+        login();
+    }
+
+    // ==================== NAVEGACIÓN Y UI ====================
+    function showApp() {
+        document.getElementById('auth-screen').classList.add('hidden');
+        document.getElementById('main-app').classList.remove('hidden');
+        document.getElementById('pub-author').innerText = currentUser.nombre;
+        
+        if(isOwner) document.getElementById('admin-badge').classList.remove('hidden');
+        
+        updateProfileUI();
+        loadHomeData();
+        initMap();
+    }
+
+    function changeTab(tabId, btn) {
+        document.querySelectorAll('.tab-view').forEach(v => v.classList.add('hidden'));
+        document.getElementById('view-' + tabId).classList.remove('hidden');
+        
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
+        btn.classList.add('tab-active');
+
+        const titles = { home: 'Inicio', map: 'Mapa Ecológico', community: 'Muro de Cota', profile: 'Mi Perfil', admin: 'Panel Master' };
+        document.getElementById('view-title').innerText = titles[tabId];
+        
+        if(tabId === 'community') loadCommunity();
+        if(tabId === 'admin') loadAdminDashboard();
+    }
+
+    // ==================== COMUNIDAD Y POSTS ====================
+    async function loadCommunity() {
+        const { data, error } = await db.from('comunidad').select('*').order('created_at', { ascending: false });
+        if (error) return;
+
+        const list = document.getElementById('comunidad-list');
+        list.innerHTML = data.map(post => `
+            <div class="card p-4 space-y-3 ${isOwner ? 'post-admin' : ''}">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center font-bold text-green-700">
+                        ${post.autor[0]}
+                    </div>
+                    <div>
+                        <p class="font-bold text-sm">${post.autor}</p>
+                        <p class="text-[10px] text-slate-400 font-bold">${new Date(post.created_at).toLocaleDateString()}</p>
+                    </div>
+                </div>
+                <p class="text-sm text-slate-700 leading-relaxed">${post.mensaje}</p>
+                ${post.foto_url ? `<img src="${post.foto_url}" class="rounded-2xl w-full object-cover max-h-64 shadow-sm">` : ''}
+                ${isOwner ? `<button onclick="deletePost('${post.id}')" class="delete-btn btn-red">Eliminar</button>` : ''}
+            </div>
+        `).join('');
+    }
+
+    async function postToCommunity() {
+        const msg = document.getElementById('c-mensaje').value;
+        if(!msg && !capturedPhotoData) return showToast("Escribe algo o toma una foto");
+
+        const postData = {
+            autor: currentUser.nombre,
+            mensaje: msg,
+            foto_url: capturedPhotoData || null
+        };
+
+        if(!navigator.onLine) {
+            await saveOfflinePost(postData);
+            document.getElementById('c-mensaje').value = '';
+            return;
+        }
+
+        const { error } = await db.from('comunidad').insert([postData]);
+        if(error) return showToast("Error al publicar");
+        
+        document.getElementById('c-mensaje').value = '';
+        capturedPhotoData = null;
+        showToast("¡Publicado en la comunidad! 🌿");
+        loadCommunity();
+    }
+
+    // ==================== CÁMARA ====================
+    function openCamera() {
+        document.getElementById('camera-modal').classList.remove('hidden');
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+            .then(stream => {
+                cameraStream = stream;
+                document.getElementById('camera-video').srcObject = stream;
+            })
+            .catch(() => {
+                showToast("Usa el selector de archivos");
+            });
+    }
+
+    function capturePhoto() {
+        const video = document.getElementById('camera-video');
+        const canvas = document.getElementById('canvas-hidden');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        
+        capturedPhotoData = canvas.toDataURL('image/jpeg', 0.7);
+        document.getElementById('canvas-preview').src = capturedPhotoData;
+        document.getElementById('canvas-preview').style.display = 'block';
+        document.getElementById('camera-video').style.display = 'none';
+        document.getElementById('photo-actions').classList.remove('hidden');
+        document.getElementById('camera-controls').classList.add('hidden');
+    }
+
+    function usePhoto() {
+        closeCamera();
+        showToast("Foto lista para publicar ✨");
+    }
+
+    function closeCamera() {
+        if(cameraStream) cameraStream.getTracks().forEach(t => t.stop());
+        document.getElementById('camera-modal').classList.add('hidden');
+        // Reset UI
+        document.getElementById('canvas-preview').style.display = 'none';
+        document.getElementById('camera-video').style.display = 'block';
+        document.getElementById('photo-actions').classList.add('hidden');
+        document.getElementById('camera-controls').classList.remove('hidden');
+    }
+
+    // ==================== MAPA ====================
+    function initMap() {
+        mapboxgl.accessToken = MAPBOX_TOKEN;
+        map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/light-v11',
+            center: [-74.10, 4.81], // Cota, Colombia
+            zoom: 13,
+            pitch: 45
+        });
+
+        // Puntos de interés en Cota
+        const puntos = [
+            { coords: [-74.103, 4.812], color: '#16a34a', title: 'Centro Acopio' },
+            { coords: [-74.108, 4.808], color: '#3b82f6', title: 'Punto Verde' }
+        ];
+
+        puntos.forEach(p => {
+            new mapboxgl.Marker({ color: p.color })
+                .setLngLat(p.coords)
+                .setPopup(new mapboxgl.Popup().setHTML(`<b class="p-2">${p.title}</b>`))
+                .addTo(map);
+        });
+    }
+
+    // ==================== AUXILIARES ====================
+    function showToast(text) {
         const t = document.createElement('div');
         t.className = 'toast';
-        t.innerText = msg;
+        t.innerText = text;
         document.body.appendChild(t);
-        toastTimeout = setTimeout(() => t.remove(), 3000);
+        setTimeout(() => t.remove(), 3000);
     }
+
+    function updateProfileUI() {
+        document.getElementById('p-name').innerText = currentUser.nombre;
+        document.getElementById('p-tag').innerText = '@' + currentUser.username;
+        document.getElementById('p-co2').innerText = currentUser.co2_evitado.toFixed(1);
+        document.getElementById('header-avatar-fallback').innerText = currentUser.nombre[0];
+        document.getElementById('p-avatar-fallback').innerText = currentUser.nombre[0];
+    }
+
+    function logoutWithGuard() {
+        Storage.clear();
+        location.reload();
+    }
+
+    window.onload = initApp;
 </script>
 </body>
 </html>
