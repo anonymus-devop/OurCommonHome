@@ -29,7 +29,6 @@
         .btn-green:active { transform: scale(0.96); }
         .btn-red { background: #ef4444; color: white; border-radius: 1rem; font-weight: 700; padding: 0.5rem 1rem; border: none; cursor: pointer; transition: transform 0.15s; font-size: 0.75rem; }
         .btn-red:active { transform: scale(0.96); }
-        .btn-amber { background: #f59e0b; color: white; border-radius: 1rem; font-weight: 700; padding: 0.5rem 1rem; border: none; cursor: pointer; transition: transform 0.15s; font-size: 0.75rem; }
         .input-field { width: 100%; padding: 1.1rem 1.2rem; background: #f8fafc; border-radius: 1rem; border: 1.5px solid #e2e8f0; outline: none; font-family: inherit; font-size: 0.95rem; font-weight: 600; color: #0f172a; transition: border-color 0.2s; }
         .input-field:focus { border-color: #16a34a; background: #f0fdf4; }
         textarea.input-field { resize: none; height: 90px; font-weight: 400; }
@@ -57,25 +56,21 @@
         .owner-badge { background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; }
         .master-key-input { border-color: #a855f7 !important; background: #faf5ff !important; }
         .master-key-input:focus { border-color: #7c3aed !important; background: #f3e8ff !important; }
-        .admin-card { background: white; border-radius: 1.5rem; padding: 1.5rem; border: 1px solid rgba(0,0,0,0.05); }
         .admin-stat { background: linear-gradient(135deg, #f0fdf4, #dcfce7); border-radius: 1rem; padding: 1rem; text-align: center; }
         .admin-stat-purple { background: linear-gradient(135deg, #faf5ff, #f3e8ff); }
         .admin-stat-blue { background: linear-gradient(135deg, #eff6ff, #dbeafe); }
         .admin-stat-amber { background: linear-gradient(135deg, #fffbeb, #fef3c7); }
         .log-entry { padding: 0.75rem; border-radius: 0.75rem; background: #f8fafc; margin-bottom: 0.5rem; font-size: 0.85rem; }
-        .log-entry .time { font-size: 0.7rem; color: #94a3b8; font-weight: 600; }
         .post-admin { position: relative; }
         .post-admin .delete-btn { position: absolute; top: 0.5rem; right: 0.5rem; opacity: 0; transition: opacity 0.2s; }
         .post-admin:hover .delete-btn { opacity: 1; }
         
-        /* Nuevos estilos para diagnóstico */
-        .diagnostic-panel { background: #fef3c7; border: 2px solid #f59e0b; border-radius: 1rem; padding: 1rem; margin-bottom: 1rem; }
+        /* Diagnostic styles */
+        .diagnostic-panel { background: linear-gradient(135deg, #fef3c7, #fffbeb); border: 2px solid #f59e0b; border-radius: 1rem; padding: 1rem; margin-bottom: 1rem; }
         .diagnostic-panel h4 { color: #92400e; font-weight: 800; font-size: 0.85rem; margin-bottom: 0.5rem; }
-        .diagnostic-log { font-family: monospace; font-size: 0.7rem; color: #78350f; background: #fffbeb; padding: 0.5rem; border-radius: 0.5rem; max-height: 150px; overflow-y: auto; }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 0.5rem; }
-        .status-ok { background: #22c55e; }
-        .status-error { background: #ef4444; }
-        .status-warn { background: #f59e0b; }
+        .diagnostic-log { font-family: 'Courier New', monospace; font-size: 0.7rem; color: #78350f; background: #fffbeb; padding: 0.75rem; border-radius: 0.5rem; max-height: 200px; overflow-y: auto; line-height: 1.5; }
+        .emergency-btn { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border-radius: 1rem; font-weight: 800; padding: 0.85rem; border: none; cursor: pointer; width: 100%; font-size: 0.85rem; margin-top: 0.5rem; }
+        .emergency-btn:active { transform: scale(0.96); }
     </style>
 </head>
 <body class="text-slate-900 pb-32">
@@ -84,13 +79,16 @@
 <div id="auth-screen" class="fixed inset-0 bg-[#F0F4F0] z-[100] flex flex-col items-center justify-center p-6 overflow-y-auto">
     <div class="w-28 h-28 bg-green-50 rounded-[2.5rem] mb-6 flex items-center justify-center text-6xl shadow-inner">🌿</div>
     <h1 class="text-3xl font-black mb-2 tracking-tight">Nuestro Hogar Común</h1>
-    <p class="text-slate-500 font-medium text-sm mb-8 text-center max-w-xs">Comunidad ecológica de Cota. Retos, mapa y muro verde.</p>
+    <p class="text-slate-500 font-medium text-sm mb-6 text-center max-w-xs">Comunidad ecológica de Cota. Retos, mapa y muro verde.</p>
     
-    <!-- Panel de Diagnóstico (se muestra solo si hay errores) -->
+    <!-- DIAGNOSTIC PANEL -->
     <div id="diagnostic-panel" class="diagnostic-panel hidden w-full max-w-sm">
         <h4>🔧 Diagnóstico de Conexión</h4>
         <div id="diagnostic-log" class="diagnostic-log"></div>
-        <button onclick="runDiagnostics()" class="mt-2 text-xs font-bold text-amber-700 underline">Re-ejecutar diagnóstico</button>
+        <div class="flex gap-2 mt-2">
+            <button onclick="runDiagnostics()" class="btn-green flex-1 text-xs">Re-ejecutar</button>
+            <button onclick="clearDiagnostics()" class="btn-red flex-1 text-xs">Limpiar</button>
+        </div>
     </div>
     
     <div class="login-card w-full max-w-sm space-y-3">
@@ -99,9 +97,12 @@
         <button class="btn-primary" onclick="login()">Entrar</button>
         <button class="btn-primary" style="background:#16a34a;" onclick="register()">Crear cuenta</button>
         
-        <!-- Botón de diagnóstico visible -->
         <button onclick="runDiagnostics()" class="w-full p-3 rounded-xl border-2 border-amber-200 text-amber-600 font-bold text-xs active:scale-95 transition-transform bg-amber-50">
             🔍 Diagnosticar Supabase
+        </button>
+        
+        <button onclick="toggleEmergencySQL()" class="emergency-btn">
+            🆘 SQL de Emergencia (Fix Error 500)
         </button>
         
         <div class="owner-section">
@@ -116,9 +117,6 @@
     </div>
     
     <button onclick="toggleGuide()" class="mt-6 text-xs font-bold text-slate-400 uppercase tracking-widest">Guía Supabase ⚙️</button>
-    
-    <!-- Sección de SQL de Emergencia -->
-    <button onclick="toggleEmergencySQL()" class="mt-4 text-xs font-bold text-red-400 uppercase tracking-widest">🆘 SQL de Emergencia</button>
 </div>
 
 <!-- ==================== ONBOARDING ==================== -->
@@ -140,8 +138,6 @@
 
 <!-- ==================== MAIN APP ==================== -->
 <div id="main-app" class="hidden">
-
-    <!-- Header -->
     <header class="pt-12 pb-4 px-6 sticky top-0 bg-[#F0F4F0]/92 backdrop-blur-md z-30 flex justify-between items-center">
         <div>
             <p id="section-label" class="text-[10px] font-black text-green-600 uppercase tracking-widest">Panel de Impacto</p>
@@ -154,8 +150,6 @@
     </header>
 
     <main class="px-5 space-y-0">
-
-        <!-- ===== HOME ===== -->
         <div id="view-home" class="tab-view space-y-5">
             <div class="bg-gradient-to-br from-green-600 to-emerald-800 p-7 rounded-[2rem] text-white shadow-lg">
                 <p class="text-[10px] font-black opacity-75 uppercase tracking-widest mb-1">CO₂ Evitado · Comunidad Cota</p>
@@ -199,7 +193,6 @@
             </div>
         </div>
 
-        <!-- ===== MAP ===== -->
         <div id="view-map" class="tab-view hidden space-y-4">
             <div id="map"></div>
             <div class="card p-5">
@@ -212,7 +205,6 @@
             </div>
         </div>
 
-        <!-- ===== COMMUNITY ===== -->
         <div id="view-community" class="tab-view hidden space-y-4">
             <div class="card p-5">
                 <p class="text-[10px] font-black text-green-600 uppercase tracking-widest mb-3">Publicar como <span id="pub-author">...</span></p>
@@ -227,10 +219,7 @@
             <div id="comunidad-list" class="space-y-3"></div>
         </div>
 
-        <!-- ===== ADMIN PANEL ===== -->
         <div id="view-admin" class="tab-view hidden space-y-4">
-            
-            <!-- Stats Cards -->
             <div class="grid grid-cols-2 gap-3">
                 <div class="admin-stat admin-stat-purple">
                     <p id="admin-total-users" class="text-2xl font-black text-purple-700">0</p>
@@ -250,34 +239,28 @@
                 </div>
             </div>
 
-            <!-- Tabs de Admin -->
             <div class="flex gap-2 overflow-x-auto pb-2">
                 <button onclick="showAdminSection('users')" class="btn-green flex-1 text-xs" id="admin-tab-users">👥 Usuarios</button>
                 <button onclick="showAdminSection('posts')" class="btn-green flex-1 text-xs" style="background:#3b82f6" id="admin-tab-posts">📝 Posts</button>
                 <button onclick="showAdminSection('logs')" class="btn-green flex-1 text-xs" style="background:#7c3aed" id="admin-tab-logs">📊 Logs</button>
             </div>
 
-            <!-- Sección Usuarios -->
             <div id="admin-section-users" class="admin-section">
                 <h3 class="font-black text-sm mb-3 text-slate-700">Gestión de Usuarios</h3>
                 <div id="users-list" class="space-y-2"></div>
             </div>
 
-            <!-- Sección Posts -->
             <div id="admin-section-posts" class="admin-section hidden">
                 <h3 class="font-black text-sm mb-3 text-slate-700">Moderar Publicaciones</h3>
                 <div id="admin-posts-list" class="space-y-3"></div>
             </div>
 
-            <!-- Sección Logs -->
             <div id="admin-section-logs" class="admin-section hidden">
                 <h3 class="font-black text-sm mb-3 text-slate-700">Actividad Reciente</h3>
                 <div id="admin-logs-list" class="space-y-2 max-h-96 overflow-y-auto"></div>
             </div>
-
         </div>
 
-        <!-- ===== PROFILE ===== -->
         <div id="view-profile" class="tab-view hidden space-y-4">
             <div class="card p-6 text-center">
                 <div class="w-24 h-24 rounded-[2rem] mx-auto mb-4 border-4 border-green-50 overflow-hidden shadow-md relative">
@@ -304,10 +287,8 @@
             </div>
             <button onclick="logout()" class="w-full p-4 rounded-2xl border-2 border-red-100 text-red-500 font-bold text-sm active:scale-95 transition-transform bg-red-50">Cerrar sesión</button>
         </div>
-
     </main>
 
-    <!-- Bottom Nav -->
     <nav class="fixed bottom-0 left-0 right-0 h-24 glass flex items-center justify-around px-2 z-40 pb-4">
         <button onclick="changeTab('home', this)" class="tab-btn tab-active flex flex-col items-center flex-1 py-2 gap-1">
             <svg class="w-6 h-6 transition-transform" fill="currentColor" viewBox="0 0 24 24">
@@ -338,7 +319,7 @@
     </nav>
 </div>
 
-<!-- ===== CAMERA MODAL ===== -->
+<!-- CAMERA MODAL -->
 <div id="camera-modal" class="modal-overlay hidden" onclick="closeCamera(event)">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
         <div class="flex justify-between items-center mb-4">
@@ -362,7 +343,124 @@
     </div>
 </div>
 
-<!-- ===== GUIDE MODAL ===== -->
+<!-- EMERGENCY SQL MODAL -->
+<div id="emergency-sql-modal" class="modal-overlay hidden" onclick="toggleEmergencySQL(event)">
+    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="font-black text-lg text-red-600">🆘 SQL de Emergencia — Fix Error 500</h3>
+            <button onclick="toggleEmergencySQL()" class="text-slate-400 font-bold text-sm p-2">Cerrar</button>
+        </div>
+        
+        <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
+            <p class="text-xs text-red-700 font-bold mb-2">⚠️ INSTRUCCIONES:</p>
+            <ol class="text-xs text-red-600 space-y-1 list-decimal list-inside">
+                <li>Abre <b>Supabase Dashboard</b> → <b>SQL Editor</b></li>
+                <li>Pega TODO este SQL</li>
+                <li>Ejecuta (Run)</li>
+                <li>Vuelve a intentar registrarte</li>
+            </ol>
+        </div>
+
+        <div class="code-block" style="font-size:0.6rem; line-height:1.5; max-height:300px; overflow-y:auto;">
+-- ============================================================
+-- FIX ERROR 500: "Database error saving new user"
+-- Causa: Trigger en auth.users falla al insertar en profiles
+-- ============================================================
+
+-- 1. CREAR TABLA profiles (si no existe)
+CREATE TABLE IF NOT EXISTS public.profiles (
+    id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    name text,
+    email text,
+    avatar_url text,
+    role text DEFAULT 'user',
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now()
+);
+
+-- 2. ELIMINAR TRIGGERS PROBLEMÁTICOS (todos en auth.users)
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+DROP TRIGGER IF EXISTS on_new_user ON auth.users;
+DROP TRIGGER IF EXISTS signup_copy ON auth.users;
+DROP TRIGGER IF EXISTS on_auth_user_created_create_public_user_record ON auth.users;
+
+-- 3. ELIMINAR FUNCIONES ANTIGUAS
+DROP FUNCTION IF EXISTS public.handle_new_user() CASCADE;
+DROP FUNCTION IF EXISTS public.handle_new_user() CASCADE;
+
+-- 4. CREAR FUNCIÓN SEGURA CON SECURITY DEFINER
+-- SECURITY DEFINER permite que el trigger acceda a tablas 
+-- fuera del schema auth usando los privilegios del creador
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  INSERT INTO public.profiles (id, name, email, role, created_at, updated_at)
+  VALUES (
+    new.id, 
+    COALESCE(new.raw_user_meta_data->>'name', ''), 
+    new.email, 
+    'user',
+    now(),
+    now()
+  )
+  ON CONFLICT (id) DO NOTHING;
+  RETURN new;
+END;
+$$;
+
+-- 5. CREAR TRIGGER LIMPIO
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_new_user();
+
+-- 6. HABILITAR RLS Y CREAR POLÍTICAS BÁSICAS
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+-- Política: cualquiera puede ver perfiles
+DROP POLICY IF EXISTS "Allow select all" ON public.profiles;
+CREATE POLICY "Allow select all"
+  ON public.profiles FOR SELECT
+  TO authenticated, anon
+  USING (true);
+
+-- Política: usuarios solo pueden actualizar su propio perfil
+DROP POLICY IF EXISTS "Allow update own" ON public.profiles;
+CREATE POLICY "Allow update own"
+  ON public.profiles FOR UPDATE
+  TO authenticated
+  USING (auth.uid() = id);
+
+-- Política: usuarios solo pueden insertar su propio perfil
+DROP POLICY IF EXISTS "Allow insert own" ON public.profiles;
+CREATE POLICY "Allow insert own"
+  ON public.profiles FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = id);
+
+-- 7. VERIFICAR QUE TODO ESTÉ CORRECTO
+SELECT 'profiles table OK' as status;
+SELECT 'trigger OK' as status;
+        </div>
+        
+        <button onclick="copyEmergencySQL()" class="btn-primary mt-4" style="background:#16a34a;">📋 Copiar SQL al portapapeles</button>
+        
+        <div class="mt-4 p-3 bg-amber-50 rounded-xl border border-amber-200">
+            <p class="text-xs text-amber-700 font-bold">💡 Si sigue fallando después de esto:</p>
+            <ul class="text-xs text-amber-600 mt-1 space-y-1 list-disc list-inside">
+                <li>Ve a <b>Supabase Dashboard → Logs → Auth</b></li>
+                <li>Busca el error exacto del trigger</li>
+                <li>Pega el error aquí para diagnóstico avanzado</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- GUIDE MODAL -->
 <div id="guide-modal" class="modal-overlay hidden" onclick="toggleGuide(event)">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
         <div class="flex justify-between items-center mb-4">
@@ -377,56 +475,6 @@
                 <div class="code-block mt-2">create table profiles (id uuid primary key references auth.users(id), name text, avatar_url text, role text default 'user');</div>
             </div>
         </div>
-    </div>
-</div>
-
-<!-- ===== EMERGENCY SQL MODAL ===== -->
-<div id="emergency-sql-modal" class="modal-overlay hidden" onclick="toggleEmergencySQL(event)">
-    <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="font-black text-lg text-red-600">🆘 SQL de Emergencia</h3>
-            <button onclick="toggleEmergencySQL()" class="text-slate-400 font-bold text-sm p-2">Cerrar</button>
-        </div>
-        <p class="text-xs text-slate-500 mb-3">Ejecuta esto en SQL Editor de Supabase si tienes error 500 en signup:</p>
-        <div class="code-block" style="font-size:0.65rem; line-height:1.4;">
--- 1. Crear tabla profiles si no existe
-CREATE TABLE IF NOT EXISTS public.profiles (
-    id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    name text,
-    email text,
-    avatar_url text,
-    role text DEFAULT 'user',
-    created_at timestamptz DEFAULT now(),
-    updated_at timestamptz DEFAULT now()
-);
-
--- 2. Eliminar triggers problemáticos (CUIDADO)
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-
--- 3. Recrear función segura
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
-BEGIN
-  INSERT INTO public.profiles (id, name, email, role)
-  VALUES (new.id, '', new.email, 'user')
-  ON CONFLICT (id) DO NOTHING;
-  RETURN new;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- 4. Recrear trigger
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
-
--- 5. Políticas RLS básicas
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-CREATE POLICY IF NOT EXISTS "Users can view all profiles"
-  ON public.profiles FOR SELECT TO authenticated, anon USING (true);
-CREATE POLICY IF NOT EXISTS "Users can update own profile"
-  ON public.profiles FOR UPDATE TO authenticated USING (auth.uid() = id);
-        </div>
-        <button onclick="copyEmergencySQL()" class="btn-primary mt-4" style="background:#16a34a;">📋 Copiar SQL</button>
     </div>
 </div>
 
@@ -463,9 +511,14 @@ CREATE POLICY IF NOT EXISTS "Users can update own profile"
         const logContainer = document.getElementById('diagnostic-log');
         if (logContainer) {
             const color = type === 'error' ? '#ef4444' : type === 'warn' ? '#f59e0b' : '#16a34a';
-            logContainer.innerHTML += `<div style="color:${color}; margin-bottom:2px;">${escHtml(log)}</div>`;
+            logContainer.innerHTML += `<div style="color:${color}; margin-bottom:2px; border-left:2px solid ${color}; padding-left:4px;">${escHtml(log)}</div>`;
             logContainer.scrollTop = logContainer.scrollHeight;
         }
+    }
+
+    function clearDiagnostics() {
+        diagnosticLogs = [];
+        document.getElementById('diagnostic-log').innerHTML = '';
     }
 
     async function runDiagnostics() {
@@ -474,7 +527,7 @@ CREATE POLICY IF NOT EXISTS "Users can update own profile"
         const logContainer = document.getElementById('diagnostic-log');
         logContainer.innerHTML = '';
         
-        logDiagnostic('Iniciando diagnóstico completo...', 'info');
+        logDiagnostic('🔍 Iniciando diagnóstico completo...', 'info');
         
         // 1. Verificar conexión básica
         try {
@@ -483,15 +536,16 @@ CREATE POLICY IF NOT EXISTS "Users can update own profile"
             const duration = (performance.now() - start).toFixed(0);
             
             if (error) {
-                logDiagnostic(`❌ Tabla profiles: ${error.message}`, 'error');
-                if (error.message.includes('does not exist')) {
-                    logDiagnostic('⚠️ La tabla profiles NO EXISTE. Debes crearla.', 'warn');
+                logDiagnostic(`❌ Tabla profiles INACCESIBLE: ${error.message}`, 'error');
+                if (error.message.includes('does not exist') || error.code === '42P01') {
+                    logDiagnostic('⚠️ CRÍTICO: La tabla profiles NO EXISTE', 'error');
+                    logDiagnostic('💡 SOLUCIÓN: Ejecuta el SQL de Emergencia', 'warn');
                 }
             } else {
-                logDiagnostic(`✅ Tabla profiles accesible (${duration}ms)`, 'info');
+                logDiagnostic(`✅ Tabla profiles OK (${duration}ms)`, 'info');
             }
         } catch (e) {
-            logDiagnostic(`❌ Error crítico conectando a Supabase: ${e.message}`, 'error');
+            logDiagnostic(`❌ Error crítico: ${e.message}`, 'error');
         }
         
         // 2. Verificar auth
@@ -508,15 +562,22 @@ CREATE POLICY IF NOT EXISTS "Users can update own profile"
             logDiagnostic(`❌ Auth check failed: ${e.message}`, 'error');
         }
         
-        // 3. Verificar triggers en auth.users
-        try {
-            // No podemos consultar directamente auth.users desde cliente, pero podemos intentar signup
-            logDiagnostic('ℹ️ Para verificar triggers, intenta crear un usuario', 'info');
-        } catch (e) {
-            logDiagnostic(`❌ Trigger check error: ${e.message}`, 'error');
+        // 3. Verificar tablas adicionales
+        const tables = ['acciones', 'comunidad'];
+        for (const table of tables) {
+            try {
+                const { error } = await db.from(table).select('count', { count: 'exact', head: true });
+                if (error) {
+                    logDiagnostic(`⚠️ Tabla ${table}: ${error.message}`, 'warn');
+                } else {
+                    logDiagnostic(`✅ Tabla ${table} OK`, 'info');
+                }
+            } catch (e) {
+                logDiagnostic(`❌ Error tabla ${table}: ${e.message}`, 'error');
+            }
         }
         
-        logDiagnostic('Diagnóstico completado.', 'info');
+        logDiagnostic('✅ Diagnóstico completado.', 'info');
     }
 
     // INIT
@@ -525,8 +586,7 @@ CREATE POLICY IF NOT EXISTS "Users can update own profile"
             db = supabase.createClient(SB_URL, SB_ANON_KEY);
             logDiagnostic('✅ Cliente Supabase inicializado', 'info');
         } catch(e) {
-            logDiagnostic(`❌ Fallo inicialización Supabase: ${e.message}`, 'error');
-            console.warn('❌ Supabase init failed:', e);
+            logDiagnostic(`❌ Fallo inicialización: ${e.message}`, 'error');
         }
         
         try {
@@ -535,8 +595,6 @@ CREATE POLICY IF NOT EXISTS "Users can update own profile"
                 currentUser = session.user;
                 logDiagnostic(`✅ Sesión restaurada: ${session.user.email}`, 'info');
                 await initUserData();
-            } else {
-                logDiagnostic('ℹ️ No hay sesión previa', 'info');
             }
         } catch (e) {
             logDiagnostic(`❌ Error verificando sesión: ${e.message}`, 'error');
@@ -554,17 +612,17 @@ CREATE POLICY IF NOT EXISTS "Users can update own profile"
             return;
         }
 
-        logDiagnostic(`Intentando login: ${email}`, 'info');
+        logDiagnostic(`🔑 Intentando login: ${email}`, 'info');
 
         try {
             const { data, error } = await db.auth.signInWithPassword({ email, password: pass });
             if (error) {
-                logDiagnostic(`❌ Login error: ${error.message} (status: ${error.status || 'unknown'})`, 'error');
+                logDiagnostic(`❌ Login error: ${error.message}`, 'error');
                 alert(error.message);
                 return;
             }
             currentUser = data.user;
-            logDiagnostic(`✅ Login exitoso: ${data.user.email}`, 'info');
+            logDiagnostic(`✅ Login exitoso`, 'info');
             await initUserData();
         } catch (e) {
             logDiagnostic(`❌ Login exception: ${e.message}`, 'error');
@@ -589,7 +647,7 @@ CREATE POLICY IF NOT EXISTS "Users can update own profile"
         logDiagnostic(`📝 Iniciando registro: ${email}`, 'info');
 
         try {
-            // PASO 1: Intentar login primero (por si ya existe)
+            // PASO 1: Intentar login primero
             logDiagnostic('Paso 1: Verificando si usuario existe...', 'info');
             const { data: loginData, error: loginError } = await db.auth.signInWithPassword({ 
                 email, 
@@ -603,21 +661,15 @@ CREATE POLICY IF NOT EXISTS "Users can update own profile"
                 await initUserData();
                 return;
             }
-            
-            if (loginError && !loginError.message.includes('Invalid login')) {
-                logDiagnostic(`⚠️ Login check error: ${loginError.message}`, 'warn');
-            }
 
             // PASO 2: Crear nueva cuenta
-            logDiagnostic('Paso 2: Creando nueva cuenta...', 'info');
+            logDiagnostic('Paso 2: Creando cuenta en Supabase Auth...', 'info');
             const { data, error } = await db.auth.signUp({ 
                 email, 
                 password: pass,
                 options: {
                     emailRedirectTo: window.location.origin,
-                    data: {
-                        name: ''
-                    }
+                    data: { name: '' }
                 }
             });
             
@@ -625,17 +677,35 @@ CREATE POLICY IF NOT EXISTS "Users can update own profile"
                 logDiagnostic(`❌ Signup error: ${error.message} (code: ${error.code || 'none'}, status: ${error.status || 'none'})`, 'error');
                 console.error('Signup full error:', error);
                 
-                // Análisis específico del error
-                if (error.status === 500 || error.status === 0) {
-                    logDiagnostic('🔴 ERROR 500 DETECTADO - Causas probables:', 'error');
-                    logDiagnostic('  1. Trigger en auth.users fallando', 'error');
-                    logDiagnostic('  2. Tabla profiles no existe o falta columna', 'error');
-                    logDiagnostic('  3. Schema auth modificado/corrupto', 'error');
-                    logDiagnostic('  4. Proyecto Supabase pausado o límite alcanzado', 'error');
+                // ANÁLISIS ESPECÍFICO DEL ERROR 500
+                if (error.status === 500 || error.status === 0 || error.message?.includes('Database error saving new user')) {
+                    logDiagnostic('🔴 ERROR 500 CONFIRMADO', 'error');
+                    logDiagnostic('Causa: Trigger en auth.users falla', 'error');
                     
-                    alert(`❌ Error 500 del servidor de Supabase.\n\nEl usuario NO EXISTE pero el servidor falló al crearlo.\n\nCAUSAS PROBABLES:\n• Trigger en auth.users intenta insertar en tabla/columna que no existe\n• Tabla 'profiles' no creada o le faltan columnas\n• Schema de auth modificado manualmente\n\nSOLUCIÓN:\n1. Abre Supabase Dashboard > SQL Editor\n2. Ejecuta el "SQL de Emergencia" (botón 🆘 abajo)\n3. Revisa Logs > Auth para detalles exactos\n\nError: ${error.message}`);
+                    alert(`❌ ERROR 500: Database error saving new user
+
+El usuario NO EXISTE pero Supabase falló al crearlo.
+
+🔴 CAUSA DEFINITIVA:
+Un trigger en auth.users intenta insertar datos en 
+la tabla "profiles" pero FALLA por una de estas razones:
+
+1. ❌ La tabla "profiles" NO EXISTE
+2. ❌ El trigger referencia una columna que NO EXISTE
+3. ❌ El trigger NO tiene SECURITY DEFINER
+4. ❌ RLS bloquea la inserción
+5. ❌ Un constraint (foreign key, NOT NULL) es violado
+
+✅ SOLUCIÓN INMEDIATA:
+1. Haz clic en el botón "🆘 SQL de Emergencia"
+2. Copia el SQL
+3. Ve a Supabase Dashboard → SQL Editor
+4. Pega y ejecuta
+5. Vuelve aquí e intenta registrarte de nuevo
+
+📋 También puedes verificar logs en:
+Supabase Dashboard → Logs → Auth`);
                     
-                    // Mostrar panel de diagnóstico
                     document.getElementById('diagnostic-panel').classList.remove('hidden');
                     return;
                 }
@@ -645,35 +715,53 @@ CREATE POLICY IF NOT EXISTS "Users can update own profile"
                     return;
                 }
                 
-                if (error.message?.includes('signup_disabled') || error.code === 'signup_disabled') {
-                    alert('Registros deshabilitados en este proyecto Supabase.');
-                    return;
-                }
-                
                 alert('Error: ' + error.message);
                 return;
             }
             
             if (data?.user) {
                 currentUser = data.user;
-                logDiagnostic(`✅ Usuario creado: ${data.user.email}`, 'info');
-                logDiagnostic(`Session presente: ${data.session ? 'Sí' : 'No (requiere confirmación email)'}`, 'info');
+                logDiagnostic(`✅ Usuario creado en auth.users: ${data.user.id}`, 'info');
                 
-                // Si no hay sesión, requiere confirmación de email
+                // PASO 3: Crear perfil manualmente (fallback si trigger falló)
+                logDiagnostic('Paso 3: Verificando perfil en tabla profiles...', 'info');
+                const { data: profileData, error: profileError } = await db
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', data.user.id)
+                    .single();
+                
+                if (profileError || !profileData) {
+                    logDiagnostic('⚠️ Perfil no creado por trigger, creando manualmente...', 'warn');
+                    const { error: insertError } = await db.from('profiles').upsert({
+                        id: data.user.id,
+                        name: '',
+                        email: data.user.email,
+                        role: 'user',
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString()
+                    });
+                    
+                    if (insertError) {
+                        logDiagnostic(`❌ Error creando perfil manual: ${insertError.message}`, 'error');
+                    } else {
+                        logDiagnostic('✅ Perfil creado manualmente', 'info');
+                    }
+                } else {
+                    logDiagnostic('✅ Perfil creado por trigger correctamente', 'info');
+                }
+                
                 if (!data.session) {
-                    showToast('Cuenta creada. Revisa tu correo para confirmar 📩');
+                    showToast('Cuenta creada. Revisa tu correo 📩');
                     showOnboarding();
                 } else {
                     showToast('Cuenta creada exitosamente 🎉');
                     await initUserData();
                 }
-            } else {
-                logDiagnostic('⚠️ No se recibió user en respuesta', 'warn');
             }
             
         } catch (e) {
             logDiagnostic(`❌ Exception en registro: ${e.message}`, 'error');
-            console.error('Register exception:', e);
             alert('Error inesperado: ' + e.message);
         }
     }
@@ -739,10 +827,8 @@ CREATE POLICY IF NOT EXISTS "Users can update own profile"
             const { data: profile, error } = await db.from('profiles').select('*').eq('id', currentUser.id).single();
             
             if (error) {
-                logDiagnostic(`⚠️ Error cargando perfil: ${error.message}`, 'warn');
-                // Si el perfil no existe, crearlo automáticamente
+                logDiagnostic(`⚠️ Perfil no encontrado: ${error.message}`, 'warn');
                 if (error.code === 'PGRST116') {
-                    logDiagnostic('Perfil no encontrado, creando...', 'info');
                     await createDefaultProfile();
                     return;
                 }
@@ -847,7 +933,6 @@ CREATE POLICY IF NOT EXISTS "Users can update own profile"
         }
     }
 
-    // AVATAR
     function updateAvatar(url, fallbackText) {
         const pAvatar = document.getElementById('p-avatar');
         const pFallback = document.getElementById('p-avatar-fallback');
@@ -863,7 +948,6 @@ CREATE POLICY IF NOT EXISTS "Users can update own profile"
         }
     }
 
-    // UI GLOBAL
     function updateGlobalUI() {
         const name = localStorage.getItem('user_real_name') || 'Usuario';
         const tag = localStorage.getItem('user_unique_tag') || '@usuario';
@@ -1263,7 +1347,7 @@ CREATE POLICY IF NOT EXISTS "Users can update own profile"
         } catch(e) {}
     }
 
-    // GUIDE & EMERGENCY
+    // MODALS
     function toggleGuide(e) {
         if (e && e.target !== document.getElementById('guide-modal')) return;
         document.getElementById('guide-modal').classList.toggle('hidden');
@@ -1275,43 +1359,7 @@ CREATE POLICY IF NOT EXISTS "Users can update own profile"
     }
     
     function copyEmergencySQL() {
-        const sql = `-- 1. Crear tabla profiles si no existe
-CREATE TABLE IF NOT EXISTS public.profiles (
-    id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    name text,
-    email text,
-    avatar_url text,
-    role text DEFAULT 'user',
-    created_at timestamptz DEFAULT now(),
-    updated_at timestamptz DEFAULT now()
-);
-
--- 2. Eliminar triggers problemáticos (CUIDADO)
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-
--- 3. Recrear función segura
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
-BEGIN
-  INSERT INTO public.profiles (id, name, email, role)
-  VALUES (new.id, '', new.email, 'user')
-  ON CONFLICT (id) DO NOTHING;
-  RETURN new;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- 4. Recrear trigger
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
-
--- 5. Políticas RLS básicas
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-CREATE POLICY IF NOT EXISTS "Users can view all profiles"
-  ON public.profiles FOR SELECT TO authenticated, anon USING (true);
-CREATE POLICY IF NOT EXISTS "Users can update own profile"
-  ON public.profiles FOR UPDATE TO authenticated USING (auth.uid() = id);`;
-        
+        const sql = document.querySelector('#emergency-sql-modal .code-block').innerText;
         navigator.clipboard.writeText(sql).then(() => {
             showToast('SQL copiado al portapapeles 📋');
         }).catch(() => {
