@@ -493,21 +493,36 @@
     }
 
     async function finishOnboarding() {
-        const name = document.getElementById('reg-name').value.trim();
-        const rawTag = document.getElementById('reg-tag').value.trim().replace('@', '').replace(/\s+/g, '_').toLowerCase();
-        if (!name || !rawTag) { showToast('Completa tu nombre y usuario'); return; }
-        
-        localStorage.setItem('user_real_name', name);
-        localStorage.setItem('user_unique_tag', '@' + rawTag);
-        
-        if (currentUser) {
-            await db.from('profiles').update({ name: name }).eq('id', currentUser.id);
-        }
-        
-        document.getElementById('onboarding').classList.add('hidden');
-        enterApp();
+    const name = document.getElementById('reg-name').value.trim();
+    const rawTag = document.getElementById('reg-tag').value.trim().replace('@', '').replace(/\s+/g, '_').toLowerCase();
+    
+    if (!name || !rawTag) { 
+        showToast('Completa tu nombre y usuario'); 
+        return; 
     }
+    
+    localStorage.setItem('user_real_name', name);
+    localStorage.setItem('user_unique_tag', '@' + rawTag);
+    
+    if (currentUser) {
+        // CAMBIO: Usamos UPSERT en lugar de UPDATE
+        const { error } = await db.from('profiles').upsert({ 
+            id: currentUser.id, 
+            name: name,
+            email: currentUser.email,
+            role: 'user' // Por defecto
+        });
 
+        if (error) {
+            console.error(error);
+            showToast('Error al guardar: ' + error.message);
+            return;
+        }
+    }
+    
+    document.getElementById('onboarding').classList.add('hidden');
+    enterApp();
+}
     function enterApp() {
         document.getElementById('auth-screen').classList.add('hidden');
         document.getElementById('onboarding').classList.add('hidden');
