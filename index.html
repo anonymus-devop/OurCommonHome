@@ -556,33 +556,38 @@
     }
 
     async function loginOwner() {
-        const email     = document.getElementById('owner-email').value;
-        const pass      = document.getElementById('owner-pass').value;
-        const masterKey = document.getElementById('owner-master-key').value;
-        if (!email || !pass || !masterKey) { alert('Completa todos los campos'); return; }
-        if (masterKey !== MASTER_OWNER_KEY) { alert('❌ Master Key incorrecta'); return; }
-        try {
-            const { data, error } = await db.auth.signInWithPassword({ email, password: pass });
-            if (error) throw error;
-            currentUser = data.user;
-            Storage.set('current_user', { id: data.user.id, email: data.user.email });
-            const { data: profile, error: pe } = await db.from('profiles').select('role, name').eq('id', currentUser.id).single();
-            if (pe) throw pe;
-            if (profile?.role === 'owner') {
-                isOwner = true;
-                Storage.set('is_owner', true);
-                Storage.set('user_real_name', profile.name || 'Owner');
-                addLog('Owner login', email);
-                showToast('Bienvenido Owner 👑');
-                enterApp();
-            } else {
-                await db.auth.signOut();
-                currentUser = null;
-                Storage.remove('current_user');
-                alert('❌ No tienes permisos de Owner');
-            }
-        } catch(e) { alert('Error: ' + e.message); }
+    // Estas 3 líneas deben coincidir con los IDs de tus inputs en el HTML
+    const email = document.getElementById('owner-email').value;
+    const pass = document.getElementById('owner-pass').value;
+    const key = document.getElementById('owner-master-key').value;
+
+    // Línea de validación de la llave maestra
+    if (key !== MASTER_OWNER_KEY) {
+        return showToast("Master Key incorrecta 🔐");
     }
+
+    if(!email || !pass) return showToast("Completa los datos de admin");
+
+    // Buscamos en la tabla usuarios de Supabase
+    const { data, error } = await db.from('usuarios')
+        .select('*')
+        .eq('email', email)
+        .eq('password', pass)
+        .single();
+
+    if (error || !data) {
+        return showToast("Credenciales de admin no válidas");
+    }
+
+    // ESTAS LÍNEAS SON LAS QUE ACTIVAN EL MODO ADMIN
+    currentUser = data;
+    isOwner = true; // <--- Cambia el estado global
+    Storage.set('hc_user', data);
+    Storage.set('hc_is_owner', true); // <--- Guarda que eres admin en el navegador
+    
+    showToast("Acceso de Owner concedido 👑");
+    showApp(); // <--- Renderiza la app con el panel de control visible
+}
 
     async function logout() {
         addLog('Logout', currentUser?.email || 'unknown');
