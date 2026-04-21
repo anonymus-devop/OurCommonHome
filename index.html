@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Nuestro Hogar Común | Cota</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -50,6 +53,8 @@
         .avatar-fallback { background: linear-gradient(135deg, #16a34a, #22c55e); display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 1.2rem; }
         .owner-section { border-top: 2px solid #e2e8f0; padding-top: 1.5rem; margin-top: 1.5rem; }
         .owner-badge { background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; }
+        .master-key-input { border-color: #a855f7 !important; background: #faf5ff !important; }
+        .master-key-input:focus { border-color: #7c3aed !important; background: #f3e8ff !important; }
     </style>
 </head>
 <body class="text-slate-900 pb-32">
@@ -67,14 +72,15 @@
         <button class="btn-primary" onclick="login()">Entrar</button>
         <button class="btn-primary" style="background:#16a34a;" onclick="register()">Crear cuenta</button>
         
-        <!-- OWNER LOGIN -->
+        <!-- OWNER LOGIN CON MASTER KEY -->
         <div class="owner-section">
             <p class="text-center text-xs font-black text-purple-600 uppercase tracking-widest mb-3">
-                🔐 Acceso Administrador
+                🔐 Acceso Owner
             </p>
             <div class="space-y-2">
                 <input id="owner-email" type="email" placeholder="Email del owner" class="input-field">
-                <input id="owner-pass" type="password" placeholder="Contraseña del owner" class="input-field">
+                <input id="owner-pass" type="password" placeholder="Contraseña" class="input-field">
+                <input id="owner-master-key" type="password" placeholder="Master Key" class="input-field master-key-input">
                 <button class="btn-primary owner-badge" onclick="loginOwner()">
                     Entrar como Owner
                 </button>
@@ -361,6 +367,9 @@ for each row execute procedure handle_new_user();
     const MAPBOX_TOKEN = 'pk.eyJ1IjoiamVyaXhkZXZlbG9waW5naSIsImEiOiJjbWhiZHU0YngxNjF2MmtwdXAxaWtydjR5In0.0Xx724Epn3x3nJ8hAYC1dA';
     const SB_URL = 'https://oamlsuhtozbindompgpl.supabase.co';
     const SB_ANON_KEY = 'sb_publishable_FUeEmJIVdKHlHMGcFiF0sg_3GbWjH-s';
+    
+    // MASTER KEY - CAMBIA ESTO EN PRODUCCIÓN
+    const MASTER_OWNER_KEY = 'CotaOwner2024**';
 
     let db, map, cameraStream, capturedPhotoData, cameraMode = 'post';
     let currentUser = null;
@@ -410,13 +419,20 @@ for each row execute procedure handle_new_user();
         showOnboarding();
     }
 
-    // OWNER LOGIN
+    // OWNER LOGIN CON MASTER KEY
     async function loginOwner() {
         const email = document.getElementById('owner-email').value;
         const pass = document.getElementById('owner-pass').value;
+        const masterKey = document.getElementById('owner-master-key').value;
         
-        if (!email || !pass) {
-            alert('Ingresa email y contraseña');
+        if (!email || !pass || !masterKey) {
+            alert('Completa todos los campos: email, contraseña y master key');
+            return;
+        }
+        
+        // Verificar master key primero
+        if (masterKey !== MASTER_OWNER_KEY) {
+            alert('❌ Master Key incorrecta');
             return;
         }
         
