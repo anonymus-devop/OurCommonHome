@@ -1,13 +1,15 @@
 /* ═══════════════════════════════════════════════════
-   sw.js · Nuestro Hogar Común v2.0
+   sw.js · Nuestro Hogar Común v2.1
    Estrategia:
-   - Shell (HTML/CSS/JS propios) → Cache First
-   - CDN externos (Supabase, Mapbox, Tailwind) → Network First con fallback
-   - Imágenes → Cache First con expiración
-   - API de Supabase → Network Only (datos en tiempo real)
+   - index.html         → Network First SIEMPRE (nunca versión vieja)
+   - CDN externos       → Network First con fallback a caché
+   - Imágenes/avatares  → Cache First con placeholder offline
+   - API de Supabase    → Network Only (datos en tiempo real)
 ═══════════════════════════════════════════════════ */
 
-const CACHE_VERSION = 'hogar-comun-v2';
+/* ⚠️ INCREMENTA ESTE NÚMERO cada vez que hagas deploy
+   para que el SW viejo se reemplace inmediatamente.     */
+const CACHE_VERSION = 'hogar-comun-v3';
 const SHELL_CACHE   = `${CACHE_VERSION}-shell`;
 const IMG_CACHE     = `${CACHE_VERSION}-images`;
 
@@ -86,7 +88,18 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  /* Shell propio (index.html, manifest.json, etc.) → Cache First */
+  /* index.html → Network First SIEMPRE.
+     Nunca se sirve una versión vieja aunque haya caché.    */
+  if (
+    request.destination === 'document' ||
+    url.endsWith('index.html') ||
+    url.split('?')[0].endsWith('/')
+  ) {
+    event.respondWith(networkFirstWithCache(request, SHELL_CACHE));
+    return;
+  }
+
+  /* Otros assets propios (manifest.json, etc.) → Cache First */
   if (url.includes(self.location.origin) || url.startsWith('./')) {
     event.respondWith(cacheFirstWithNetwork(request, SHELL_CACHE));
     return;
