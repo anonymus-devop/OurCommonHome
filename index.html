@@ -559,7 +559,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const APP_VERSION = '2.3.0-OAuthServer';
+    const APP_VERSION = '2.3.1-Fixed';
     const SITE_URL = window.location.origin;
     
     const MAPBOX_TOKEN = 'pk.eyJ1IjoiamVyaXhkZXZlbG9waW5naSIsImEiOiJjbWhiZHU0YngxNjF2MmtwdXAxaWtydjR5In0.0Xx724Epn3x3nJ8hAYC1dA';
@@ -591,337 +591,170 @@
     ];
 
     // ============================================================
-    // OAUTH SERVER: CONSENT SCREEN
+    // OAUTH SERVER: CONSENT SCREEN (CORREGIDO)
     // ============================================================
     
-// ============================================================
-// OAUTH SERVER: CONSENT SCREEN (CORREGIDO)
-// ============================================================
-
-let oauthAuthorizationId = null;
-let oauthClientInfo = null;
-let oauthSession = null;
-
-async function initOAuthConsent() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const authId = urlParams.get('authorization_id');
-    
-    if (!authId) return false;
-    
-    oauthAuthorizationId = authId;
-    logDiagnostic(`🔐 OAuth consent iniciado: ${authId}`, 'info');
-    
-    // Mostrar loading en botones
-    const approveBtn = document.getElementById('btn-approve-oauth');
-    const denyBtn = document.getElementById('btn-deny-oauth');
-    if (approveBtn) {
-        approveBtn.disabled = true;
-        document.getElementById('btn-approve-text').innerText = 'Cargando...';
-    }
-    if (denyBtn) denyBtn.disabled = true;
-    
-    try {
-        // Verificar si el usuario está autenticado PRIMERO
-        const { data: { session } } = await db.auth.getSession();
+    async function initOAuthConsent() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const authId = urlParams.get('authorization_id');
         
-        if (!session) {
-            logDiagnostic('ℹ️ Usuario no autenticado, guardando auth_id y mostrando login', 'info');
-            sessionStorage.setItem('pending_oauth_auth_id', authId);
-            showToast('Inicia sesión para autorizar la aplicación');
-            // No retornar true aquí - dejar que el flujo normal de auth se muestre
-            return false; 
+        if (!authId) return false;
+        
+        oauthAuthorizationId = authId;
+        logDiagnostic('🔐 OAuth consent iniciado: ' + authId, 'info');
+        
+        try {
+            const { data: { session } } = await db.auth.getSession();
+            
+            if (!session) {
+                logDiagnostic('ℹ️ Usuario no autenticado, guardando auth_id', 'info');
+                sessionStorage.setItem('pending_oauth_auth_id', authId);
+                showToast('Inicia sesión para autorizar la aplicación');
+                return false;
+            }
+            
+            currentUser = session.user;
+            
+            const { data, error } = await db.auth.oauth.getAuthorizationDetails(authId);
+            
+            if (error) throw new Error('getAuthorizationDetails: ' + error.message);
+            if (!data) throw new Error('No se recibieron datos de autorización');
+            
+            oauthClientInfo = data;
+            logDiagnostic('✅ Cliente OAuth: ' + (data.client?.name || 'Unknown'), 'info');
+            
+            renderConsentScreen(data, session.user);
+            return true;
+            
+        } catch (e) {
+            logDiagnostic('❌ OAuth consent exc: ' + e.message, 'error');
+            showConsentError(e.message);
+            return true;
+        }
+    }
+    
+    function renderConsentScreen(details, user) {
+        document.getElementById('auth-screen').classList.add('hidden');
+        document.getElementById('main-app').classList.add('hidden');
+        document.getElementById('profile-setup').classList.add('hidden');
+        document.getElementById('oauth-consent-screen').classList.remove('hidden');
+        
+        document.getElementById('consent-app-name').innerText = details.client?.name || 'Aplicación externa';
+        document.getElementById('consent-app-icon').innerText = details.client?.icon || '🔐';
+        
+        const userName = user.user_metadata?.full_name || 
+                         user.user_metadata?.name || 
+                         user.email?.split('@')[0] || 
+                         'Usuario';
+        document.getElementById('consent-user-name').innerText = userName;
+        document.getElementById('consent-user-email').innerText = user.email || '';
+        document.getElementById('consent-user-avatar').innerText = userName.charAt(0).toUpperCase();
+        
+        const scopesList = document.getElementById('consent-scopes-list');
+        const scopeString = details.scope || '';
+        const scopes = scopeString.split(' ').filter(s => s.trim());
+        
+        if (scopes.length === 0) {
+            scopes.push('openid', 'email', 'profile');
         }
         
-        oauthSession = session;
-        currentUser = session.user;
+        const scopeLabels = {
+            'openid': { icon: '🔓', label: 'Identidad básica', desc: 'Acceso a tu ID de usuario' },
+            'email': { icon: '📧', label: 'Correo electrónico', desc: 'Ver tu dirección de email' },
+            'profile': { icon: '👤', label: 'Perfil', desc: 'Ver tu nombre y foto de perfil' },
+            'phone': { icon: '📱', label: 'Teléfono', desc: 'Ver tu número de teléfono' }
+        };
         
-        // Obtener detalles de la autorización
-        logDiagnostic('📡 Llamando getAuthorizationDetails...', 'info');
-        const { data, error } = await db.auth.oauth.getAuthorizationDetails(authId);
-        
-        if (error) {
-            throw new Error(`getAuthorizationDetails: ${error.message}`);
-        }
-        
-        if (!data) {
-            throw new Error('No se recibieron datos de autorización');
-        }
-        
-        oauthClientInfo = data;
-        logDiagnostic(`✅ Cliente OAuth: ${data.client?.name || 'Unknown'}`, 'info');
-        
-        // Mostrar consent screen
-        renderConsentScreen(data, session.user);
-        return true;
-        
-    } catch (e) {
-        logDiagnostic(`❌ OAuth consent exc: ${e.message}`, 'error');
-        showConsentError(e.message);
-        return true; // Es un flujo OAuth pero con error
+        scopesList.innerHTML = scopes.map(scope => {
+            const info = scopeLabels[scope] || { icon: '🔒', label: scope, desc: 'Acceso solicitado' };
+            return '<div class=\"consent-scope-item\">' +
+                '<div class=\"consent-scope-icon\">' + info.icon + '</div>' +
+                '<div>' +
+                    '<p class=\"font-bold text-sm text-slate-800\">' + info.label + '</p>' +
+                    '<p class=\"text-xs text-slate-500\">' + info.desc + '</p>' +
+                '</div>' +
+            '</div>';
+        }).join('');
     }
-}
 
-function renderConsentScreen(details, user) {
-    // Ocultar todo lo demás
-    document.getElementById('auth-screen').classList.add('hidden');
-    document.getElementById('main-app').classList.add('hidden');
-    document.getElementById('profile-setup').classList.add('hidden');
-    document.getElementById('oauth-consent-screen').classList.remove('hidden');
-    
-    // Info del cliente
-    document.getElementById('consent-app-name').innerText = details.client?.name || 'Aplicación externa';
-    document.getElementById('consent-app-icon').innerText = details.client?.icon || '🔐';
-    
-    // Info del usuario
-    const userName = user.user_metadata?.full_name || 
-                     user.user_metadata?.name || 
-                     user.email?.split('@')[0] || 
-                     'Usuario';
-    document.getElementById('consent-user-name').innerText = userName;
-    document.getElementById('consent-user-email').innerText = user.email || '';
-    document.getElementById('consent-user-avatar').innerText = userName.charAt(0).toUpperCase();
-    
-    // Scopes - NOTA: es "scope" (singular) según la documentación de Supabase [^1^]
-    const scopesList = document.getElementById('consent-scopes-list');
-    // La API devuelve "scope" como string space-separated, no "scopes" como array
-    const scopeString = details.scope || '';
-    const scopes = scopeString.split(' ').filter(s => s.trim());
-    
-    // Si no hay scopes, mostrar defaults
-    if (scopes.length === 0) {
-        scopes.push('openid', 'email', 'profile');
-    }
-    
-    const scopeLabels = {
-        'openid': { icon: '🔓', label: 'Identidad básica', desc: 'Acceso a tu ID de usuario' },
-        'email': { icon: '📧', label: 'Correo electrónico', desc: 'Ver tu dirección de email' },
-        'profile': { icon: '👤', label: 'Perfil', desc: 'Ver tu nombre y foto de perfil' },
-        'phone': { icon: '📱', label: 'Teléfono', desc: 'Ver tu número de teléfono' }
-    };
-    
-    scopesList.innerHTML = scopes.map(scope => {
-        const info = scopeLabels[scope] || { icon: '🔒', label: scope, desc: 'Acceso solicitado' };
-        return `
-            <div class="consent-scope-item">
-                <div class="consent-scope-icon">${info.icon}</div>
-                <div>
-                    <p class="font-bold text-sm text-slate-800">${info.label}</p>
-                    <p class="text-xs text-slate-500">${info.desc}</p>
-                </div>
-            </div>
-        `;
-    }).join('');
-    
-    // Habilitar botones
-    const approveBtn = document.getElementById('btn-approve-oauth');
-    const denyBtn = document.getElementById('btn-deny-oauth');
-    if (approveBtn) {
-        approveBtn.disabled = false;
-        document.getElementById('btn-approve-text').innerText = 'Permitir acceso';
-    }
-    if (denyBtn) denyBtn.disabled = false;
-}
-
-function showConsentError(message) {
-    const errorDiv = document.getElementById('consent-error');
-    const errorText = document.getElementById('consent-error-text');
-    if (errorDiv && errorText) {
-        errorText.innerText = message;
-        errorDiv.classList.remove('hidden');
-    }
-    // Habilitar botón de denegar para que pueda salir
-    const denyBtn = document.getElementById('btn-deny-oauth');
-    if (denyBtn) denyBtn.disabled = false;
-}
-
-async function approveOAuthConsent() {
-    if (!oauthAuthorizationId) {
-        showToast('Error: No hay autorización pendiente');
-        return;
-    }
-    
-    const approveBtn = document.getElementById('btn-approve-oauth');
-    const denyBtn = document.getElementById('btn-deny-oauth');
-    
-    // Deshabilitar botones durante la operación
-    if (approveBtn) {
-        approveBtn.disabled = true;
-        document.getElementById('btn-approve-text').innerText = 'Autorizando...';
-    }
-    if (denyBtn) denyBtn.disabled = true;
-    
-    logDiagnostic('✅ Usuario aprobó OAuth consent', 'info');
-    
-    try {
-        const { data, error } = await db.auth.oauth.approveAuthorization(oauthAuthorizationId);
-        
-        if (error) {
-            throw new Error(error.message);
+    function showConsentError(message) {
+        const errorDiv = document.getElementById('consent-error');
+        const errorText = document.getElementById('consent-error-text');
+        if (errorDiv && errorText) {
+            errorText.innerText = message;
+            errorDiv.classList.remove('hidden');
         }
-        
-        if (data?.redirect_to) {
-            logDiagnostic(`🔄 Redirecting to: ${data.redirect_to}`, 'info');
-            showToast('Autorización exitosa. Redirigiendo...');
-            window.location.href = data.redirect_to;
-        } else {
-            throw new Error('No redirect URL received');
-        }
-        
-    } catch (e) {
-        logDiagnostic(`❌ approveAuthorization: ${e.message}`, 'error');
-        showConsentError('Error al autorizar: ' + e.message);
-        if (approveBtn) {
-            approveBtn.disabled = false;
-            document.getElementById('btn-approve-text').innerText = 'Permitir acceso';
-        }
-        if (denyBtn) denyBtn.disabled = false;
     }
-}
 
-async function denyOAuthConsent() {
-    if (!oauthAuthorizationId) {
-        // Si no hay auth_id, simplemente volver al login
-        document.getElementById('oauth-consent-screen').classList.add('hidden');
-        document.getElementById('auth-screen').classList.remove('hidden');
-        return;
-    }
-    
-    const approveBtn = document.getElementById('btn-approve-oauth');
-    const denyBtn = document.getElementById('btn-deny-oauth');
-    
-    if (denyBtn) {
-        denyBtn.disabled = true;
-        denyBtn.innerText = 'Procesando...';
-    }
-    if (approveBtn) approveBtn.disabled = true;
-    
-    logDiagnostic('❌ Usuario denegó OAuth consent', 'info');
-    
-    try {
-        const { data, error } = await db.auth.oauth.denyAuthorization(oauthAuthorizationId);
-        
-        if (error) {
-            console.warn('denyAuthorization error:', error);
-        }
-        
-        if (data?.redirect_to) {
-            window.location.href = data.redirect_to;
-        } else {
-            // Volver a la app principal
-            document.getElementById('oauth-consent-screen').classList.add('hidden');
-            document.getElementById('auth-screen').classList.remove('hidden');
-            showToast('Acceso denegado');
-        }
-        
-    } catch (e) {
-        logDiagnostic(`❌ denyAuthorization exc: ${e.message}`, 'error');
-        document.getElementById('oauth-consent-screen').classList.add('hidden');
-        document.getElementById('auth-screen').classList.remove('hidden');
-    }
-}
-
-// Reanudar OAuth después de login
-async function resumeOAuthAfterLogin() {
-    const pendingAuthId = sessionStorage.getItem('pending_oauth_auth_id');
-    if (!pendingAuthId) return;
-    
-    sessionStorage.removeItem('pending_oauth_auth_id');
-    logDiagnostic(`🔄 Reanudando OAuth después de login: ${pendingAuthId}`, 'info');
-    
-    // Actualizar URL con el authorization_id
-    const url = new URL(window.location.href);
-    url.searchParams.set('authorization_id', pendingAuthId);
-    window.history.replaceState({}, '', url);
-    
-    // Re-inicializar consent
-    await initOAuthConsent();
-}
-
-// ============================================================
-// EVENT LISTENERS (AGREGAR EN DOMContentLoaded)
-// ============================================================
-
-document.addEventListener('DOMContentLoaded', () => {
-    // OAuth consent buttons - usando addEventListener en lugar de onclick inline
-    const btnApprove = document.getElementById('btn-approve-oauth');
-    const btnDeny = document.getElementById('btn-deny-oauth');
-    
-    if (btnApprove) {
-        btnApprove.addEventListener('click', approveOAuthConsent);
-    }
-    if (btnDeny) {
-        btnDeny.addEventListener('click', denyOAuthConsent);
-    }
-    
     async function approveOAuthConsent() {
-        if (!oauthAuthorizationId) return;
+        if (!oauthAuthorizationId) {
+            showToast('Error: No hay autorización pendiente');
+            return;
+        }
+        
+        const btn = document.getElementById('btn-approve-oauth');
+        if (btn) {
+            btn.disabled = true;
+            document.getElementById('btn-approve-text').innerText = 'Autorizando...';
+        }
         
         logDiagnostic('✅ Usuario aprobó OAuth consent', 'info');
-        showToast('Autorizando...');
         
         try {
             const { data, error } = await db.auth.oauth.approveAuthorization(oauthAuthorizationId);
             
-            if (error) {
-                logDiagnostic(`❌ approveAuthorization: ${error.message}`, 'error');
-                alert('Error al autorizar: ' + error.message);
-                return;
-            }
+            if (error) throw new Error(error.message);
+            if (!data?.redirect_to) throw new Error('No redirect URL received');
             
-            // Redirigir al cliente OAuth
-            if (data?.redirect_to) {
-                logDiagnostic(`🔄 Redirecting to: ${data.redirect_to}`, 'info');
-                window.location.href = data.redirect_to;
-            }
+            logDiagnostic('🔄 Redirecting to: ' + data.redirect_to, 'info');
+            window.location.href = data.redirect_to;
             
         } catch (e) {
-            logDiagnostic(`❌ approveAuthorization exc: ${e.message}`, 'error');
-            alert('Error: ' + e.message);
+            logDiagnostic('❌ approveAuthorization: ' + e.message, 'error');
+            showConsentError('Error al autorizar: ' + e.message);
+            if (btn) {
+                btn.disabled = false;
+                document.getElementById('btn-approve-text').innerText = 'Permitir acceso';
+            }
         }
     }
-    
+
     async function denyOAuthConsent() {
-        if (!oauthAuthorizationId) return;
+        if (!oauthAuthorizationId) {
+            document.getElementById('oauth-consent-screen').classList.add('hidden');
+            document.getElementById('auth-screen').classList.remove('hidden');
+            return;
+        }
         
         logDiagnostic('❌ Usuario denegó OAuth consent', 'info');
         
         try {
             const { data, error } = await db.auth.oauth.denyAuthorization(oauthAuthorizationId);
             
-            if (error) {
-                logDiagnostic(`❌ denyAuthorization: ${error.message}`, 'error');
-            }
-            
-            // Redirigir al cliente con error
             if (data?.redirect_to) {
                 window.location.href = data.redirect_to;
             } else {
-                // Volver a la app principal
                 document.getElementById('oauth-consent-screen').classList.add('hidden');
                 document.getElementById('auth-screen').classList.remove('hidden');
                 showToast('Acceso denegado');
             }
-            
         } catch (e) {
-            logDiagnostic(`❌ denyAuthorization exc: ${e.message}`, 'error');
             document.getElementById('oauth-consent-screen').classList.add('hidden');
             document.getElementById('auth-screen').classList.remove('hidden');
         }
     }
-    
-    // Reanudar OAuth después de login
+
     async function resumeOAuthAfterLogin() {
         const pendingAuthId = sessionStorage.getItem('pending_oauth_auth_id');
         if (!pendingAuthId) return;
         
         sessionStorage.removeItem('pending_oauth_auth_id');
+        logDiagnostic('🔄 Reanudando OAuth después de login: ' + pendingAuthId, 'info');
         
-        // Actualizar URL con el authorization_id
         const url = new URL(window.location.href);
         url.searchParams.set('authorization_id', pendingAuthId);
         window.history.replaceState({}, '', url);
         
-        // Re-inicializar consent
         await initOAuthConsent();
     }
 
@@ -930,14 +763,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================================
     
     async function signInWithOAuth(provider) {
-        logDiagnostic(`🔐 OAuth ${provider} iniciado...`, 'info');
-        showToast(`Conectando con ${provider}...`);
+        logDiagnostic('🔐 OAuth ' + provider + ' iniciado...', 'info');
+        showToast('Conectando con ' + provider + '...');
         
         try {
             const { data, error } = await db.auth.signInWithOAuth({
                 provider: provider,
                 options: {
-                    redirectTo: `${SITE_URL}/auth/callback`,
+                    redirectTo: SITE_URL + '/auth/callback',
                     queryParams: provider === 'google' ? {
                         access_type: 'offline',
                         prompt: 'consent'
@@ -946,8 +779,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             
             if (error) {
-                logDiagnostic(`❌ OAuth ${provider}: ${error.message}`, 'error');
-                alert(`Error con ${provider}: ${error.message}`);
+                logDiagnostic('❌ OAuth ' + provider + ': ' + error.message, 'error');
+                alert('Error con ' + provider + ': ' + error.message);
                 return;
             }
             
@@ -956,7 +789,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
         } catch (e) {
-            logDiagnostic(`❌ OAuth ${provider} exc: ${e.message}`, 'error');
+            logDiagnostic('❌ OAuth ' + provider + ' exc: ' + e.message, 'error');
             alert('Error: ' + e.message);
         }
     }
@@ -974,20 +807,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 const { data: { session }, error } = await db.auth.getSession();
                 
                 if (error) {
-                    logDiagnostic(`❌ OAuth callback error: ${error.message}`, 'error');
+                    logDiagnostic('❌ OAuth callback error: ' + error.message, 'error');
                     return;
                 }
                 
                 if (session) {
                     currentUser = session.user;
-                    logDiagnostic(`✅ OAuth login: ${session.user.email}`, 'info');
-                    showToast(`¡Bienvenido! 🎉`);
+                    logDiagnostic('✅ OAuth login: ' + session.user.email, 'info');
+                    showToast('¡Bienvenido! 🎉');
                     
                     window.history.replaceState({}, document.title, window.location.pathname);
                     
                     await createProfileAfterSignup(currentUser);
                     
-                    // Verificar si hay OAuth pendiente
                     const pendingAuthId = sessionStorage.getItem('pending_oauth_auth_id');
                     if (pendingAuthId) {
                         await resumeOAuthAfterLogin();
@@ -996,7 +828,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             } catch (e) {
-                logDiagnostic(`❌ OAuth callback exc: ${e.message}`, 'error');
+                logDiagnostic('❌ OAuth callback exc: ' + e.message, 'error');
             }
         }
     }
@@ -1051,7 +883,7 @@ document.addEventListener('DOMContentLoaded', () => {
         otpTimerInterval = setInterval(() => {
             seconds--;
             if (seconds > 0) {
-                timerEl.innerText = `Reenviar código en ${seconds}s`;
+                timerEl.innerText = 'Reenviar código en ' + seconds + 's';
             } else {
                 timerEl.innerText = '¿No recibiste el código?';
                 timerEl.classList.add('expired');
@@ -1068,67 +900,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // OTP Input handling
-    document.addEventListener('DOMContentLoaded', () => {
-        const otpInputs = document.querySelectorAll('.otp-input');
-        
-        otpInputs.forEach((input, index) => {
-            input.addEventListener('keydown', (e) => {
-                if (e.key === 'Backspace' && !input.value && index > 0) {
-                    otpInputs[index - 1].focus();
-                }
-            });
-            
-            input.addEventListener('input', (e) => {
-                const val = e.target.value.replace(/\D/g, '');
-                e.target.value = val;
-                
-                if (val) {
-                    e.target.classList.add('filled');
-                    if (index < 5) {
-                        otpInputs[index + 1].focus();
-                    } else {
-                        setTimeout(() => verifyOTP(), 200);
-                    }
-                } else {
-                    e.target.classList.remove('filled');
-                }
-            });
-            
-            input.addEventListener('paste', (e) => {
-                e.preventDefault();
-                const pasteData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
-                
-                pasteData.split('').forEach((char, i) => {
-                    if (otpInputs[i]) {
-                        otpInputs[i].value = char;
-                        otpInputs[i].classList.add('filled');
-                    }
-                });
-                
-                if (pasteData.length === 6) {
-                    setTimeout(() => verifyOTP(), 200);
-                } else if (otpInputs[pasteData.length]) {
-                    otpInputs[pasteData.length].focus();
-                }
-            });
-        });
-    });
-
     // ============================================================
     // DIAGNÓSTICO
     // ============================================================
     
-    function logDiagnostic(message, type = 'info') {
+    function logDiagnostic(message, type) {
         const timestamp = new Date().toLocaleTimeString();
-        const log = `[${timestamp}] ${message}`;
+        const log = '[' + timestamp + '] ' + message;
         diagnosticLogs.push({ message, type, timestamp });
-        console.log(`[DIAGNOSTIC ${type.toUpperCase()}] ${message}`);
+        console.log('[DIAGNOSTIC ' + type.toUpperCase() + '] ' + message);
         
         const logContainer = document.getElementById('diagnostic-log');
         if (logContainer) {
             const color = type === 'error' ? '#ef4444' : type === 'warn' ? '#f59e0b' : '#16a34a';
-            logContainer.innerHTML += `<div style="color:${color}; margin-bottom:2px; border-left:2px solid ${color}; padding-left:4px;">${escHtml(log)}</div>`;
+            logContainer.innerHTML += '<div style=\"color: ' + color + '; margin-bottom:2px; border-left:2px solid ' + color + '; padding-left:4px;\">' + escHtml(log) + '</div>';
             logContainer.scrollTop = logContainer.scrollHeight;
         }
     }
@@ -1144,7 +929,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const logContainer = document.getElementById('diagnostic-log');
         logContainer.innerHTML = '';
         
-        logDiagnostic(`🔍 v${APP_VERSION} | Site: ${SITE_URL}`, 'info');
+        logDiagnostic('🔍 v' + APP_VERSION + ' | Site: ' + SITE_URL, 'info');
         
         try {
             const start = performance.now();
@@ -1152,12 +937,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const duration = (performance.now() - start).toFixed(0);
             
             if (error) {
-                logDiagnostic(`❌ profiles: ${error.message}`, 'error');
+                logDiagnostic('❌ profiles: ' + error.message, 'error');
             } else {
-                logDiagnostic(`✅ profiles OK (${duration}ms)`, 'info');
+                logDiagnostic('✅ profiles OK (' + duration + ' ms)', 'info');
             }
         } catch (e) {
-            logDiagnostic(`❌ Error: ${e.message}`, 'error');
+            logDiagnostic('❌ Error: ' + e.message, 'error');
         }
         
         logDiagnostic('✅ Diagnóstico completado.', 'info');
@@ -1167,16 +952,16 @@ document.addEventListener('DOMContentLoaded', () => {
     window.onload = async () => {
         try {
             db = supabase.createClient(SB_URL, SB_ANON_KEY);
-            logDiagnostic(`✅ Supabase OK | v${APP_VERSION}`, 'info');
+            logDiagnostic('✅ Supabase OK | v' + APP_VERSION, 'info');
         } catch(e) {
-            logDiagnostic(`❌ Init failed: ${e.message}`, 'error');
+            logDiagnostic('❌ Init failed: ' + e.message, 'error');
         }
         
-        // PRIORITY 1: OAuth Server Consent Screen
+        // PRIORITY 1: OAuth Server Consent
         const isOAuthFlow = await initOAuthConsent();
         if (isOAuthFlow) return;
         
-        // PRIORITY 2: OAuth Client Callback (Google/Apple login)
+        // PRIORITY 2: OAuth Client Callback
         await handleOAuthCallback();
         
         // PRIORITY 3: Regular session check
@@ -1185,11 +970,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const { data: { session } } = await db.auth.getSession();
                 if (session) {
                     currentUser = session.user;
-                    logDiagnostic(`✅ Sesión: ${session.user.email}`, 'info');
+                    logDiagnostic('✅ Sesión: ' + session.user.email, 'info');
                     await initUserData();
                 }
             } catch (e) {
-                logDiagnostic(`❌ Session check: ${e.message}`, 'error');
+                logDiagnostic('❌ Session check: ' + e.message, 'error');
             }
         }
     };
@@ -1207,19 +992,18 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        logDiagnostic(`🔑 Login: ${email}`, 'info');
+        logDiagnostic('🔑 Login: ' + email, 'info');
 
         try {
             const { data, error } = await db.auth.signInWithPassword({ email, password: pass });
             if (error) {
-                logDiagnostic(`❌ Login: ${error.message}`, 'error');
+                logDiagnostic('❌ Login: ' + error.message, 'error');
                 alert(error.message);
                 return;
             }
             currentUser = data.user;
-            logDiagnostic(`✅ Login OK`, 'info');
+            logDiagnostic('✅ Login OK', 'info');
             
-            // Verificar si hay OAuth pendiente después del login
             const pendingAuthId = sessionStorage.getItem('pending_oauth_auth_id');
             if (pendingAuthId) {
                 await resumeOAuthAfterLogin();
@@ -1227,7 +1011,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 await initUserData();
             }
         } catch (e) {
-            logDiagnostic(`❌ Login exc: ${e.message}`, 'error');
+            logDiagnostic('❌ Login exc: ' + e.message, 'error');
             alert('Error: ' + e.message);
         }
     }
@@ -1258,7 +1042,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        logDiagnostic(`📝 Registro ${authMethod}: ${email}`, 'info');
+        logDiagnostic('📝 Registro ' + authMethod + ': ' + email, 'info');
         pendingEmail = email;
         pendingPhone = phone;
 
@@ -1281,17 +1065,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 
                 if (error) {
-                    logDiagnostic(`❌ Signup: ${error.message}`, 'error');
+                    logDiagnostic('❌ Signup: ' + error.message, 'error');
                     alert('Error: ' + error.message);
                     return;
                 }
                 
                 if (data?.user && !data?.session) {
-                    logDiagnostic(`📩 OTP enviado a ${email}`, 'info');
+                    logDiagnostic('📩 OTP enviado a ' + email, 'info');
                     showOTPScreen(email);
                 } else if (data?.session) {
                     currentUser = data.user;
-                    logDiagnostic(`✅ Usuario creado (auto-confirmed)`, 'info');
+                    logDiagnostic('✅ Usuario creado (auto-confirmed)', 'info');
                     await createProfileAfterSignup(data.user);
                     await initUserData();
                 }
@@ -1305,19 +1089,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 
                 if (error) {
-                    logDiagnostic(`❌ SMS Signup: ${error.message}`, 'error');
+                    logDiagnostic('❌ SMS Signup: ' + error.message, 'error');
                     alert('Error: ' + error.message);
                     return;
                 }
                 
                 if (data?.user && !data?.session) {
-                    logDiagnostic(`📩 SMS OTP enviado a ${phone}`, 'info');
+                    logDiagnostic('📩 SMS OTP enviado a ' + phone, 'info');
                     showOTPScreen(phone);
                 }
             }
             
         } catch (e) {
-            logDiagnostic(`❌ Registro exc: ${e.message}`, 'error');
+            logDiagnostic('❌ Registro exc: ' + e.message, 'error');
             alert('Error: ' + e.message);
         }
     }
@@ -1331,7 +1115,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        logDiagnostic(`🔐 Verificando OTP: ${code}`, 'info');
+        logDiagnostic('🔐 Verificando OTP: ' + code, 'info');
 
         try {
             let result;
@@ -1351,7 +1135,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (result.error) {
-                logDiagnostic(`❌ OTP inválido: ${result.error.message}`, 'error');
+                logDiagnostic('❌ OTP inválido: ' + result.error.message, 'error');
                 alert('Código incorrecto o expirado. Intenta de nuevo.');
                 
                 inputs.forEach(i => {
@@ -1363,14 +1147,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             currentUser = result.data.user;
-            logDiagnostic(`✅ OTP verificado. Usuario: ${currentUser.id}`, 'info');
+            logDiagnostic('✅ OTP verificado. Usuario: ' + currentUser.id, 'info');
             
             hideOTPScreen();
             showToast('¡Cuenta verificada! 🎉');
             
             await createProfileAfterSignup(currentUser);
             
-            // Verificar si hay OAuth pendiente
             const pendingAuthId = sessionStorage.getItem('pending_oauth_auth_id');
             if (pendingAuthId) {
                 await resumeOAuthAfterLogin();
@@ -1379,13 +1162,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
         } catch (e) {
-            logDiagnostic(`❌ OTP exc: ${e.message}`, 'error');
+            logDiagnostic('❌ OTP exc: ' + e.message, 'error');
             alert('Error: ' + e.message);
         }
     }
 
     async function resendOTP() {
-        logDiagnostic(`📩 Reenviando OTP ${authMethod}...`, 'info');
+        logDiagnostic('📩 Reenviando OTP ' + authMethod + '...', 'info');
         
         try {
             if (authMethod === 'email') {
@@ -1405,7 +1188,7 @@ document.addEventListener('DOMContentLoaded', () => {
             startOTPTimer();
             
         } catch (e) {
-            logDiagnostic(`❌ Reenvío falló: ${e.message}`, 'error');
+            logDiagnostic('❌ Reenvío falló: ' + e.message, 'error');
             alert('Error al reenviar: ' + e.message);
         }
     }
@@ -1428,12 +1211,12 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             
             if (error) {
-                logDiagnostic(`⚠️ Perfil manual: ${error.message}`, 'warn');
+                logDiagnostic('⚠️ Perfil manual: ' + error.message, 'warn');
             } else {
                 logDiagnostic('✅ Perfil creado', 'info');
             }
         } catch (e) {
-            logDiagnostic(`❌ Perfil exc: ${e.message}`, 'error');
+            logDiagnostic('❌ Perfil exc: ' + e.message, 'error');
         }
     }
 
@@ -1536,8 +1319,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const rawTag = document.getElementById('setup-tag').value.trim().replace('@', '').replace(/\s+/g, '_').toLowerCase();
         
         if (!name || !rawTag) { 
-            showToast('Completa tu nombre y usuario'); 
-            return; 
+            showToast('Completa tu nombre y usuario');
+            return;
         }
         
         if (!currentUser) {
@@ -1554,7 +1337,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 .eq('id', currentUser.id);
 
             if (error) {
-                logDiagnostic(`❌ Error guardando perfil: ${error.message}`, 'error');
+                logDiagnostic('❌ Error guardando perfil: ' + error.message, 'error');
                 showToast('Error al guardar: ' + error.message);
                 return;
             }
@@ -1567,7 +1350,7 @@ document.addEventListener('DOMContentLoaded', () => {
             enterApp();
             
         } catch (e) {
-            logDiagnostic(`❌ Exception guardando perfil: ${e.message}`, 'error');
+            logDiagnostic('❌ Exception guardando perfil: ' + e.message, 'error');
             showToast('Error de conexión');
         }
     }
@@ -1617,7 +1400,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const name = localStorage.getItem('user_real_name') || 'Usuario';
         const tag = localStorage.getItem('user_unique_tag') || '@usuario';
         const initial = name.charAt(0).toUpperCase();
-        const dicebearUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(tag)}&backgroundColor=d1fae5`;
+        const dicebearUrl = 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(tag) + '&backgroundColor=d1fae5';
         
         if (currentUser) {
             db.from('profiles').select('avatar_url').eq('id', currentUser.id).single().then(({data}) => {
@@ -1697,25 +1480,25 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadUsers() {
         try {
             const { data } = await db.from('profiles').select('*').order('created_at', { ascending: false });
-            document.getElementById('users-list').innerHTML = (data || []).map(u => `
-                <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full avatar-fallback text-sm">${(u.name || '?').charAt(0).toUpperCase()}</div>
-                        <div>
-                            <p class="font-bold text-sm">${u.name || '—'}</p>
-                            <p class="text-[10px] text-slate-400">${u.email || u.id.slice(0,8)} • ${u.role || 'user'}</p>
-                        </div>
-                    </div>
-                    <div class="flex gap-1">
-                        ${u.role !== 'owner' 
-                            ? `<button onclick="makeOwner('${u.id}')" class="badge badge-purple cursor-pointer">👑</button>
-                               <button onclick="deleteUser('${u.id}')" class="badge badge-red cursor-pointer">🗑️</button>`
-                            : '<span class="badge badge-green">Owner</span>'}
-                    </div>
-                </div>
-            `).join('');
+            document.getElementById('users-list').innerHTML = (data || []).map(u => 
+                '<div class=\"flex items-center justify-between p-3 bg-slate-50 rounded-xl\">' +
+                    '<div class=\"flex items-center gap-3\">' +
+                        '<div class=\"w-10 h-10 rounded-full avatar-fallback text-sm\">' + (u.name || '?').charAt(0).toUpperCase() + '</div>' +
+                        '<div>' +
+                            '<p class=\"font-bold text-sm\">' + (u.name || '—') + '</p>' +
+                            '<p class=\"text-[10px] text-slate-400\">' + (u.email || u.id.slice(0,8)) + ' • ' + (u.role || 'user') + '</p>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class=\"flex gap-1\">' +
+                        (u.role !== 'owner' ? 
+                            '<button onclick=\"makeOwner(\'' + u.id + '\')\" class=\"badge badge-purple cursor-pointer\">👑</button>' +
+                            '<button onclick=\"deleteUser(\'' + u.id + '\')\" class=\"badge badge-red cursor-pointer\">🗑️</button>' 
+                            : '<span class=\"badge badge-green\">Owner</span>') +
+                    '</div>' +
+                '</div>'
+            ).join('');
         } catch(e) {
-            document.getElementById('users-list').innerHTML = '<div class="text-center text-slate-400 py-4">Error cargando usuarios</div>';
+            document.getElementById('users-list').innerHTML = '<div class=\"text-center text-slate-400 py-4\">Error cargando usuarios</div>';
         }
     }
 
@@ -1738,19 +1521,19 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadAdminPosts() {
         try {
             const { data } = await db.from('comunidad').select('*').order('created_at', { ascending: false }).limit(50);
-            document.getElementById('admin-posts-list').innerHTML = (data || []).map(p => `
-                <div class="card p-4 post-admin relative">
-                    <button onclick="deletePost('${p.id}')" class="delete-btn btn-red">🗑️ Borrar</button>
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="font-bold text-sm">${escHtml(p.autor || 'Anónimo')}</span>
-                        <span class="text-[10px] text-slate-400">${getTimeAgo(p.created_at)}</span>
-                    </div>
-                    <p class="text-sm text-slate-600">${escHtml(p.mensaje || '')}</p>
-                    ${p.foto_url ? `<img src="${p.foto_url}" class="w-full rounded-lg mt-2 object-cover" style="max-height:150px;">` : ''}
-                </div>
-            `).join('');
+            document.getElementById('admin-posts-list').innerHTML = (data || []).map(p => 
+                '<div class=\"card p-4 post-admin relative\">' +
+                    '<button onclick=\"deletePost(\'' + p.id + '\')\" class=\"delete-btn btn-red\">🗑️ Borrar</button>' +
+                    '<div class=\"flex items-center gap-2 mb-2\">' +
+                        '<span class=\"font-bold text-sm\">' + escHtml(p.autor || 'Anónimo') + '</span>' +
+                        '<span class=\"text-[10px] text-slate-400\">' + getTimeAgo(p.created_at) + '</span>' +
+                    '</div>' +
+                    '<p class=\"text-sm text-slate-600\">' + escHtml(p.mensaje || '') + '</p>' +
+                    (p.foto_url ? '<img src=\"' + p.foto_url + '\" class=\"w-full rounded-lg mt-2 object-cover\" style=\"max-height:150px;\">' : '') +
+                '</div>'
+            ).join('');
         } catch(e) {
-            document.getElementById('admin-posts-list').innerHTML = '<div class="text-center text-slate-400 py-4">Error cargando posts</div>';
+            document.getElementById('admin-posts-list').innerHTML = '<div class=\"text-center text-slate-400 py-4\">Error cargando posts</div>';
         }
     }
 
@@ -1776,14 +1559,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderLogs() {
-        document.getElementById('admin-logs-list').innerHTML = adminLogs.map(l => `
-            <div class="log-entry">
-                <span class="time">${l.time}</span> • 
-                <span class="font-semibold text-slate-700">${l.action}</span>
-                <span class="text-slate-500"> → ${l.detail}</span>
-                <span class="text-[10px] text-slate-400 ml-1">(${l.user})</span>
-            </div>
-        `).join('') || '<div class="text-center text-slate-400 py-4">Sin actividad reciente</div>';
+        document.getElementById('admin-logs-list').innerHTML = adminLogs.map(l => 
+            '<div class=\"log-entry\">' +
+                '<span class=\"time\">' + l.time + '</span> • ' +
+                '<span class=\"font-semibold text-slate-700\">' + l.action + '</span>' +
+                '<span class=\"text-slate-500\"> → ' + l.detail + '</span>' +
+                '<span class=\"text-[10px] text-slate-400 ml-1\">(' + l.user + ')</span>' +
+            '</div>'
+        ).join('') || '<div class=\"text-center text-slate-400 py-4\">Sin actividad reciente</div>';
     }
 
     // ==================== HOME DATA ====================
@@ -1808,19 +1591,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.getElementById('co2-total').innerText = total.toFixed(1);
         document.getElementById('home-actions-count').innerText = data.length;
-        document.getElementById('acciones-list').innerHTML = data.map(i => `
-            <div class="card p-4 flex items-center gap-4" style="border-left: 5px solid #16a34a;">
-                <div class="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center text-xl flex-shrink-0">
-                    ${catIcons[i.categoria] || '🌍'}
-                </div>
-                <div class="flex-1 min-w-0">
-                    <h4 class="font-bold text-slate-800 text-sm leading-tight">${i.titulo}</h4>
-                    <div class="flex items-center gap-2 mt-1">
-                        <span class="badge badge-green">${parseFloat(i.impacto_co2).toFixed(1)} kg CO₂</span>
-                        ${i.categoria ? `<span class="badge badge-blue">${i.categoria}</span>` : ''}
-                    </div>
-                </div>
-            </div>`).join('');
+        document.getElementById('acciones-list').innerHTML = data.map(i => 
+            '<div class=\"card p-4 flex items-center gap-4\" style=\"border-left: 5px solid #16a34a;\">' +
+                '<div class=\"w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center text-xl flex-shrink-0\">' +
+                    (catIcons[i.categoria] || '🌍') +
+                '</div>' +
+                '<div class=\"flex-1 min-w-0\">' +
+                    '<h4 class=\"font-bold text-slate-800 text-sm leading-tight\">' + i.titulo + '</h4>' +
+                    '<div class=\"flex items-center gap-2 mt-1\">' +
+                        '<span class=\"badge badge-green\">' + parseFloat(i.impacto_co2).toFixed(1) + ' kg CO₂</span>' +
+                        (i.categoria ? '<span class=\"badge badge-blue\">' + i.categoria + '</span>' : '') +
+                    '</div>' +
+                '</div>' +
+            '</div>'
+        ).join('');
 
         try {
             const res2 = await db.from('comunidad').select('id', { count: 'exact', head: true });
@@ -1843,10 +1627,10 @@ document.addEventListener('DOMContentLoaded', () => {
         map.on('load', () => {
             COLLECTION_POINTS.forEach(pt => {
                 const el = document.createElement('div');
-                el.style.cssText = `width:38px;height:38px;border-radius:50%;background:${pt.color};border:3px solid white;box-shadow:0 4px 12px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;`;
+                el.style.cssText = 'width:38px;height:38px;border-radius:50%;background:' + pt.color + ';border:3px solid white;box-shadow:0 4px 12px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;';
                 el.innerHTML = pt.type === 'municipal' ? '🏛️' : pt.type === 'raee' ? '⚡' : '♻️';
                 const popup = new mapboxgl.Popup({ offset: 25, closeButton: false, maxWidth: '220px' })
-                    .setHTML(`<div style="font-family:Plus Jakarta Sans,sans-serif;padding:4px;"><p style="font-weight:800;font-size:13px;margin:0 0 4px;">${pt.name}</p><p style="font-size:11px;color:#64748b;margin:0;">${pt.desc}</p></div>`);
+                    .setHTML('<div style=\"font-family:Plus Jakarta Sans,sans-serif;padding:4px;\"><p style=\"font-weight:800;font-size:13px;margin:0 0 4px;\">' + pt.name + '</p><p style=\"font-size:11px;color:#64748b;margin:0;\">' + pt.desc + '</p></div>');
                 new mapboxgl.Marker({ element: el }).setLngLat(pt.coords).setPopup(popup).addTo(map);
             });
         });
@@ -1868,26 +1652,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderMuro(posts) {
         if (!posts.length) {
-            document.getElementById('comunidad-list').innerHTML = `<div class="card p-8 text-center text-slate-400 text-sm font-semibold">Sé el primero en publicar 🌿</div>`;
+            document.getElementById('comunidad-list').innerHTML = '<div class=\"card p-8 text-center text-slate-400 text-sm font-semibold\">Sé el primero en publicar 🌿</div>';
             return;
         }
         document.getElementById('comunidad-list').innerHTML = posts.map(p => {
             const seed = encodeURIComponent(p.autor || 'anon');
-            const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}&backgroundColor=d1fae5`;
+            const avatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + seed + '&backgroundColor=d1fae5';
             const timeAgo = p.created_at ? getTimeAgo(p.created_at) : '';
-            const imgHtml = p.foto_url ? `<img src="${p.foto_url}" class="w-full rounded-xl mt-3 object-cover" style="max-height:200px;" onerror="this.remove()">` : '';
-            return `
-            <div class="card p-5">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="w-10 h-10 rounded-full avatar-fallback text-sm flex-shrink-0">${(p.autor || '?').charAt(0).toUpperCase()}</div>
-                    <div>
-                        <p class="font-extrabold text-sm text-slate-900 leading-tight">${escHtml(p.autor || 'Anónimo')}</p>
-                        <p class="text-[9px] text-slate-400 font-bold">Cota · ${timeAgo}</p>
-                    </div>
-                </div>
-                <p class="text-slate-600 text-sm leading-relaxed">${escHtml(p.mensaje || '')}</p>
-                ${imgHtml}
-            </div>`;
+            const imgHtml = p.foto_url ? '<img src=\"' + p.foto_url + '\" class=\"w-full rounded-xl mt-3 object-cover\" style=\"max-height:200px;\" onerror=\"this.remove()\">' : '';
+            return 
+                '<div class=\"card p-5\">' +
+                    '<div class=\"flex items-center gap-3 mb-3\">' +
+                        '<div class=\"w-10 h-10 rounded-full avatar-fallback text-sm flex-shrink-0\">' + (p.autor || '?').charAt(0).toUpperCase() + '</div>' +
+                        '<div>' +
+                            '<p class=\"font-extrabold text-sm text-slate-900 leading-tight\">' + escHtml(p.autor || 'Anónimo') + '</p>' +
+                            '<p class=\"text-[9px] text-slate-400 font-bold\">Cota · ' + timeAgo + '</p>' +
+                        '</div>' +
+                    '</div>' +
+                    '<p class=\"text-slate-600 text-sm leading-relaxed\">' + escHtml(p.mensaje || '') + '</p>' +
+                    imgHtml +
+                '</div>';
         }).join('');
     }
 
@@ -1963,7 +1747,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (cameraMode === 'avatar') {
             if (currentUser) {
                 const blob = await (await fetch(dataUrl)).blob();
-                const path = `avatars/${currentUser.id}.jpg`;
+                const path = 'avatars/' + currentUser.id + '.jpg';
                 await db.storage.from('avatars').upload(path, blob, { upsert: true });
                 const { data } = db.storage.from('avatars').getPublicUrl(path);
                 await db.from('profiles').update({ avatar_url: data.publicUrl }).eq('id', currentUser.id);
@@ -2042,6 +1826,75 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(t);
         toastTimeout = setTimeout(() => t.remove(), 3000);
     }
+
+    // ============================================================
+    // EVENT LISTENERS (AGREGAR AL FINAL)
+    // ============================================================
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        // OAuth consent buttons
+        const btnApprove = document.getElementById('btn-approve-oauth');
+        const btnDeny = document.getElementById('btn-deny-oauth');
+        
+        if (btnApprove) {
+            btnApprove.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                approveOAuthConsent();
+            });
+        }
+        if (btnDeny) {
+            btnDeny.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                denyOAuthConsent();
+            });
+        }
+        
+        // OTP inputs
+        const otpInputs = document.querySelectorAll('.otp-input');
+        otpInputs.forEach((input, index) => {
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !input.value && index > 0) {
+                    otpInputs[index - 1].focus();
+                }
+            });
+            
+            input.addEventListener('input', (e) => {
+                const val = e.target.value.replace(/\D/g, '');
+                e.target.value = val;
+                
+                if (val) {
+                    e.target.classList.add('filled');
+                    if (index < 5) {
+                        otpInputs[index + 1].focus();
+                    } else {
+                        setTimeout(() => verifyOTP(), 200);
+                    }
+                } else {
+                    e.target.classList.remove('filled');
+                }
+            });
+            
+            input.addEventListener('paste', (e) => {
+                e.preventDefault();
+                const pasteData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+                
+                pasteData.split('').forEach((char, i) => {
+                    if (otpInputs[i]) {
+                        otpInputs[i].value = char;
+                        otpInputs[i].classList.add('filled');
+                    }
+                });
+                
+                if (pasteData.length === 6) {
+                    setTimeout(() => verifyOTP(), 200);
+                } else if (otpInputs[pasteData.length]) {
+                    otpInputs[pasteData.length].focus();
+                }
+            });
+        });
+    });
 </script>
 </body>
 </html>
