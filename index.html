@@ -770,7 +770,7 @@
             const { data, error } = await db.auth.signInWithOAuth({
                 provider: provider,
                 options: {
-                    redirectTo: SITE_URL + '/auth/callback',
+                    redirectTo: SITE_URL,
                     queryParams: provider === 'google' ? {
                         access_type: 'offline',
                         prompt: 'consent'
