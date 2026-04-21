@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <title>Nuestro Hogar Común | Cota</title>
+    <title>Nuestro Hogar Común | Cota — OAuth Server</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -77,22 +75,85 @@
         .otp-timer { font-size: 0.75rem; color: #94a3b8; font-weight: 600; }
         .otp-timer.expired { color: #ef4444; }
         
+        /* OAuth Buttons */
+        .oauth-divider { display: flex; align-items: center; gap: 1rem; margin: 1rem 0; color: #94a3b8; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+        .oauth-divider::before, .oauth-divider::after { content: ''; flex: 1; height: 1px; background: #e2e8f0; }
+        
+        .oauth-btn { width: 100%; padding: 1rem; border-radius: 1rem; border: 2px solid #e2e8f0; background: white; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.75rem; margin-bottom: 0.5rem; }
+        .oauth-btn:active { transform: scale(0.97); }
+        .oauth-btn-google { border-color: #e2e8f0; color: #374151; }
+        .oauth-btn-google:hover { background: #f8fafc; }
+        .oauth-btn-apple { border-color: #111827; background: #111827; color: white; }
+        .oauth-btn-apple:active { background: #374151; }
+        
         .method-selector { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
         .method-btn { flex: 1; padding: 0.75rem; border-radius: 1rem; border: 2px solid #e2e8f0; background: white; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; color: #64748b; }
         .method-btn.active { border-color: #16a34a; background: #f0fdf4; color: #16a34a; }
         .method-btn:active { transform: scale(0.97); }
         
         .phone-input { direction: ltr; text-align: left; }
+        
+        .diagnostic-panel { background: linear-gradient(135deg, #fef3c7, #fffbeb); border: 2px solid #f59e0b; border-radius: 1rem; padding: 1rem; margin-bottom: 1rem; }
+        .diagnostic-panel h4 { color: #92400e; font-weight: 800; font-size: 0.85rem; margin-bottom: 0.5rem; }
+        .diagnostic-log { font-family: 'Courier New', monospace; font-size: 0.7rem; color: #78350f; background: #fffbeb; padding: 0.75rem; border-radius: 0.5rem; max-height: 200px; overflow-y: auto; line-height: 1.5; }
+        
+        /* OAuth Consent Screen Styles */
+        .consent-screen { background: white; min-height: 100vh; padding: 2rem 1.5rem; }
+        .consent-header { text-align: center; margin-bottom: 2rem; }
+        .consent-app-icon { width: 64px; height: 64px; border-radius: 1.5rem; background: linear-gradient(135deg, #16a34a, #22c55e); display: flex; align-items: center; center; justify-content: center; font-size: 2rem; margin: 0 auto 1rem; }
+        .consent-scopes { background: #f8fafc; border-radius: 1rem; padding: 1.25rem; margin: 1.5rem 0; }
+        .consent-scope-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0; border-bottom: 1px solid #e2e8f0; }
+        .consent-scope-item:last-child { border-bottom: none; }
+        .consent-scope-icon { width: 36px; height: 36px; border-radius: 0.75rem; background: #dcfce7; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+        .consent-buttons { display: flex; gap: 0.75rem; margin-top: 2rem; }
+        .consent-buttons .btn-primary { flex: 1; }
+        .consent-buttons .btn-deny { flex: 1; background: white; color: #64748b; border: 2px solid #e2e8f0; border-radius: 1.5rem; font-weight: 700; padding: 1.1rem 2rem; font-size: 1rem; cursor: pointer; transition: all 0.15s; }
+        .consent-buttons .btn-deny:active { transform: scale(0.97); background: #f8fafc; }
+        .consent-user-info { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: #f0fdf4; border-radius: 1rem; margin-bottom: 1.5rem; }
+        .consent-user-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #16a34a, #22c55e); display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; }
     </style>
 </head>
 <body class="text-slate-900 pb-32">
+
+<!-- ==================== OAUTH CONSENT SCREEN ==================== -->
+<div id="oauth-consent-screen" class="consent-screen hidden">
+    <div class="max-w-sm mx-auto">
+        <div class="consent-header">
+            <div class="consent-app-icon" id="consent-app-icon">🔐</div>
+            <h2 class="text-2xl font-black mb-1" id="consent-app-name">App Solicitante</h2>
+            <p class="text-sm text-slate-500">quiere acceder a tu cuenta de <b>Nuestro Hogar Común</b></p>
+        </div>
+        
+        <div class="consent-user-info" id="consent-user-info">
+            <div class="consent-user-avatar" id="consent-user-avatar">?</div>
+            <div>
+                <p class="font-bold text-sm" id="consent-user-name">Usuario</p>
+                <p class="text-xs text-slate-500" id="consent-user-email">email@ejemplo.com</p>
+            </div>
+        </div>
+        
+        <div class="consent-scopes">
+            <p class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Permisos solicitados</p>
+            <div id="consent-scopes-list">
+                <!-- Scopes se renderizan dinámicamente -->
+            </div>
+        </div>
+        
+        <p class="text-xs text-slate-400 text-center mb-4">Puedes revocar este acceso en cualquier momento desde tu perfil.</p>
+        
+        <div class="consent-buttons">
+            <button class="btn-deny" onclick="denyOAuthConsent()">Denegar</button>
+            <button class="btn-primary" onclick="approveOAuthConsent()">Permitir acceso</button>
+        </div>
+    </div>
+</div>
 
 <!-- ==================== AUTH SCREEN ==================== -->
 <div id="auth-screen" class="fixed inset-0 bg-[#F0F4F0] z-[100] flex flex-col items-center justify-center p-6 overflow-y-auto">
     <div class="w-28 h-28 bg-green-50 rounded-[2.5rem] mb-6 flex items-center justify-center text-6xl shadow-inner">🌿</div>
     <h1 class="text-3xl font-black mb-2 tracking-tight">Nuestro Hogar Común</h1>
     <p class="text-slate-500 font-medium text-sm mb-2 text-center max-w-xs">Comunidad ecológica de Cota. Retos, mapa y muro verde.</p>
-    <p id="version-tag" class="text-[10px] text-slate-400 font-mono mb-4">v2.1.0-OTP</p>
+    <p id="version-tag" class="text-[10px] text-slate-400 font-mono mb-4">v2.3.0-OAuthServer</p>
     
     <!-- OTP VERIFICATION SCREEN -->
     <div id="otp-screen" class="hidden w-full max-w-sm">
@@ -130,16 +191,28 @@
     
     <!-- MAIN AUTH FORM -->
     <div id="auth-form" class="login-card w-full max-w-sm space-y-3">
+        
+        <!-- OAUTH BUTTONS -->
+        <button class="oauth-btn oauth-btn-google" onclick="signInWithOAuth('google')">
+            <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            Continuar con Google
+        </button>
+        
+        <button class="oauth-btn oauth-btn-apple" onclick="signInWithOAuth('apple')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.21-1.98 1.08-3.11-1.05.05-2.31.7-3.06 1.55-.68.78-1.27 2.02-1.11 3.12 1.18.09 2.38-.6 3.09-1.56"/></svg>
+            Continuar con Apple
+        </button>
+        
+        <div class="oauth-divider">o usa email</div>
+        
         <input id="auth-email" type="email" placeholder="Email" class="input-field" value="raulortiz11@gmail.com">
         <input id="auth-pass" type="password" placeholder="Contraseña (mín. 6 caracteres)" class="input-field" value="Diciembre07">
         
-        <!-- Phone input for SMS OTP (optional) -->
         <div id="phone-section" class="hidden">
             <input id="auth-phone" type="tel" placeholder="+57 300 123 4567" class="input-field phone-input">
             <p class="text-[10px] text-slate-400 px-1">Incluye código de país (ej: +57 para Colombia)</p>
         </div>
         
-        <!-- Method selector -->
         <div class="method-selector">
             <button class="method-btn active" onclick="setAuthMethod('email')" id="method-email">📧 Email</button>
             <button class="method-btn" onclick="setAuthMethod('sms')" id="method-sms">📱 SMS</button>
@@ -395,13 +468,15 @@
 <div id="guide-modal" class="modal-overlay hidden" onclick="toggleGuide(event)">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
         <div class="flex justify-between items-center mb-4">
-            <h3 class="font-black text-lg">Guía Supabase 🔐</h3>
+            <h3 class="font-black text-lg">Guía Supabase ⚙️</h3>
             <button onclick="toggleGuide()" class="text-slate-400 font-bold text-sm p-2">Cerrar</button>
         </div>
         <div class="space-y-3 text-sm">
-            <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">OTP Email</p><p>Supabase envía código automáticamente. No requiere configuración extra.</p></div>
-            <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">OTP SMS</p><p>Configura Twilio/MessageBird en Supabase Dashboard → Auth → Providers → Phone</p></div>
-            <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">Site URL</p><p>Authentication → URL Configuration → Site URL = tu dominio</p></div>
+            <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">OAuth Server</p><p>Tu app es ahora un Authorization Server OAuth 2.1. Terceros pueden usar "Sign in with Nuestro Hogar Común".</p></div>
+            <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">Google OAuth</p><p>Dashboard → Auth → Providers → Google. Client ID + Secret desde Google Cloud Console.</p></div>
+            <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">Apple OAuth</p><p>Dashboard → Auth → Providers → Apple. Service ID + Private Key desde Apple Developer.</p></div>
+            <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">OTP Email</p><p>Funciona sin configuración extra. Supabase envía el código automáticamente.</p></div>
+            <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">OTP SMS</p><p>Configura Twilio/MessageBird en Dashboard → Auth → Providers → Phone</p></div>
         </div>
     </div>
 </div>
@@ -410,7 +485,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const APP_VERSION = '2.1.0-OTP';
+    const APP_VERSION = '2.3.0-OAuthServer';
     const SITE_URL = window.location.origin;
     
     const MAPBOX_TOKEN = 'pk.eyJ1IjoiamVyaXhkZXZlbG9waW5naSIsImEiOiJjbWhiZHU0YngxNjF2MmtwdXAxaWtydjR5In0.0Xx724Epn3x3nJ8hAYC1dA';
@@ -425,8 +500,12 @@
     let diagnosticLogs = [];
     let pendingEmail = null;
     let pendingPhone = null;
-    let authMethod = 'email'; // 'email' | 'sms'
+    let authMethod = 'email';
     let otpTimerInterval = null;
+    
+    // OAuth Server state
+    let oauthAuthorizationId = null;
+    let oauthClientInfo = null;
 
     const COLLECTION_POINTS = [
         { name: 'Centro de Acopio Municipal', coords: [-74.1086, 4.8105], type: 'municipal', color: '#16a34a', desc: 'Cra. 3 #5-20, Cota. Lun–Vie 8am–5pm' },
@@ -436,6 +515,244 @@
         { name: 'Centro de Acopio Rozo', coords: [-74.1115, 4.8088], type: 'municipal', color: '#16a34a', desc: 'Vereda Rozo, Cota. Jue y Sáb 7am–1pm' },
         { name: 'Punto Verde Siberia', coords: [-74.1023, 4.8155], type: 'verde', color: '#3b82f6', desc: 'Vía Siberia, cerca al portón. 24 horas' },
     ];
+
+    // ============================================================
+    // OAUTH SERVER: CONSENT SCREEN
+    // ============================================================
+    
+    async function initOAuthConsent() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const authId = urlParams.get('authorization_id');
+        
+        if (!authId) return false; // No es un flujo OAuth
+        
+        oauthAuthorizationId = authId;
+        logDiagnostic(`🔐 OAuth consent iniciado: ${authId}`, 'info');
+        
+        try {
+            // Obtener detalles de la autorización
+            const { data, error } = await db.auth.oauth.getAuthorizationDetails(authId);
+            
+            if (error) {
+                logDiagnostic(`❌ OAuth getAuthorizationDetails: ${error.message}`, 'error');
+                showToast('Error cargando autorización');
+                return true;
+            }
+            
+            oauthClientInfo = data;
+            logDiagnostic(`✅ Cliente OAuth: ${data.client?.name || 'Unknown'}`, 'info');
+            
+            // Verificar si el usuario está autenticado
+            const { data: { session } } = await db.auth.getSession();
+            
+            if (!session) {
+                // Usuario no autenticado — guardar auth_id y redirigir a login
+                logDiagnostic('ℹ️ Usuario no autenticado, redirigiendo a login', 'info');
+                sessionStorage.setItem('pending_oauth_auth_id', authId);
+                showToast('Inicia sesión para continuar');
+                return true;
+            }
+            
+            currentUser = session.user;
+            
+            // Mostrar consent screen
+            renderConsentScreen(data, session.user);
+            return true;
+            
+        } catch (e) {
+            logDiagnostic(`❌ OAuth consent exc: ${e.message}`, 'error`);
+            return true;
+        }
+    }
+    
+    function renderConsentScreen(details, user) {
+        // Ocultar todo lo demás
+        document.getElementById('auth-screen').classList.add('hidden');
+        document.getElementById('main-app').classList.add('hidden');
+        document.getElementById('oauth-consent-screen').classList.remove('hidden');
+        
+        // Info del cliente
+        document.getElementById('consent-app-name').innerText = details.client?.name || 'Aplicación externa';
+        document.getElementById('consent-app-icon').innerText = details.client?.icon || '🔐';
+        
+        // Info del usuario
+        const userName = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Usuario';
+        document.getElementById('consent-user-name').innerText = userName;
+        document.getElementById('consent-user-email').innerText = user.email;
+        document.getElementById('consent-user-avatar').innerText = userName.charAt(0).toUpperCase();
+        
+        // Scopes
+        const scopesList = document.getElementById('consent-scopes-list');
+        const scopes = details.scopes || ['openid', 'email', 'profile'];
+        
+        const scopeLabels = {
+            'openid': { icon: '🔓', label: 'Identidad básica', desc: 'Acceso a tu ID de usuario' },
+            'email': { icon: '📧', label: 'Correo electrónico', desc: 'Ver tu dirección de email' },
+            'profile': { icon: '👤', label: 'Perfil', desc: 'Ver tu nombre y foto de perfil' },
+            'phone': { icon: '📱', label: 'Teléfono', desc: 'Ver tu número de teléfono' }
+        };
+        
+        scopesList.innerHTML = scopes.map(scope => {
+            const info = scopeLabels[scope] || { icon: '🔒', label: scope, desc: 'Acceso solicitado' };
+            return `
+                <div class="consent-scope-item">
+                    <div class="consent-scope-icon">${info.icon}</div>
+                    <div>
+                        <p class="font-bold text-sm text-slate-800">${info.label}</p>
+                        <p class="text-xs text-slate-500">${info.desc}</p>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    async function approveOAuthConsent() {
+        if (!oauthAuthorizationId) return;
+        
+        logDiagnostic('✅ Usuario aprobó OAuth consent', 'info');
+        showToast('Autorizando...');
+        
+        try {
+            const { data, error } = await db.auth.oauth.approveAuthorization(oauthAuthorizationId);
+            
+            if (error) {
+                logDiagnostic(`❌ approveAuthorization: ${error.message}`, 'error');
+                alert('Error al autorizar: ' + error.message);
+                return;
+            }
+            
+            // Redirigir al cliente OAuth
+            if (data?.redirect_to) {
+                logDiagnostic(`🔄 Redirecting to: ${data.redirect_to}`, 'info');
+                window.location.href = data.redirect_to;
+            }
+            
+        } catch (e) {
+            logDiagnostic(`❌ approveAuthorization exc: ${e.message}`, 'error');
+            alert('Error: ' + e.message);
+        }
+    }
+    
+    async function denyOAuthConsent() {
+        if (!oauthAuthorizationId) return;
+        
+        logDiagnostic('❌ Usuario denegó OAuth consent', 'info');
+        
+        try {
+            const { data, error } = await db.auth.oauth.denyAuthorization(oauthAuthorizationId);
+            
+            if (error) {
+                logDiagnostic(`❌ denyAuthorization: ${error.message}`, 'error');
+            }
+            
+            // Redirigir al cliente con error
+            if (data?.redirect_to) {
+                window.location.href = data.redirect_to;
+            } else {
+                // Volver a la app principal
+                document.getElementById('oauth-consent-screen').classList.add('hidden');
+                document.getElementById('auth-screen').classList.remove('hidden');
+                showToast('Acceso denegado');
+            }
+            
+        } catch (e) {
+            logDiagnostic(`❌ denyAuthorization exc: ${e.message}`, 'error');
+            document.getElementById('oauth-consent-screen').classList.add('hidden');
+            document.getElementById('auth-screen').classList.remove('hidden');
+        }
+    }
+    
+    // Reanudar OAuth después de login
+    async function resumeOAuthAfterLogin() {
+        const pendingAuthId = sessionStorage.getItem('pending_oauth_auth_id');
+        if (!pendingAuthId) return;
+        
+        sessionStorage.removeItem('pending_oauth_auth_id');
+        
+        // Actualizar URL con el authorization_id
+        const url = new URL(window.location.href);
+        url.searchParams.set('authorization_id', pendingAuthId);
+        window.history.replaceState({}, '', url);
+        
+        // Re-inicializar consent
+        await initOAuthConsent();
+    }
+
+    // ============================================================
+    // OAUTH CLIENT: LOGIN WITH GOOGLE/APPLE
+    // ============================================================
+    
+    async function signInWithOAuth(provider) {
+        logDiagnostic(`🔐 OAuth ${provider} iniciado...`, 'info');
+        showToast(`Conectando con ${provider}...`);
+        
+        try {
+            const { data, error } = await db.auth.signInWithOAuth({
+                provider: provider,
+                options: {
+                    redirectTo: `${SITE_URL}/auth/callback`,
+                    queryParams: provider === 'google' ? {
+                        access_type: 'offline',
+                        prompt: 'consent'
+                    } : {}
+                }
+            });
+            
+            if (error) {
+                logDiagnostic(`❌ OAuth ${provider}: ${error.message}`, 'error');
+                alert(`Error con ${provider}: ${error.message}`);
+                return;
+            }
+            
+            if (data?.url) {
+                window.location.href = data.url;
+            }
+            
+        } catch (e) {
+            logDiagnostic(`❌ OAuth ${provider} exc: ${e.message}`, 'error');
+            alert('Error: ' + e.message);
+        }
+    }
+
+    async function handleOAuthCallback() {
+        const hash = window.location.hash;
+        const query = new URLSearchParams(window.location.search);
+        
+        if (hash.includes('access_token') || hash.includes('refresh_token') || 
+            query.get('code') || window.location.pathname.includes('/auth/callback')) {
+            
+            logDiagnostic('🔍 OAuth callback detectado', 'info');
+            
+            try {
+                const { data: { session }, error } = await db.auth.getSession();
+                
+                if (error) {
+                    logDiagnostic(`❌ OAuth callback error: ${error.message}`, 'error');
+                    return;
+                }
+                
+                if (session) {
+                    currentUser = session.user;
+                    logDiagnostic(`✅ OAuth login: ${session.user.email}`, 'info');
+                    showToast(`¡Bienvenido! 🎉`);
+                    
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    
+                    await createProfileAfterSignup(currentUser);
+                    
+                    // Verificar si hay OAuth pendiente
+                    const pendingAuthId = sessionStorage.getItem('pending_oauth_auth_id');
+                    if (pendingAuthId) {
+                        await resumeOAuthAfterLogin();
+                    } else {
+                        await initUserData();
+                    }
+                }
+            } catch (e) {
+                logDiagnostic(`❌ OAuth callback exc: ${e.message}`, 'error');
+            }
+        }
+    }
 
     // ============================================================
     // OTP UI HELPERS
@@ -459,7 +776,6 @@
         document.getElementById('otp-screen').classList.remove('hidden');
         document.getElementById('otp-target').innerText = target;
         
-        // Reset inputs
         document.querySelectorAll('.otp-input').forEach(input => {
             input.value = '';
             input.classList.remove('filled');
@@ -525,7 +841,6 @@
                     if (index < 5) {
                         otpInputs[index + 1].focus();
                     } else {
-                        // Last digit entered, auto-verify
                         setTimeout(() => verifyOTP(), 200);
                     }
                 } else {
@@ -582,7 +897,7 @@
         const logContainer = document.getElementById('diagnostic-log');
         logContainer.innerHTML = '';
         
-        logDiagnostic(`🔍 v${APP_VERSION} | Site: ${SITE_URL} | Method: ${authMethod}`, 'info');
+        logDiagnostic(`🔍 v${APP_VERSION} | Site: ${SITE_URL}`, 'info');
         
         try {
             const start = performance.now();
@@ -610,15 +925,25 @@
             logDiagnostic(`❌ Init failed: ${e.message}`, 'error');
         }
         
-        try {
-            const { data: { session } } = await db.auth.getSession();
-            if (session) {
-                currentUser = session.user;
-                logDiagnostic(`✅ Sesión: ${session.user.email}`, 'info');
-                await initUserData();
+        // PRIORITY 1: OAuth Server Consent Screen
+        const isOAuthFlow = await initOAuthConsent();
+        if (isOAuthFlow) return;
+        
+        // PRIORITY 2: OAuth Client Callback (Google/Apple login)
+        await handleOAuthCallback();
+        
+        // PRIORITY 3: Regular session check
+        if (!currentUser) {
+            try {
+                const { data: { session } } = await db.auth.getSession();
+                if (session) {
+                    currentUser = session.user;
+                    logDiagnostic(`✅ Sesión: ${session.user.email}`, 'info');
+                    await initUserData();
+                }
+            } catch (e) {
+                logDiagnostic(`❌ Session check: ${e.message}`, 'error');
             }
-        } catch (e) {
-            logDiagnostic(`❌ Session check: ${e.message}`, 'error');
         }
     };
 
@@ -646,7 +971,14 @@
             }
             currentUser = data.user;
             logDiagnostic(`✅ Login OK`, 'info');
-            await initUserData();
+            
+            // Verificar si hay OAuth pendiente después del login
+            const pendingAuthId = sessionStorage.getItem('pending_oauth_auth_id');
+            if (pendingAuthId) {
+                await resumeOAuthAfterLogin();
+            } else {
+                await initUserData();
+            }
         } catch (e) {
             logDiagnostic(`❌ Login exc: ${e.message}`, 'error');
             alert('Error: ' + e.message);
@@ -668,13 +1000,11 @@
             return;
         }
 
-        // SMS method validation
         if (authMethod === 'sms') {
             if (!phone) {
                 showToast('Ingresa tu número de teléfono');
                 return;
             }
-            // Basic phone validation
             if (!phone.match(/^\+[1-9]\d{1,14}$/)) {
                 alert('Formato inválido. Usa: +57 300 123 4567 o +573001234567');
                 return;
@@ -686,7 +1016,6 @@
         pendingPhone = phone;
 
         try {
-            // Check if user already exists
             const { data: loginData } = await db.auth.signInWithPassword({ email, password: pass });
             if (loginData?.user) {
                 currentUser = loginData.user;
@@ -694,19 +1023,14 @@
                 await initUserData();
                 return;
             }
-        } catch (e) {
-            // Expected error - user doesn't exist yet
-        }
+        } catch (e) {}
 
         try {
             if (authMethod === 'email') {
-                // EMAIL OTP: signUp with email OTP
                 const { data, error } = await db.auth.signUp({ 
                     email, 
                     password: pass,
-                    options: {
-                        data: { name: '' }
-                    }
+                    options: { data: { name: '' } }
                 });
                 
                 if (error) {
@@ -716,11 +1040,9 @@
                 }
                 
                 if (data?.user && !data?.session) {
-                    // Email confirmation required - Supabase sends OTP automatically
                     logDiagnostic(`📩 OTP enviado a ${email}`, 'info');
                     showOTPScreen(email);
                 } else if (data?.session) {
-                    // Auto-confirmed (if email confirmation disabled in Supabase)
                     currentUser = data.user;
                     logDiagnostic(`✅ Usuario creado (auto-confirmed)`, 'info');
                     await createProfileAfterSignup(data.user);
@@ -728,14 +1050,11 @@
                 }
                 
             } else if (authMethod === 'sms') {
-                // SMS OTP: signUp with phone
                 const { data, error } = await db.auth.signUp({
                     email,
                     password: pass,
                     phone: phone,
-                    options: {
-                        data: { name: '' }
-                    }
+                    options: { data: { name: '' } }
                 });
                 
                 if (error) {
@@ -771,14 +1090,12 @@
             let result;
             
             if (authMethod === 'email') {
-                // Verify email OTP
                 result = await db.auth.verifyOtp({
                     email: pendingEmail,
                     token: code,
                     type: 'signup'
                 });
             } else {
-                // Verify SMS OTP
                 result = await db.auth.verifyOtp({
                     phone: pendingPhone,
                     token: code,
@@ -790,7 +1107,6 @@
                 logDiagnostic(`❌ OTP inválido: ${result.error.message}`, 'error');
                 alert('Código incorrecto o expirado. Intenta de nuevo.');
                 
-                // Clear inputs
                 inputs.forEach(i => {
                     i.value = '';
                     i.classList.remove('filled');
@@ -806,7 +1122,14 @@
             showToast('¡Cuenta verificada! 🎉');
             
             await createProfileAfterSignup(currentUser);
-            await initUserData();
+            
+            // Verificar si hay OAuth pendiente
+            const pendingAuthId = sessionStorage.getItem('pending_oauth_auth_id');
+            if (pendingAuthId) {
+                await resumeOAuthAfterLogin();
+            } else {
+                await initUserData();
+            }
             
         } catch (e) {
             logDiagnostic(`❌ OTP exc: ${e.message}`, 'error');
@@ -849,8 +1172,9 @@
         try {
             const { error } = await db.from('profiles').upsert({
                 id: user.id,
-                name: '',
+                name: user.user_metadata?.full_name || user.user_metadata?.name || '',
                 email: user.email,
+                avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || '',
                 role: 'user',
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
@@ -956,6 +1280,7 @@
     function showProfileSetup() {
         document.getElementById('auth-screen').classList.add('hidden');
         document.getElementById('otp-screen').classList.add('hidden');
+        document.getElementById('oauth-consent-screen').classList.add('hidden');
         document.getElementById('profile-setup').classList.remove('hidden');
     }
 
@@ -1003,7 +1328,9 @@
     function skipProfileSetup() {
         if (!currentUser) return;
         
-        const defaultName = currentUser.email.split('@')[0];
+        const defaultName = currentUser.user_metadata?.full_name || 
+                           currentUser.user_metadata?.name || 
+                           currentUser.email.split('@')[0];
         localStorage.setItem('user_real_name', defaultName);
         localStorage.setItem('user_unique_tag', defaultName.toLowerCase());
         
@@ -1014,6 +1341,7 @@
     function enterApp() {
         document.getElementById('auth-screen').classList.add('hidden');
         document.getElementById('otp-screen').classList.add('hidden');
+        document.getElementById('oauth-consent-screen').classList.add('hidden');
         document.getElementById('profile-setup').classList.add('hidden');
         document.getElementById('main-app').classList.remove('hidden');
         updateGlobalUI();
