@@ -78,6 +78,32 @@
         /* OAuth Buttons */
         .oauth-divider { display: flex; align-items: center; gap: 1rem; margin: 1rem 0; color: #94a3b8; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
         .oauth-divider::before, .oauth-divider::after { content: ''; flex: 1; height: 1px; background: #e2e8f0; }
+        /* Fix para WebView de Oppo/ColorOS */
+        @supports (-webkit-touch-callout: none) {
+            .oauth-btn {
+                -webkit-appearance: none;
+                appearance: none;
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                min-height: 48px; /* ColorOS requiere mínimo 48px touch target */
+            }
+            
+            .oauth-btn-google {
+                background: white !important;
+                border: 2px solid #e2e8f0 !important;
+                color: #374151 !important;
+            }
+        }
+        
+        /* Fix para WebView que oculta elementos con position fixed */
+        @supports (-webkit-overflow-scrolling: touch) {
+            #auth-screen {
+                position: fixed;
+                -webkit-transform: translateZ(0);
+                transform: translateZ(0);
+            }
+        }
         
         .oauth-btn { width: 100%; padding: 1rem; border-radius: 1rem; border: 2px solid #e2e8f0; background: white; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.75rem; margin-bottom: 0.5rem; }
         .oauth-btn:active { transform: scale(0.97); }
