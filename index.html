@@ -1570,47 +1570,136 @@
     }
 
     // ==================== HOME DATA ====================
-    async function loadHomeData() {
-        const fallback = [
-            { titulo: 'Separar residuos en casa', impacto_co2: 2.5, categoria: 'Reciclaje' },
-            { titulo: 'Ir al trabajo en bicicleta', impacto_co2: 4.1, categoria: 'Movilidad' },
-            { titulo: 'Compostar residuos orgánicos', impacto_co2: 1.8, categoria: 'Compostaje' },
-            { titulo: 'Reducir uso de plástico de un solo uso', impacto_co2: 1.2, categoria: 'Consumo' },
-            { titulo: 'Plantar un árbol nativo', impacto_co2: 6.0, categoria: 'Reforestación' },
-            { titulo: 'Llevar residuos electrónicos al punto RAEE', impacto_co2: 3.3, categoria: 'RAEE' },
-        ];
+   // ==================== RETOS / ACCIONES ====================
 
-        let data = fallback;
-        try {
-            const res = await db.from('acciones').select('*').order('created_at', { ascending: false });
-            if (res.data && res.data.length > 0) data = res.data;
-        } catch(e) {}
-
-        const catIcons = { 'Reciclaje':'♻️', 'Movilidad':'🚲', 'Compostaje':'🌱', 'Consumo':'🛍️', 'Reforestación':'🌳', 'RAEE':'⚡' };
-        const total = data.reduce((a, b) => a + parseFloat(b.impacto_co2 || 0), 0);
-
-        document.getElementById('co2-total').innerText = total.toFixed(1);
-        document.getElementById('home-actions-count').innerText = data.length;
-        document.getElementById('acciones-list').innerHTML = data.map(i => 
-            '<div class=\"card p-4 flex items-center gap-4\" style=\"border-left: 5px solid #16a34a;\">' +
-                '<div class=\"w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center text-xl flex-shrink-0\">' +
-                    (catIcons[i.categoria] || '🌍') +
-                '</div>' +
+async function loadHomeData() {
+    try {
+        // Cargar retos disponibles
+        const { data: retos, error: retosError } = await db
+            .from('acciones')
+            .select('*')
+            .eq('activo', true)
+            .order('puntos', { ascending: false });
+        
+        if (retosError) throw retosError;
+        
+        // Cargar retos completados por el usuario
+        let completados = [];
+        if (currentUser) {
+            const { data: userRetos } = await db
+                .from('user_acciones')
+                .select('accion_id')
+                .eq('user_id', currentUser.id);
+            completados = (userRetos || []).map(r => r.accion_id);
+        }
+        
+        const catIcons = { 
+            'Reciclaje':'♻️', 'Movilidad':'🚲', 'Compostaje':'🌱', 
+            'Consumo':'🛍️', 'Reforestación':'🌳', 'RAEE':'⚡',
+            'Energía':'💡', 'Agua':'💧', 'Alimentación':'🥗'
+        };
+        
+        const totalCO2 = (retos || []).reduce((a, b) => a + parseFloat(b.impacto_co2 || 0), 0);
+        
+        document.getElementById('co2-total').innerText = totalCO2.toFixed(1);
+        document.getElementById('home-actions-count').innerText = (retos || []).length;
+        
+        // Renderizar retos
+        document.getElementById('acciones-list').innerHTML = (retos || []).map(reto => {
+            const isDone = completados.includes(reto.id);
+            const icon = catIcons[reto.categoria] || '🌍';
+            
+            return '<div class=\"card p-4 flex items-center gap-4 ' + (isDone ? 'opacity-60' : '') + '\" style=\"border-left: 5px solid ' + (isDone ? '#94a3b8' : '#16a34a') + ';\">' +
+                '<div class=\"w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center text-xl flex-shrink-0\">' + icon + '</div>' +
                 '<div class=\"flex-1 min-w-0\">' +
-                    '<h4 class=\"font-bold text-slate-800 text-sm leading-tight\">' + i.titulo + '</h4>' +
+                    '<h4 class=\"font-bold text-slate-800 text-sm leading-tight ' + (isDone ? 'line-through' : '') + '\">' + reto.titulo + '</h4>' +
+                    '<p class=\"text-xs text-slate-500 mt-0.5\">' + (reto.descripcion || '') + '</p>' +
                     '<div class=\"flex items-center gap-2 mt-1\">' +
-                        '<span class=\"badge badge-green\">' + parseFloat(i.impacto_co2).toFixed(1) + ' kg CO₂</span>' +
-                        (i.categoria ? '<span class=\"badge badge-blue\">' + i.categoria + '</span>' : '') +
+                        '<span class=\"badge badge-green\">' + parseFloat(reto.impacto_co2).toFixed(1) + ' kg CO₂</span>' +
+                        (reto.categoria ? '<span class=\"badge badge-blue\">' + reto.categoria + '</span>' : '') +
+                        '<span class=\"badge badge-amber\">+' + reto.puntos + ' pts</span>' +
                     '</div>' +
                 '</div>' +
-            '</div>'
-        ).join('');
-
-        try {
-            const res2 = await db.from('comunidad').select('id', { count: 'exact', head: true });
-            document.getElementById('home-posts-count').innerText = res2.count || '—';
-        } catch(e) { document.getElementById('home-posts-count').innerText = '—'; }
+                '<button onclick=\"completarReto(\'' + reto.id + '\', ' + reto.impacto_co2 + ', ' + reto.puntos + ')\" ' + 
+                    'class=\"btn-green flex-shrink-0 ' + (isDone ? 'hidden' : '') + '\" style=\"padding: 0.5rem 1rem; font-size: 0.75rem;\">' +
+                    '✅ Completar' +
+                '</button>' +
+                '<span class=\"badge badge-green flex-shrink-0 ' + (isDone ? '' : 'hidden') + '\">✓ Hecho</span>' +
+            '</div>';
+        }).join('');
+        
+        // Stats de posts
+        const { count: postCount } = await db.from('comunidad').select('id', { count: 'exact', head: true });
+        document.getElementById('home-posts-count').innerText = postCount || '—';
+        
+    } catch(e) {
+        console.error('loadHomeData error:', e);
+        // Fallback estático si falla
+        mostrarFallbackRetos();
     }
+}
+
+async function completarReto(accionId, co2, puntos) {
+    if (!currentUser) {
+        showToast('Inicia sesión para completar retos');
+        return;
+    }
+    
+    showToast('Completando reto...');
+    
+    try {
+        const { error } = await db.from('user_acciones').insert({
+            user_id: currentUser.id,
+            accion_id: accionId,
+            impacto_co2: co2,
+            puntos_ganados: puntos
+        });
+        
+        if (error) {
+            if (error.code === '23505') { // unique violation
+                showToast('¡Ya completaste este reto! 🎉');
+            } else {
+                throw error;
+            }
+            return;
+        }
+        
+        showToast('¡Reto completado! +' + puntos + ' pts 🌿');
+        addLog('Reto completado', accionId);
+        
+        // Recargar para mostrar como hecho
+        loadHomeData();
+        loadProfileStats();
+        
+    } catch (e) {
+        console.error('completarReto error:', e);
+        showToast('Error: ' + e.message);
+    }
+}
+
+function mostrarFallbackRetos() {
+    const fallback = [
+        { titulo: 'Separar residuos en casa', impacto_co2: 2.5, categoria: 'Reciclaje', descripcion: 'Separa plástico, papel, vidrio y orgánicos' },
+        { titulo: 'Ir al trabajo en bicicleta', impacto_co2: 4.1, categoria: 'Movilidad', descripcion: 'Usa bici en lugar de carro/moto' },
+        { titulo: 'Compostar residuos orgánicos', impacto_co2: 1.8, categoria: 'Compostaje', descripcion: 'Crea compost con restos de comida' },
+    ];
+    
+    const catIcons = { 'Reciclaje':'♻️', 'Movilidad':'🚲', 'Compostaje':'🌱' };
+    
+    document.getElementById('acciones-list').innerHTML = fallback.map(i => 
+        '<div class=\"card p-4 flex items-center gap-4\" style=\"border-left: 5px solid #16a34a;\">' +
+            '<div class=\"w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center text-xl flex-shrink-0\">' + (catIcons[i.categoria] || '🌍') + '</div>' +
+            '<div class=\"flex-1 min-w-0\">' +
+                '<h4 class=\"font-bold text-slate-800 text-sm leading-tight\">' + i.titulo + '</h4>' +
+                '<p class=\"text-xs text-slate-500 mt-0.5\">' + i.descripcion + '</p>' +
+                '<div class=\"flex items-center gap-2 mt-1\">' +
+                    '<span class=\"badge badge-green\">' + i.impacto_co2 + ' kg CO₂</span>' +
+                    '<span class=\"badge badge-blue\">' + i.categoria + '</span>' +
+                '</div>' +
+            '</div>' +
+        '</div>'
+    ).join('');
+}
 
     // MAP
     function initMap() {
@@ -1781,21 +1870,33 @@
 
     // PROFILE STATS
     async function loadProfileStats() {
-        const name = localStorage.getItem('user_real_name') || 'Anónimo';
-        try {
-            const [res1, res2] = await Promise.all([
-                db.from('acciones').select('impacto_co2'),
-                db.from('comunidad').select('id', { count: 'exact', head: true }).eq('autor', name),
-            ]);
-            const total = (res1.data || []).reduce((a, b) => a + parseFloat(b.impacto_co2 || 0), 0);
-            const posts = res2.count || 0;
-            const nivel = Math.floor(total / 10) + 1;
-            document.getElementById('p-co2').innerText = total.toFixed(1);
-            document.getElementById('p-posts').innerText = posts;
-            document.getElementById('p-nivel').innerText = nivel;
-        } catch(e) {}
+    if (!currentUser) return;
+    
+    try {
+        // Usar la función RPC o calcular manualmente
+        const { data: userRetos, error } = await db
+            .from('user_acciones')
+            .select('impacto_co2, puntos_ganados')
+            .eq('user_id', currentUser.id);
+        
+        if (error) throw error;
+        
+        const totalCO2 = (userRetos || []).reduce((a, b) => a + parseFloat(b.impacto_co2 || 0), 0);
+        const totalPuntos = (userRetos || []).reduce((a, b) => a + (b.puntos_ganados || 0), 0);
+        const retosCount = (userRetos || []).length;
+        const nivel = Math.floor(totalPuntos / 50) + 1;
+        
+        document.getElementById('p-co2').innerText = totalCO2.toFixed(1);
+        document.getElementById('p-posts').innerText = retosCount;
+        document.getElementById('p-nivel').innerText = nivel;
+        
+        // Guardar en localStorage para mostrar en home
+        localStorage.setItem('user_co2', totalCO2.toFixed(1));
+        localStorage.setItem('user_puntos', totalPuntos);
+        
+    } catch(e) {
+        console.error('loadProfileStats error:', e);
     }
-
     // MODALS
     function toggleGuide(e) {
         if (e && e.target !== document.getElementById('guide-modal')) return;
