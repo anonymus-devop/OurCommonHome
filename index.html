@@ -1368,44 +1368,102 @@
     // ============================================================
     
     window.onload = async function() {
+    try {
+        db = supabase.createClient(SB_URL, SB_ANON_KEY);
+        logDiagnostic('✅ Supabase OK | v' + APP_VERSION, 'info');
+    } catch(e) { 
+        logDiagnostic('❌ Init: ' + e.message, 'error'); 
+        return; 
+    }
+    
+    // ============================================================
+    // PRIORIDAD 1: Procesar OAuth callback PRIMERO (antes de limpiar nada)
+    // ============================================================
+    
+    // Verificar si hay tokens en el hash
+    var hash = window.location.hash;
+    var hasOAuthTokens = hash.indexOf('access_token') !== -1 || hash.indexOf('refresh_token') !== -1;
+    
+    if (hasOAuthTokens) {
+        logDiagnostic('🔍 Hash con tokens detectado, procesando OAuth...', 'info');
+        
         try {
-            db = supabase.createClient(SB_URL, SB_ANON_KEY);
-            logDiagnostic('✅ Supabase OK | v' + APP_VERSION, 'info');
-        } catch(e) { logDiagnostic('❌ Init failed: ' + e.message, 'error'); return; }
-        
-        // Limpiar hash OAuth
-        if (window.location.hash.indexOf('access_token') !== -1) {
-            window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
-        }
-        
-        // Auth state listener
-        db.auth.onAuthStateChange(async function(event, session) {
-            if (event === 'SIGNED_IN' && session && !currentUser) {
-                currentUser = session.user;
+            // Supabase lee el hash automáticamente
+            var sessionResult = await db.auth.getSession();
+            
+            if (sessionResult.data?.session) {
+                currentUser = sessionResult.data.session.user;
+                logDiagnostic('✅ OAuth login: ' + currentUser.email, 'info');
+                showToast('¡Bienvenido! 🎉');
+                
+                // ✅ AHORA sí limpiar el hash
+                window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+                
                 await createProfileAfterSignup(currentUser);
                 await initUserData();
-            }
-        });
-        
-        // OAuth Server Consent
-        var isOAuthFlow = await initOAuthConsent();
-        if (isOAuthFlow) return;
-        
-        // OAuth Client Callback
-        await handleOAuthCallback();
-        
-        // Regular session check
-        if (!currentUser) {
-            try {
-                var sessionResult = await db.auth.getSession();
-                if (sessionResult.data?.session) {
-                    currentUser = sessionResult.data.session.user;
-                    await initUserData();
+                return; // Salir, ya estamos logueados
+                
+            } else {
+                logDiagnostic('⚠️ getSession no devolvió sesión, intentando manual...', 'warn');
+                
+                // Fallback: parsear hash manualmente
+                var hashParams = new URLSearchParams(hash.substring(1));
+                var accessToken = hashParams.get('access_token');
+                var refreshToken = hashParams.get('refresh_token');
+                
+                if (accessToken) {
+                    var result = await db.auth.setSession({
+                        access_token: accessToken,
+                        refresh_token: refreshToken || ''
+                    });
+                    
+                    if (result.data?.session) {
+                        currentUser = result.data.session.user;
+                        showToast('¡Bienvenido! 🎉');
+                        window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+                        await createProfileAfterSignup(currentUser);
+                        await initUserData();
+                        return;
+                    }
                 }
-            } catch (e) { logDiagnostic('❌ Session check: ' + e.message, 'error'); }
+            }
+        } catch (e) {
+            logDiagnostic('❌ OAuth error: ' + e.message, 'error');
+        }
+    }
+    
+    // ============================================================
+    // PRIORIDAD 2: OAuth Server Consent (si no hubo tokens)
+    // ============================================================
+    
+    var isOAuthFlow = await initOAuthConsent();
+    if (isOAuthFlow) return;
+    
+    // ============================================================
+    // PRIORIDAD 3: Sesión normal (si no hubo OAuth)
+    // ============================================================
+    
+    // Auth state listener
+    db.auth.onAuthStateChange(async function(event, session) {
+        if (event === 'SIGNED_IN' && session && !currentUser) {
+            currentUser = session.user;
+            await createProfileAfterSignup(currentUser);
+            await initUserData();
+        }
+    });
+    
+    if (!currentUser) {
+        try {
+            var sessionResult = await db.auth.getSession();
+            if (sessionResult.data?.session) {
+                currentUser = sessionResult.data.session.user;
+                logDiagnostic('✅ Sesión existente: ' + currentUser.email, 'info');
+                await initUserData();
+            }
+        } catch (e) { 
+            logDiagnostic('❌ Session check: ' + e.message, 'error'); 
         }
     };
-
     // ============================================================
     // EVENT LISTENERS
     // ============================================================
