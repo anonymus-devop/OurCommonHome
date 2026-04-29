@@ -2,10 +2,12 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
+    <meta name="screen-orientation" content="auto">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
-    <title>Nuestro Hogar Común | Cota — OAuth Server</title>
-    <link rel="manifest" href="https://progressier.app/hQyav6ks3OF7F1YbtQ5s/progressier.json"/><script defer src="https://progressier.app/hQyav6ks3OF7F1YbtQ5s/script.js"></script>
+    <title>Nuestro Hogar Común | Cota</title>
+    <link rel="manifest" href="https://progressier.app/hQyav6ks3OF7F1YbtQ5s/progressier.json"/>
+    <script defer src="https://progressier.app/hQyav6ks3OF7F1YbtQ5s/script.js"></script>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -21,7 +23,7 @@
         .card { background: white; border-radius: 1.8rem; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
         .hidden { display: none !important; }
         #map { width: 100%; height: 360px; border-radius: 2rem; overflow: hidden; border: 3px solid white; box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
-        .tab-btn { color: #94a3b8; transition: all 0.2s; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        .tab-btn { color: #94a3b8; transition: all 0.2s; cursor: pointer; }
         .tab-active { color: var(--green) !important; }
         .tab-active svg { transform: scale(1.12); }
         .pulse { animation: pulse 2s infinite; }
@@ -53,7 +55,6 @@
         .toast { position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 0.75rem 1.5rem; border-radius: 999px; font-size: 0.8rem; font-weight: 600; z-index: 999; animation: toastIn 0.3s ease; white-space: nowrap; }
         @keyframes toastIn { from{opacity:0;transform:translateX(-50%) translateY(10px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
         .login-card { background: white; border-radius: 1.5rem; padding: 1.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-        .code-block { background:#0f172a; color:#22c55e; padding:1rem; border-radius:1rem; font-size:0.7rem; overflow-x:auto; font-family:monospace; }
         .avatar-fallback { background: linear-gradient(135deg, #16a34a, #22c55e); display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 1.2rem; }
         .owner-section { border-top: 2px solid #e2e8f0; padding-top: 1.5rem; margin-top: 1.5rem; }
         .owner-badge { background: linear-gradient(135deg, #7c3aed, #a855f7); color: white; }
@@ -67,150 +68,40 @@
         .post-admin { position: relative; }
         .post-admin .delete-btn { position: absolute; top: 0.5rem; right: 0.5rem; opacity: 0; transition: opacity 0.2s; }
         .post-admin:hover .delete-btn { opacity: 1; }
-        
-        /* OTP Styles */
         .otp-container { display: flex; gap: 0.5rem; justify-content: center; margin: 1.5rem 0; }
         .otp-input { width: 3rem; height: 3.5rem; text-align: center; font-size: 1.5rem; font-weight: 800; border: 2px solid #e2e8f0; border-radius: 1rem; background: #f8fafc; outline: none; transition: all 0.2s; }
         .otp-input:focus { border-color: #16a34a; background: #f0fdf4; transform: scale(1.05); }
         .otp-input.filled { border-color: #16a34a; background: #dcfce7; color: #15803d; }
         .otp-timer { font-size: 0.75rem; color: #94a3b8; font-weight: 600; }
         .otp-timer.expired { color: #ef4444; }
-        
-        /* OAuth Buttons */
         .oauth-divider { display: flex; align-items: center; gap: 1rem; margin: 1rem 0; color: #94a3b8; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
         .oauth-divider::before, .oauth-divider::after { content: ''; flex: 1; height: 1px; background: #e2e8f0; }
-        /* Fix para WebView de Oppo/ColorOS */
-        @supports (-webkit-touch-callout: none) {
-            .oauth-btn {
-                -webkit-appearance: none;
-                appearance: none;
-                display: flex !important;
-                visibility: visible !important;
-                opacity: 1 !important;
-                min-height: 48px; /* ColorOS requiere mínimo 48px touch target */
-            }
-            
-            .oauth-btn-google {
-                background: white !important;
-                border: 2px solid #e2e8f0 !important;
-                color: #374151 !important;
-            }
-        }
-        
-        /* Fix para WebView que oculta elementos con position fixed */
-        @supports (-webkit-overflow-scrolling: touch) {
-            #auth-screen {
-                position: fixed;
-                -webkit-transform: translateZ(0);
-                transform: translateZ(0);
-            }
-        }
-        
         .oauth-btn { width: 100%; padding: 1rem; border-radius: 1rem; border: 2px solid #e2e8f0; background: white; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.75rem; margin-bottom: 0.5rem; }
         .oauth-btn:active { transform: scale(0.97); }
         .oauth-btn-google { border-color: #e2e8f0; color: #374151; }
         .oauth-btn-google:hover { background: #f8fafc; }
-        .oauth-btn-apple { border-color: #111827; background: #111827; color: white; }
-        .oauth-btn-apple:active { background: #374151; }
-        
-        .method-selector { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
-        .method-btn { flex: 1; padding: 0.75rem; border-radius: 1rem; border: 2px solid #e2e8f0; background: white; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; color: #64748b; }
-        .method-btn.active { border-color: #16a34a; background: #f0fdf4; color: #16a34a; }
-        .method-btn:active { transform: scale(0.97); }
-        
-        .phone-input { direction: ltr; text-align: left; }
-        
-        .diagnostic-panel { background: linear-gradient(135deg, #fef3c7, #fffbeb); border: 2px solid #f59e0b; border-radius: 1rem; padding: 1rem; margin-bottom: 1rem; }
-        .diagnostic-panel h4 { color: #92400e; font-weight: 800; font-size: 0.85rem; margin-bottom: 0.5rem; }
-        .diagnostic-log { font-family: 'Courier New', monospace; font-size: 0.7rem; color: #78350f; background: #fffbeb; padding: 0.75rem; border-radius: 0.5rem; max-height: 200px; overflow-y: auto; line-height: 1.5; }
-        
-        /* OAuth Consent Screen Styles */
-        /* OAuth Consent Screen Styles - CORREGIDO */
+        .oauth-btn-github { border-color: #24292f; background: #24292f; color: white; }
+        .oauth-btn-github:active { background: #1a1e22; }
         .consent-screen { background: white; min-height: 100vh; padding: 2rem 1.5rem; }
         .consent-header { text-align: center; margin-bottom: 2rem; }
-        .consent-app-icon { 
-            width: 64px; 
-            height: 64px; 
-            border-radius: 1.5rem; 
-            background: linear-gradient(135deg, #16a34a, #22c55e); 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 2rem; 
-            margin: 0 auto 1rem; 
-        }
-        .consent-scopes { 
-            background: #f8fafc; 
-            border-radius: 1rem; 
-            padding: 1.25rem; 
-            margin: 1.5rem 0; 
-        }
-        .consent-scope-item { 
-            display: flex; 
-            align-items: center; 
-            gap: 0.75rem; 
-            padding: 0.75rem 0; 
-            border-bottom: 1px solid #e2e8f0; 
-        }
+        .consent-app-icon { width: 64px; height: 64px; border-radius: 1.5rem; background: linear-gradient(135deg, #16a34a, #22c55e); display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 1rem; }
+        .consent-scopes { background: #f8fafc; border-radius: 1rem; padding: 1.25rem; margin: 1.5rem 0; }
+        .consent-scope-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0; border-bottom: 1px solid #e2e8f0; }
         .consent-scope-item:last-child { border-bottom: none; }
-        .consent-scope-icon { 
-            width: 36px; 
-            height: 36px; 
-            border-radius: 0.75rem; 
-            background: #dcfce7; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 1rem; 
-            flex-shrink: 0; 
-        }
-        .consent-buttons { 
-            display: flex; 
-            gap: 0.75rem; 
-            margin-top: 2rem; 
-        }
+        .consent-scope-icon { width: 36px; height: 36px; border-radius: 0.75rem; background: #dcfce7; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+        .consent-buttons { display: flex; gap: 0.75rem; margin-top: 2rem; }
         .consent-buttons .btn-primary { flex: 1; }
-        .consent-buttons .btn-deny { 
-            flex: 1; 
-            background: white; 
-            color: #64748b; 
-            border: 2px solid #e2e8f0; 
-            border-radius: 1.5rem; 
-            font-weight: 700; 
-            padding: 1.1rem 2rem; 
-            font-size: 1rem; 
-            cursor: pointer; 
-            transition: all 0.15s; 
-        }
-        .consent-buttons .btn-deny:active { 
-            transform: scale(0.97); 
-            background: #f8fafc; 
-        }
-        .consent-user-info { 
-            display: flex; 
-            align-items: center; 
-            gap: 0.75rem; 
-            padding: 1rem; 
-            background: #f0fdf4; 
-            border-radius: 1rem; 
-            margin-bottom: 1.5rem; 
-        }
-        .consent-user-avatar { 
-            width: 40px; 
-            height: 40px; 
-            border-radius: 50%; 
-            background: linear-gradient(135deg, #16a34a, #22c55e); 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            color: white; 
-            font-weight: 800; 
-        }
+        .consent-buttons .btn-deny { flex: 1; background: white; color: #64748b; border: 2px solid #e2e8f0; border-radius: 1.5rem; font-weight: 700; padding: 1.1rem 2rem; font-size: 1rem; cursor: pointer; transition: all 0.15s; }
+        .consent-buttons .btn-deny:active { transform: scale(0.97); background: #f8fafc; }
+        .consent-user-info { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: #f0fdf4; border-radius: 1rem; margin-bottom: 1.5rem; }
+        .consent-user-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #16a34a, #22c55e); display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; }
+        .barra-progreso-container { width: 100%; height: 8px; background: #e2e8f0; border-radius: 999px; overflow: hidden; margin-top: 0.5rem; }
+        .barra-progreso-fill { height: 100%; background: linear-gradient(90deg, #16a34a, #22c55e); border-radius: 999px; transition: width 0.5s ease; }
     </style>
 </head>
 <body class="text-slate-900 pb-32">
 
-<!-- ==================== OAUTH CONSENT SCREEN (CORREGIDO) ==================== -->
+<!-- OAUTH CONSENT SCREEN -->
 <div id="oauth-consent-screen" class="consent-screen hidden">
     <div class="max-w-sm mx-auto pt-12">
         <div class="consent-header">
@@ -218,7 +109,6 @@
             <h2 class="text-2xl font-black mb-1" id="consent-app-name">App Solicitante</h2>
             <p class="text-sm text-slate-500">quiere acceder a tu cuenta de <b>Nuestro Hogar Común</b></p>
         </div>
-        
         <div class="consent-user-info" id="consent-user-info">
             <div class="consent-user-avatar" id="consent-user-avatar">?</div>
             <div>
@@ -226,20 +116,14 @@
                 <p class="text-xs text-slate-500" id="consent-user-email">email@ejemplo.com</p>
             </div>
         </div>
-        
         <div class="consent-scopes">
             <p class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Permisos solicitados</p>
-            <div id="consent-scopes-list">
-                <!-- Scopes rendered dynamically -->
-            </div>
+            <div id="consent-scopes-list"></div>
         </div>
-        
         <div id="consent-error" class="hidden bg-red-50 border border-red-200 rounded-xl p-3 mb-4">
             <p class="text-xs text-red-600 font-bold" id="consent-error-text"></p>
         </div>
-        
         <p class="text-xs text-slate-400 text-center mb-4">Puedes revocar este acceso en cualquier momento desde tu perfil.</p>
-        
         <div class="consent-buttons">
             <button type="button" class="btn-deny" id="btn-deny-oauth" disabled>Denegar</button>
             <button type="button" class="btn-primary" id="btn-approve-oauth" disabled>
@@ -249,20 +133,18 @@
     </div>
 </div>
 
-<!-- ==================== AUTH SCREEN ==================== -->
+<!-- AUTH SCREEN -->
 <div id="auth-screen" class="fixed inset-0 bg-[#F0F4F0] z-[100] flex flex-col items-center justify-center p-6 overflow-y-auto">
     <div class="w-28 h-28 bg-green-50 rounded-[2.5rem] mb-6 flex items-center justify-center text-6xl shadow-inner">🌿</div>
     <h1 class="text-3xl font-black mb-2 tracking-tight">Nuestro Hogar Común</h1>
     <p class="text-slate-500 font-medium text-sm mb-2 text-center max-w-xs">Comunidad ecológica de Cota. Retos, mapa y muro verde.</p>
-    <p id="version-tag" class="text-[10px] text-slate-400 font-mono mb-4">v2.3.0-OAuthServer</p>
+    <p id="version-tag" class="text-[10px] text-slate-400 font-mono mb-4">v2.4.1-OAuthFix</p>
     
-    <!-- OTP VERIFICATION SCREEN -->
     <div id="otp-screen" class="hidden w-full max-w-sm">
         <div class="login-card text-center">
             <div class="w-16 h-16 bg-blue-50 rounded-2xl mx-auto mb-4 flex items-center justify-center text-3xl">🔐</div>
             <h2 class="text-xl font-black mb-2">Verificación OTP</h2>
-            <p class="text-sm text-slate-500 mb-4">Ingresa el código de 6 dígitos enviado a <b id="otp-target"></b></p>
-            
+            <p class="text-sm text-slate-500 mb-4">Ingresa el código enviado a <b id="otp-target"></b></p>
             <div class="otp-container" id="otp-inputs">
                 <input type="text" maxlength="1" class="otp-input" data-index="0" inputmode="numeric" autocomplete="one-time-code">
                 <input type="text" maxlength="1" class="otp-input" data-index="1" inputmode="numeric">
@@ -271,16 +153,13 @@
                 <input type="text" maxlength="1" class="otp-input" data-index="4" inputmode="numeric">
                 <input type="text" maxlength="1" class="otp-input" data-index="5" inputmode="numeric">
             </div>
-            
             <p class="otp-timer mb-4" id="otp-timer">Reenviar código en 60s</p>
-            
             <button class="btn-primary mb-3" onclick="verifyOTP()" id="verify-otp-btn">Verificar</button>
             <button onclick="resendOTP()" class="w-full text-sm text-slate-400 font-bold mb-3" id="resend-otp-btn" disabled>Reenviar código</button>
             <button onclick="cancelOTP()" class="w-full text-xs text-red-400 font-bold">Cancelar</button>
         </div>
     </div>
     
-    <!-- DIAGNOSTIC PANEL -->
     <div id="diagnostic-panel" class="diagnostic-panel hidden w-full max-w-sm">
         <h4>🔧 Diagnóstico de Conexión</h4>
         <div id="diagnostic-log" class="diagnostic-log"></div>
@@ -290,34 +169,21 @@
         </div>
     </div>
     
-    <!-- MAIN AUTH FORM -->
     <div id="auth-form" class="login-card w-full max-w-sm space-y-3">
-        
-        <!-- OAUTH BUTTONS -->
         <button class="oauth-btn oauth-btn-google" onclick="signInWithOAuth('google')">
             <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
             Continuar con Google
         </button>
         
-        <button class="oauth-btn oauth-btn-apple" onclick="signInWithOAuth('apple')">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.21-1.98 1.08-3.11-1.05.05-2.31.7-3.06 1.55-.68.78-1.27 2.02-1.11 3.12 1.18.09 2.38-.6 3.09-1.56"/></svg>
-            Continuar con Apple
+        <button class="oauth-btn oauth-btn-github" onclick="signInWithOAuth('github')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+            Continuar con GitHub
         </button>
         
         <div class="oauth-divider">o usa email</div>
         
         <input id="auth-email" type="email" placeholder="Email" class="input-field" value="raulortiz11@gmail.com">
         <input id="auth-pass" type="password" placeholder="Contraseña (mín. 6 caracteres)" class="input-field" value="Diciembre07">
-        
-        <div id="phone-section" class="hidden">
-            <input id="auth-phone" type="tel" placeholder="+57 300 123 4567" class="input-field phone-input">
-            <p class="text-[10px] text-slate-400 px-1">Incluye código de país (ej: +57 para Colombia)</p>
-        </div>
-        
-        <div class="method-selector">
-            <button class="method-btn active" onclick="setAuthMethod('email')" id="method-email">📧 Email</button>
-            <button class="method-btn" onclick="setAuthMethod('sms')" id="method-sms">📱 SMS</button>
-        </div>
         
         <button class="btn-primary" onclick="login()">Entrar</button>
         <button class="btn-primary" style="background:#16a34a;" onclick="register()">Crear cuenta</button>
@@ -340,7 +206,7 @@
     <button onclick="toggleGuide()" class="mt-6 text-xs font-bold text-slate-400 uppercase tracking-widest">Guía Supabase ⚙️</button>
 </div>
 
-<!-- ==================== PROFILE SETUP ==================== -->
+<!-- PROFILE SETUP -->
 <div id="profile-setup" class="fixed inset-0 bg-white z-[100] flex flex-col hidden">
     <div class="flex-1 flex flex-col items-center justify-center px-8 text-center">
         <div class="w-28 h-28 bg-green-50 rounded-[2.5rem] mb-8 flex items-center justify-center text-6xl shadow-inner">👤</div>
@@ -358,7 +224,7 @@
     </div>
 </div>
 
-<!-- ==================== MAIN APP ==================== -->
+<!-- MAIN APP -->
 <div id="main-app" class="hidden">
     <header class="pt-12 pb-4 px-6 sticky top-0 bg-[#F0F4F0]/92 backdrop-blur-md z-30 flex justify-between items-center">
         <div>
@@ -374,11 +240,12 @@
     <main class="px-5 space-y-0">
         <div id="view-home" class="tab-view space-y-5">
             <div class="bg-gradient-to-br from-green-600 to-emerald-800 p-7 rounded-[2rem] text-white shadow-lg">
-                <p class="text-[10px] font-black opacity-75 uppercase tracking-widest mb-1">CO₂ Evitado · Comunidad Cota</p>
+                <p class="text-[10px] font-black opacity-75 uppercase tracking-widest mb-1" id="co2-label">Mi impacto · CO₂ ahorado</p>
                 <div class="flex items-baseline gap-2">
                     <span id="co2-total" class="text-5xl font-black tracking-tight">0.0</span>
                     <span class="font-bold text-lg text-green-200">kg</span>
                 </div>
+                <p id="puntos-banner" class="text-sm font-bold text-green-200 mt-1 hidden">⭐ 0 puntos</p>
                 <div class="mt-4 grid grid-cols-2 gap-3">
                     <div class="bg-white/15 rounded-xl p-3 text-center">
                         <p id="home-actions-count" class="text-xl font-black">0</p>
@@ -492,18 +359,43 @@
                 </div>
                 <h3 id="p-name" class="text-xl font-black">—</h3>
                 <p id="p-tag" class="text-green-600 font-bold text-sm mb-4">@usuario</p>
-                <div class="grid grid-cols-3 gap-2 text-center">
-                    <div class="bg-green-50 rounded-xl p-3">
-                        <p id="p-co2" class="text-lg font-black text-green-700">0</p>
-                        <p class="text-[9px] font-black text-green-500 uppercase">kg CO₂</p>
+                
+                <div class="space-y-3">
+                    <div class="bg-green-50 rounded-xl p-3 flex items-center gap-3">
+                        <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center text-xl">🌍</div>
+                        <div class="text-left">
+                            <p id="p-co2" class="text-xl font-black text-green-700">0.0</p>
+                            <p class="text-[9px] font-black text-green-500 uppercase">kg CO₂ ahorados</p>
+                        </div>
                     </div>
-                    <div class="bg-slate-50 rounded-xl p-3">
-                        <p id="p-posts" class="text-lg font-black text-slate-700">0</p>
-                        <p class="text-[9px] font-black text-slate-400 uppercase">Posts</p>
+                    
+                    <div class="bg-blue-50 rounded-xl p-3 flex items-center gap-3">
+                        <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-xl">⭐</div>
+                        <div class="text-left">
+                            <p id="p-puntos" class="text-xl font-black text-blue-700">0</p>
+                            <p class="text-[9px] font-black text-blue-500 uppercase">puntos totales</p>
+                        </div>
                     </div>
+                    
+                    <div class="bg-purple-50 rounded-xl p-3 flex items-center gap-3">
+                        <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center text-xl">🎯</div>
+                        <div class="text-left">
+                            <p id="p-retos" class="text-xl font-black text-purple-700">0</p>
+                            <p class="text-[9px] font-black text-purple-500 uppercase">retos completados</p>
+                        </div>
+                    </div>
+                    
                     <div class="bg-amber-50 rounded-xl p-3">
-                        <p id="p-nivel" class="text-lg font-black text-amber-700">1</p>
-                        <p class="text-[9px] font-black text-amber-500 uppercase">Nivel</p>
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="flex items-center gap-2">
+                                <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center text-lg">🏆</div>
+                                <p class="text-xs font-black text-amber-600">NIVEL <span id="p-nivel">1</span></p>
+                            </div>
+                            <p class="text-[10px] font-bold text-amber-500"><span id="p-progreso">0</span>/<span id="p-sig-nivel">100</span> pts</p>
+                        </div>
+                        <div class="barra-progreso-container">
+                            <div id="barra-progreso" class="barra-progreso-fill" style="width: 0%"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -513,29 +405,19 @@
 
     <nav class="fixed bottom-0 left-0 right-0 h-24 glass flex items-center justify-around px-2 z-40 pb-4">
         <button onclick="changeTab('home', this)" class="tab-btn tab-active flex flex-col items-center flex-1 py-2 gap-1">
-            <svg class="w-6 h-6 transition-transform" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z"/>
-                <path d="M12 5.432l8.159 8.159c.03.03.061.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198c.03-.028.061-.056.091-.086L12 5.43z"/>
-            </svg>
+            <svg class="w-6 h-6 transition-transform" fill="currentColor" viewBox="0 0 24 24"><path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z"/><path d="M12 5.432l8.159 8.159c.03.03.061.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198c.03-.028.061-.056.091-.086L12 5.43z"/></svg>
             <span class="text-[9px] font-black uppercase tracking-tight">Inicio</span>
         </button>
         <button onclick="changeTab('map', this)" class="tab-btn flex flex-col items-center flex-1 py-2 gap-1">
-            <svg class="w-6 h-6 transition-transform" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-                <path d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
-                <path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/>
-            </svg>
+            <svg class="w-6 h-6 transition-transform" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
             <span class="text-[9px] font-black uppercase tracking-tight">Mapa</span>
         </button>
         <button onclick="changeTab('community', this)" class="tab-btn flex flex-col items-center flex-1 py-2 gap-1">
-            <svg class="w-6 h-6 transition-transform" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-                <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
-            </svg>
+            <svg class="w-6 h-6 transition-transform" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
             <span class="text-[9px] font-black uppercase tracking-tight">Muro</span>
         </button>
         <button onclick="changeTab('profile', this)" class="tab-btn flex flex-col items-center flex-1 py-2 gap-1">
-            <svg class="w-6 h-6 transition-transform" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-                <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-            </svg>
+            <svg class="w-6 h-6 transition-transform" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
             <span class="text-[9px] font-black uppercase tracking-tight">Perfil</span>
         </button>
     </nav>
@@ -573,11 +455,10 @@
             <button onclick="toggleGuide()" class="text-slate-400 font-bold text-sm p-2">Cerrar</button>
         </div>
         <div class="space-y-3 text-sm">
-            <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">OAuth Server</p><p>Tu app es ahora un Authorization Server OAuth 2.1. Terceros pueden usar "Sign in with Nuestro Hogar Común".</p></div>
-            <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">Google OAuth</p><p>Dashboard → Auth → Providers → Google. Client ID + Secret desde Google Cloud Console.</p></div>
-            <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">Apple OAuth</p><p>Dashboard → Auth → Providers → Apple. Service ID + Private Key desde Apple Developer.</p></div>
-            <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">OTP Email</p><p>Funciona sin configuración extra. Supabase envía el código automáticamente.</p></div>
-            <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">OTP SMS</p><p>Configura Twilio/MessageBird en Dashboard → Auth → Providers → Phone</p></div>
+            <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">OAuth Server</p><p>Tu app es ahora un Authorization Server OAuth 2.1.</p></div>
+            <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">Google OAuth</p><p>Dashboard → Auth → Providers → Google.</p></div>
+            <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">GitHub OAuth</p><p>Dashboard → Auth → Providers → GitHub.</p></div>
+            <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">Retos</p><p>Se suman puntos, nivel y CO₂ al completar.</p></div>
         </div>
     </div>
 </div>
@@ -586,7 +467,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const APP_VERSION = '2.3.1-Fixed';
+    const APP_VERSION = '2.4.1-OAuthFix';
     const SITE_URL = 'https://anonymus-devop.github.io/OurCommonHome/';
     
     const MAPBOX_TOKEN = 'pk.eyJ1IjoiamVyaXhkZXZlbG9waW5naSIsImEiOiJjbWhiZHU0YngxNjF2MmtwdXAxaWtydjR5In0.0Xx724Epn3x3nJ8hAYC1dA';
@@ -600,197 +481,26 @@
     let adminLogs = [];
     let diagnosticLogs = [];
     let pendingEmail = null;
-    let pendingPhone = null;
-    let authMethod = 'email';
     let otpTimerInterval = null;
-    
-    // OAuth Server state
     let oauthAuthorizationId = null;
     let oauthClientInfo = null;
 
     const COLLECTION_POINTS = [
-        { name: 'Centro de Acopio Municipal', coords: [-74.1086, 4.8105], type: 'municipal', color: '#16a34a', desc: 'Cra. 3 #5-20, Cota. Lun–Vie 8am–5pm' },
+        { name: 'Centro de Acopio Municipal', coords: [-74.1086, 4.8105], type: 'municipal', color: '#16a34a', desc: 'Cra. 3 #5-20, Cota. Lun-Vie 8am-5pm' },
         { name: 'Punto Verde Parque Principal', coords: [-74.1072, 4.8118], type: 'verde', color: '#3b82f6', desc: 'Parque Principal de Cota. Todos los días' },
-        { name: 'Punto Verde La Moya', coords: [-74.1142, 4.8065], type: 'verde', color: '#3b82f6', desc: 'Barrio La Moya, Cota. Mar–Sáb 9am–4pm' },
-        { name: 'Punto RAEE (Electrónicos)', coords: [-74.1058, 4.8132], type: 'raee', color: '#f59e0b', desc: 'Biblioteca Municipal. Lun–Vie 8am–6pm' },
-        { name: 'Centro de Acopio Rozo', coords: [-74.1115, 4.8088], type: 'municipal', color: '#16a34a', desc: 'Vereda Rozo, Cota. Jue y Sáb 7am–1pm' },
+        { name: 'Punto Verde La Moya', coords: [-74.1142, 4.8065], type: 'verde', color: '#3b82f6', desc: 'Barrio La Moya, Cota. Mar-Sáb 9am-4pm' },
+        { name: 'Punto RAEE (Electrónicos)', coords: [-74.1058, 4.8132], type: 'raee', color: '#f59e0b', desc: 'Biblioteca Municipal. Lun-Vie 8am-6pm' },
+        { name: 'Centro de Acopio Rozo', coords: [-74.1115, 4.8088], type: 'municipal', color: '#16a34a', desc: 'Vereda Rozo, Cota. Jue y Sáb 7am-1pm' },
         { name: 'Punto Verde Siberia', coords: [-74.1023, 4.8155], type: 'verde', color: '#3b82f6', desc: 'Vía Siberia, cerca al portón. 24 horas' },
     ];
 
     // ============================================================
-    // OAUTH SERVER: CONSENT SCREEN (CORREGIDO)
+    // FUNCIONES GLOBALES (expuestas a window para onclick inline)
     // ============================================================
     
-    async function initOAuthConsent() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const authId = urlParams.get('authorization_id');
-        
-        if (!authId) return false;
-        
-        oauthAuthorizationId = authId;
-        logDiagnostic('🔐 OAuth consent iniciado: ' + authId, 'info');
-        
-        try {
-            const { data: { session } } = await db.auth.getSession();
-            
-            if (!session) {
-                logDiagnostic('ℹ️ Usuario no autenticado, guardando auth_id', 'info');
-                sessionStorage.setItem('pending_oauth_auth_id', authId);
-                showToast('Inicia sesión para autorizar la aplicación');
-                return false;
-            }
-            
-            currentUser = session.user;
-            
-            const { data, error } = await db.auth.oauth.getAuthorizationDetails(authId);
-            
-            if (error) throw new Error('getAuthorizationDetails: ' + error.message);
-            if (!data) throw new Error('No se recibieron datos de autorización');
-            
-            oauthClientInfo = data;
-            logDiagnostic('✅ Cliente OAuth: ' + (data.client?.name || 'Unknown'), 'info');
-            
-            renderConsentScreen(data, session.user);
-            return true;
-            
-        } catch (e) {
-            logDiagnostic('❌ OAuth consent exc: ' + e.message, 'error');
-            showConsentError(e.message);
-            return true;
-        }
-    }
-    
-    function renderConsentScreen(details, user) {
-        document.getElementById('auth-screen').classList.add('hidden');
-        document.getElementById('main-app').classList.add('hidden');
-        document.getElementById('profile-setup').classList.add('hidden');
-        document.getElementById('oauth-consent-screen').classList.remove('hidden');
-        
-        document.getElementById('consent-app-name').innerText = details.client?.name || 'Aplicación externa';
-        document.getElementById('consent-app-icon').innerText = details.client?.icon || '🔐';
-        
-        const userName = user.user_metadata?.full_name || 
-                         user.user_metadata?.name || 
-                         user.email?.split('@')[0] || 
-                         'Usuario';
-        document.getElementById('consent-user-name').innerText = userName;
-        document.getElementById('consent-user-email').innerText = user.email || '';
-        document.getElementById('consent-user-avatar').innerText = userName.charAt(0).toUpperCase();
-        
-        const scopesList = document.getElementById('consent-scopes-list');
-        const scopeString = details.scope || '';
-        const scopes = scopeString.split(' ').filter(s => s.trim());
-        
-        if (scopes.length === 0) {
-            scopes.push('openid', 'email', 'profile');
-        }
-        
-        const scopeLabels = {
-            'openid': { icon: '🔓', label: 'Identidad básica', desc: 'Acceso a tu ID de usuario' },
-            'email': { icon: '📧', label: 'Correo electrónico', desc: 'Ver tu dirección de email' },
-            'profile': { icon: '👤', label: 'Perfil', desc: 'Ver tu nombre y foto de perfil' },
-            'phone': { icon: '📱', label: 'Teléfono', desc: 'Ver tu número de teléfono' }
-        };
-        
-        scopesList.innerHTML = scopes.map(scope => {
-            const info = scopeLabels[scope] || { icon: '🔒', label: scope, desc: 'Acceso solicitado' };
-            return '<div class=\"consent-scope-item\">' +
-                '<div class=\"consent-scope-icon\">' + info.icon + '</div>' +
-                '<div>' +
-                    '<p class=\"font-bold text-sm text-slate-800\">' + info.label + '</p>' +
-                    '<p class=\"text-xs text-slate-500\">' + info.desc + '</p>' +
-                '</div>' +
-            '</div>';
-        }).join('');
-    }
-
-    function showConsentError(message) {
-        const errorDiv = document.getElementById('consent-error');
-        const errorText = document.getElementById('consent-error-text');
-        if (errorDiv && errorText) {
-            errorText.innerText = message;
-            errorDiv.classList.remove('hidden');
-        }
-    }
-
-    async function approveOAuthConsent() {
-        if (!oauthAuthorizationId) {
-            showToast('Error: No hay autorización pendiente');
-            return;
-        }
-        
-        const btn = document.getElementById('btn-approve-oauth');
-        if (btn) {
-            btn.disabled = true;
-            document.getElementById('btn-approve-text').innerText = 'Autorizando...';
-        }
-        
-        logDiagnostic('✅ Usuario aprobó OAuth consent', 'info');
-        
-        try {
-            const { data, error } = await db.auth.oauth.approveAuthorization(oauthAuthorizationId);
-            
-            if (error) throw new Error(error.message);
-            if (!data?.redirect_to) throw new Error('No redirect URL received');
-            
-            logDiagnostic('🔄 Redirecting to: ' + data.redirect_to, 'info');
-            window.location.href = data.redirect_to;
-            
-        } catch (e) {
-            logDiagnostic('❌ approveAuthorization: ' + e.message, 'error');
-            showConsentError('Error al autorizar: ' + e.message);
-            if (btn) {
-                btn.disabled = false;
-                document.getElementById('btn-approve-text').innerText = 'Permitir acceso';
-            }
-        }
-    }
-
-    async function denyOAuthConsent() {
-        if (!oauthAuthorizationId) {
-            document.getElementById('oauth-consent-screen').classList.add('hidden');
-            document.getElementById('auth-screen').classList.remove('hidden');
-            return;
-        }
-        
-        logDiagnostic('❌ Usuario denegó OAuth consent', 'info');
-        
-        try {
-            const { data, error } = await db.auth.oauth.denyAuthorization(oauthAuthorizationId);
-            
-            if (data?.redirect_to) {
-                window.location.href = data.redirect_to;
-            } else {
-                document.getElementById('oauth-consent-screen').classList.add('hidden');
-                document.getElementById('auth-screen').classList.remove('hidden');
-                showToast('Acceso denegado');
-            }
-        } catch (e) {
-            document.getElementById('oauth-consent-screen').classList.add('hidden');
-            document.getElementById('auth-screen').classList.remove('hidden');
-        }
-    }
-
-    async function resumeOAuthAfterLogin() {
-        const pendingAuthId = sessionStorage.getItem('pending_oauth_auth_id');
-        if (!pendingAuthId) return;
-        
-        sessionStorage.removeItem('pending_oauth_auth_id');
-        logDiagnostic('🔄 Reanudando OAuth después de login: ' + pendingAuthId, 'info');
-        
-        const url = new URL(window.location.href);
-        url.searchParams.set('authorization_id', pendingAuthId);
-        window.history.replaceState({}, '', url);
-        
-        await initOAuthConsent();
-    }
-
-    // ============================================================
-    // OAUTH CLIENT: LOGIN WITH GOOGLE/APPLE
-    // ============================================================
-    
-    async function signInWithOAuth(provider) {
-        logDiagnostic('🔐 OAuth ' + provider + ' iniciado...', 'info');
+    // OAUTH CLIENT - Google / GitHub
+    window.signInWithOAuth = async function(provider) {
+        console.log("🔐 OAuth iniciado:", provider);
         showToast('Conectando con ' + provider + '...');
         
         try {
@@ -806,8 +516,8 @@
             });
             
             if (error) {
-                logDiagnostic('❌ OAuth ' + provider + ': ' + error.message, 'error');
-                alert('Error con ' + provider + ': ' + error.message);
+                console.error('❌ OAuth error:', error.message);
+                showToast('Error: ' + error.message);
                 return;
             }
             
@@ -816,78 +526,387 @@
             }
             
         } catch (e) {
-            logDiagnostic('❌ OAuth ' + provider + ' exc: ' + e.message, 'error');
-            alert('Error: ' + e.message);
+            console.error('❌ OAuth exc:', e.message);
+            showToast('Error: ' + e.message);
         }
-    }
+    };
 
-    async function handleOAuthCallback() {
-        const hash = window.location.hash;
-        const query = new URLSearchParams(window.location.search);
-        
-        if (hash.includes('access_token') || hash.includes('refresh_token') || 
-            query.get('code') || window.location.pathname.includes('/auth/callback')) {
-            
-            logDiagnostic('🔍 OAuth callback detectado', 'info');
-            
-            try {
-                const { data: { session }, error } = await db.auth.getSession();
-                
-                if (error) {
-                    logDiagnostic('❌ OAuth callback error: ' + error.message, 'error');
-                    return;
-                }
-                
-                if (session) {
-                    currentUser = session.user;
-                    logDiagnostic('✅ OAuth login: ' + session.user.email, 'info');
-                    showToast('¡Bienvenido! 🎉');
-                    
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                    
-                    await createProfileAfterSignup(currentUser);
-                    
-                    const pendingAuthId = sessionStorage.getItem('pending_oauth_auth_id');
-                    if (pendingAuthId) {
-                        await resumeOAuthAfterLogin();
-                    } else {
-                        await initUserData();
-                    }
-                }
-            } catch (e) {
-                logDiagnostic('❌ OAuth callback exc: ' + e.message, 'error');
+    // LOGIN
+    window.login = async function() {
+        const email = document.getElementById('auth-email').value.trim();
+        const pass = document.getElementById('auth-pass').value;
+        if (!email || !pass) { showToast('Completa email y contraseña'); return; }
+
+        logDiagnostic('🔑 Login: ' + email, 'info');
+        try {
+            const { data, error } = await db.auth.signInWithPassword({ email, password: pass });
+            if (error) { alert(error.message); return; }
+            currentUser = data.user;
+            const pendingAuthId = sessionStorage.getItem('pending_oauth_auth_id');
+            if (pendingAuthId) await resumeOAuthAfterLogin();
+            else await initUserData();
+        } catch (e) { alert('Error: ' + e.message); }
+    };
+
+    // REGISTER
+    window.register = async function() {
+        const email = document.getElementById('auth-email').value.trim();
+        const pass = document.getElementById('auth-pass').value;
+        if (!email || !pass) { showToast('Completa email y contraseña'); return; }
+        if (pass.length < 6) { alert('Mínimo 6 caracteres'); return; }
+
+        logDiagnostic('📝 Registro: ' + email, 'info');
+        pendingEmail = email;
+
+        try {
+            const { data: loginData } = await db.auth.signInWithPassword({ email, password: pass });
+            if (loginData?.user) { currentUser = loginData.user; showToast('¡Bienvenido! 👋'); await initUserData(); return; }
+        } catch (e) {}
+
+        try {
+            const { data, error } = await db.auth.signUp({ email, password: pass, options: { data: { name: '' } } });
+            if (error) { alert('Error: ' + error.message); return; }
+            if (data?.user && !data?.session) { showOTPScreen(email); }
+            else if (data?.session) { currentUser = data.user; await createProfileAfterSignup(data.user); await initUserData(); }
+        } catch (e) { alert('Error: ' + e.message); }
+    };
+
+    // OTP
+    window.verifyOTP = async function() {
+        const inputs = document.querySelectorAll('.otp-input');
+        const code = Array.from(inputs).map(i => i.value).join('');
+        if (code.length !== 6) { showToast('Ingresa los 6 dígitos'); return; }
+
+        try {
+            const result = await db.auth.verifyOtp({ email: pendingEmail, token: code, type: 'signup' });
+            if (result.error) {
+                alert('Código incorrecto'); inputs.forEach(i => { i.value = ''; i.classList.remove('filled'); }); inputs[0].focus(); return;
             }
+            currentUser = result.data.user;
+            hideOTPScreen();
+            await createProfileAfterSignup(currentUser);
+            await initUserData();
+        } catch (e) { alert('Error: ' + e.message); }
+    };
+
+    window.resendOTP = async function() {
+        try {
+            await db.auth.resend({ type: 'signup', email: pendingEmail });
+            showToast('Código reenviado 📩'); startOTPTimer();
+        } catch (e) { alert('Error: ' + e.message); }
+    };
+
+    window.cancelOTP = function() { hideOTPScreen(); };
+
+    // OWNER
+    window.loginOwner = async function() {
+        const email = document.getElementById('owner-email').value;
+        const pass = document.getElementById('owner-pass').value;
+        const masterKey = document.getElementById('owner-master-key').value;
+        if (!email || !pass || !masterKey) { alert('Completa todos los campos'); return; }
+        if (masterKey !== MASTER_OWNER_KEY) { alert('❌ Master Key incorrecta'); return; }
+        
+        try {
+            const { data, error } = await db.auth.signInWithPassword({ email, password: pass });
+            if (error) throw error;
+            currentUser = data.user;
+            const { data: profile } = await db.from('profiles').select('role, name').eq('id', currentUser.id).single();
+            if (profile?.role === 'owner') {
+                isOwner = true; localStorage.setItem('is_owner', 'true'); localStorage.setItem('user_real_name', profile.name || 'Owner');
+                addLog('Owner login', email); showToast('Bienvenido Owner 👑'); enterApp();
+            } else { await db.auth.signOut(); currentUser = null; alert('❌ No tienes permisos'); }
+        } catch (e) { alert('Error: ' + e.message); }
+    };
+
+    window.logout = async function() {
+        addLog('Logout', currentUser?.email || 'unknown');
+        await db.auth.signOut(); localStorage.clear(); currentUser = null; isOwner = false; location.reload();
+    };
+
+    // PROFILE SETUP
+    window.saveProfileSetup = async function() {
+        const name = document.getElementById('setup-name').value.trim();
+        const rawTag = document.getElementById('setup-tag').value.trim().replace('@', '').replace(/\s+/g, '_').toLowerCase();
+        if (!name || !rawTag) { showToast('Completa nombre y usuario'); return; }
+        if (!currentUser) { showToast('Error: No hay sesión'); return; }
+        
+        try {
+            const { error } = await db.from('profiles').update({ name: name, updated_at: new Date().toISOString() }).eq('id', currentUser.id);
+            if (error) { showToast('Error: ' + error.message); return; }
+            localStorage.setItem('user_real_name', name);
+            localStorage.setItem('user_unique_tag', '@' + rawTag);
+            document.getElementById('profile-setup').classList.add('hidden');
+            enterApp();
+        } catch (e) { showToast('Error de conexión'); }
+    };
+
+    window.skipProfileSetup = function() {
+        if (!currentUser) return;
+        const defaultName = currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || currentUser.email.split('@')[0];
+        localStorage.setItem('user_real_name', defaultName);
+        localStorage.setItem('user_unique_tag', defaultName.toLowerCase());
+        document.getElementById('profile-setup').classList.add('hidden');
+        enterApp();
+    };
+
+    // TABS
+    window.changeTab = function(tabId, el) {
+        document.querySelectorAll('.tab-view').forEach(v => v.classList.add('hidden'));
+        document.getElementById('view-' + tabId).classList.remove('hidden');
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
+        if (el) el.classList.add('tab-active');
+        document.getElementById('section-label').innerText = TAB_META[tabId].label;
+        document.getElementById('view-title').innerText = TAB_META[tabId].title;
+        if (tabId === 'map' && !map) initMap();
+        if (tabId === 'community') loadMuro();
+        if (tabId === 'profile') loadProfileStats();
+        if (tabId === 'admin') loadAdminPanel();
+        window.scrollTo(0, 0);
+    };
+
+    // RETOS
+    window.completarReto = async function(accionId, co2) {
+        if (!currentUser) { showToast('Inicia sesión para completar retos'); return; }
+        
+        var puntos = Math.round(co2 * 2);
+        showToast('+' + puntos + ' pts 🌿');
+        
+        try {
+            var result = await db.from('user_acciones').insert({
+                user_id: currentUser.id,
+                accion_id: accionId,
+                impacto_co2: co2,
+                puntos_ganados: puntos
+            });
+            
+            if (result.error) {
+                if (result.error.code === '23505') { showToast('¡Ya completaste este reto! 🎉'); return; }
+                throw result.error;
+            }
+            
+            showToast('¡Reto completado! +' + puntos + ' pts 🎉');
+            addLog('Reto completado', accionId);
+            setTimeout(() => { loadHomeData(); loadProfileStats(); }, 500);
+            
+        } catch (e) {
+            console.error('completarReto error:', e);
+            showToast('Error: ' + e.message);
         }
-    }
+    };
+
+    // COMMUNITY
+    window.postToCommunity = async function() {
+        var msg = document.getElementById('c-mensaje').value.trim();
+        var name = localStorage.getItem('user_real_name') || 'Anónimo';
+        if (!msg) { showToast('Escribe algo antes de publicar'); return; }
+        var payload = { autor: name, mensaje: msg };
+        if (capturedPhotoData) payload.foto_url = capturedPhotoData;
+        try {
+            var result = await db.from('comunidad').insert([payload]);
+            if (result.error) throw result.error;
+            addLog('New post', msg.slice(0, 30) + '...');
+            showToast('¡Publicado en el muro! 🌿');
+        } catch(e) { showToast('Publicado localmente (sin conexión)'); }
+        document.getElementById('c-mensaje').value = '';
+        capturedPhotoData = null;
+        loadMuro();
+    };
+
+    // CAMERA
+    window.openCamera = async function() { cameraMode = 'post'; document.getElementById('cam-title').innerText = 'Foto para el Muro'; startCamera(); };
+    window.openCameraForAvatar = async function() { cameraMode = 'avatar'; document.getElementById('cam-title').innerText = 'Foto de Perfil'; startCamera(); };
+    window.capturePhoto = function() {
+        var video = document.getElementById('camera-video');
+        var canvas = document.getElementById('canvas-hidden');
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 480;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        var dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        document.getElementById('canvas-preview').src = dataUrl;
+        document.getElementById('canvas-preview').style.display = 'block';
+        document.getElementById('camera-video').style.display = 'none';
+        document.getElementById('camera-controls').classList.add('hidden');
+        document.getElementById('photo-actions').classList.remove('hidden');
+        stopCamera();
+    };
+    window.usePhoto = async function() {
+        var dataUrl = document.getElementById('canvas-preview').src;
+        if (cameraMode === 'avatar') {
+            if (currentUser) {
+                var blob = await (await fetch(dataUrl)).blob();
+                var path = 'avatars/' + currentUser.id + '.jpg';
+                await db.storage.from('avatars').upload(path, blob, { upsert: true });
+                var result = db.storage.from('avatars').getPublicUrl(path);
+                await db.from('profiles').update({ avatar_url: result.data.publicUrl }).eq('id', currentUser.id);
+                updateAvatar(result.data.publicUrl, (localStorage.getItem('user_real_name') || '?').charAt(0).toUpperCase());
+                showToast('Foto de perfil actualizada 📸');
+            }
+        } else { capturedPhotoData = dataUrl; showToast('Foto lista para publicar 📸'); }
+        closeCamera();
+    };
+    window.retakePhoto = function() { capturedPhotoData = null; startCamera(); };
+    window.closeCamera = function(e) { if (e && e.target !== document.getElementById('camera-modal')) return; stopCamera(); document.getElementById('camera-modal').classList.add('hidden'); };
+
+    // ADMIN
+    window.showAdminSection = function(section) {
+        document.querySelectorAll('.admin-section').forEach(s => s.classList.add('hidden'));
+        document.getElementById('admin-section-' + section).classList.remove('hidden');
+        document.querySelectorAll('[id^="admin-tab-"]').forEach(b => b.style.opacity = '0.6');
+        document.getElementById('admin-tab-' + section).style.opacity = '1';
+    };
+    window.makeOwner = async function(id) { if (!confirm('¿Promover a Owner?')) return; await db.from('profiles').update({ role: 'owner' }).eq('id', id); addLog('Promoted to owner', id); showToast('Usuario promovido 👑'); loadUsers(); };
+    window.deleteUser = async function(id) { if (!confirm('¿Eliminar usuario?')) return; await db.from('profiles').update({ role: 'deleted', name: '[Eliminado]' }).eq('id', id); addLog('User deleted', id); showToast('Usuario eliminado'); loadUsers(); };
+    window.deletePost = async function(id) { if (!confirm('¿Eliminar esta publicación?')) return; await db.from('comunidad').delete().eq('id', id); addLog('Post deleted', id); showToast('Publicación eliminada 🗑️'); loadAdminPosts(); loadMuro(); };
+
+    // MODALS
+    window.toggleGuide = function(e) { if (e && e.target !== document.getElementById('guide-modal')) return; document.getElementById('guide-modal').classList.toggle('hidden'); };
+    window.runDiagnostics = async function() {
+        diagnosticLogs = [];
+        document.getElementById('diagnostic-panel').classList.remove('hidden');
+        const logContainer = document.getElementById('diagnostic-log');
+        logContainer.innerHTML = '';
+        logDiagnostic('🔍 v' + APP_VERSION + ' | Site: ' + SITE_URL, 'info');
+        try {
+            const start = performance.now();
+            const { data, error } = await db.from('profiles').select('count', { count: 'exact', head: true });
+            const duration = (performance.now() - start).toFixed(0);
+            if (error) logDiagnostic('❌ profiles: ' + error.message, 'error');
+            else logDiagnostic('✅ profiles OK (' + duration + ' ms)', 'info');
+        } catch (e) { logDiagnostic('❌ Error: ' + e.message, 'error'); }
+        logDiagnostic('✅ Diagnóstico completado.', 'info');
+    };
+    window.clearDiagnostics = function() { diagnosticLogs = []; document.getElementById('diagnostic-log').innerHTML = ''; };
 
     // ============================================================
-    // OTP UI HELPERS
+    // OAUTH SERVER: CONSENT SCREEN
     // ============================================================
     
-    function setAuthMethod(method) {
-        authMethod = method;
-        document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('method-' + method).classList.add('active');
+    async function initOAuthConsent() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const authId = urlParams.get('authorization_id');
+        if (!authId) return false;
         
-        const phoneSection = document.getElementById('phone-section');
-        if (method === 'sms') {
-            phoneSection.classList.remove('hidden');
-        } else {
-            phoneSection.classList.add('hidden');
+        oauthAuthorizationId = authId;
+        logDiagnostic('🔐 OAuth consent iniciado: ' + authId, 'info');
+        
+        try {
+            const { data: { session } } = await db.auth.getSession();
+            if (!session) {
+                sessionStorage.setItem('pending_oauth_auth_id', authId);
+                showToast('Inicia sesión para autorizar');
+                return false;
+            }
+            
+            currentUser = session.user;
+            const { data, error } = await db.auth.oauth.getAuthorizationDetails(authId);
+            if (error) throw new Error(error.message);
+            if (!data) throw new Error('No se recibieron datos');
+            
+            oauthClientInfo = data;
+            renderConsentScreen(data, session.user);
+            return true;
+        } catch (e) {
+            logDiagnostic('❌ OAuth consent: ' + e.message, 'error');
+            return true;
+        }
+    }
+    
+    function renderConsentScreen(details, user) {
+        document.getElementById('auth-screen').classList.add('hidden');
+        document.getElementById('main-app').classList.add('hidden');
+        document.getElementById('oauth-consent-screen').classList.remove('hidden');
+        
+        document.getElementById('consent-app-name').innerText = details.client?.name || 'Aplicación externa';
+        document.getElementById('consent-app-icon').innerText = details.client?.icon || '🔐';
+        
+        const userName = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Usuario';
+        document.getElementById('consent-user-name').innerText = userName;
+        document.getElementById('consent-user-email').innerText = user.email || '';
+        document.getElementById('consent-user-avatar').innerText = userName.charAt(0).toUpperCase();
+        
+        const scopesList = document.getElementById('consent-scopes-list');
+        const scopeString = details.scope || '';
+        const scopes = scopeString.split(' ').filter(s => s.trim());
+        if (scopes.length === 0) scopes.push('openid', 'email', 'profile');
+        
+        const scopeLabels = {
+            'openid': { icon: '🔓', label: 'Identidad básica', desc: 'Acceso a tu ID' },
+            'email': { icon: '📧', label: 'Correo', desc: 'Ver tu email' },
+            'profile': { icon: '👤', label: 'Perfil', desc: 'Ver tu nombre y foto' },
+            'phone': { icon: '📱', label: 'Teléfono', desc: 'Ver tu número' }
+        };
+        
+        scopesList.innerHTML = scopes.map(scope => {
+            const info = scopeLabels[scope] || { icon: '🔒', label: scope, desc: 'Acceso' };
+            return '<div class="consent-scope-item"><div class="consent-scope-icon">' + info.icon + '</div><div><p class="font-bold text-sm text-slate-800">' + info.label + '</p><p class="text-xs text-slate-500">' + info.desc + '</p></div></div>';
+        }).join('');
+    }
+
+    function showConsentError(message) {
+        const errorDiv = document.getElementById('consent-error');
+        const errorText = document.getElementById('consent-error-text');
+        if (errorDiv && errorText) {
+            errorText.innerText = message;
+            errorDiv.classList.remove('hidden');
         }
     }
 
+    async function approveOAuthConsent() {
+        if (!oauthAuthorizationId) return;
+        const btn = document.getElementById('btn-approve-oauth');
+        if (btn) { btn.disabled = true; document.getElementById('btn-approve-text').innerText = 'Autorizando...'; }
+        
+        try {
+            const { data, error } = await db.auth.oauth.approveAuthorization(oauthAuthorizationId);
+            if (error) throw error;
+            if (data?.redirect_to) window.location.href = data.redirect_to;
+        } catch (e) {
+            showConsentError('Error: ' + e.message);
+            if (btn) { btn.disabled = false; document.getElementById('btn-approve-text').innerText = 'Permitir acceso'; }
+        }
+    }
+
+    async function denyOAuthConsent() {
+        if (!oauthAuthorizationId) {
+            document.getElementById('oauth-consent-screen').classList.add('hidden');
+            document.getElementById('auth-screen').classList.remove('hidden');
+            return;
+        }
+        try {
+            const { data } = await db.auth.oauth.denyAuthorization(oauthAuthorizationId);
+            if (data?.redirect_to) window.location.href = data.redirect_to;
+            else {
+                document.getElementById('oauth-consent-screen').classList.add('hidden');
+                document.getElementById('auth-screen').classList.remove('hidden');
+            }
+        } catch (e) {
+            document.getElementById('oauth-consent-screen').classList.add('hidden');
+            document.getElementById('auth-screen').classList.remove('hidden');
+        }
+    }
+
+    async function resumeOAuthAfterLogin() {
+        const pendingAuthId = sessionStorage.getItem('pending_oauth_auth_id');
+        if (!pendingAuthId) return;
+        sessionStorage.removeItem('pending_oauth_auth_id');
+        const url = new URL(window.location.href);
+        url.searchParams.set('authorization_id', pendingAuthId);
+        window.history.replaceState({}, '', url);
+        await initOAuthConsent();
+    }
+
+    // ============================================================
+    // OTP HELPERS
+    // ============================================================
+    
     function showOTPScreen(target) {
         document.getElementById('auth-form').classList.add('hidden');
         document.getElementById('otp-screen').classList.remove('hidden');
         document.getElementById('otp-target').innerText = target;
-        
         document.querySelectorAll('.otp-input').forEach(input => {
-            input.value = '';
-            input.classList.remove('filled');
+            input.value = ''; input.classList.remove('filled');
         });
         document.querySelector('.otp-input[data-index="0"]').focus();
-        
         startOTPTimer();
     }
 
@@ -901,30 +920,17 @@
         let seconds = 60;
         const timerEl = document.getElementById('otp-timer');
         const resendBtn = document.getElementById('resend-otp-btn');
-        
-        resendBtn.disabled = true;
-        timerEl.classList.remove('expired');
-        
+        resendBtn.disabled = true; timerEl.classList.remove('expired');
         stopOTPTimer();
-        
         otpTimerInterval = setInterval(() => {
             seconds--;
-            if (seconds > 0) {
-                timerEl.innerText = 'Reenviar código en ' + seconds + 's';
-            } else {
-                timerEl.innerText = '¿No recibiste el código?';
-                timerEl.classList.add('expired');
-                resendBtn.disabled = false;
-                stopOTPTimer();
-            }
+            if (seconds > 0) timerEl.innerText = 'Reenviar código en ' + seconds + 's';
+            else { timerEl.innerText = '¿No recibiste el código?'; timerEl.classList.add('expired'); resendBtn.disabled = false; stopOTPTimer(); }
         }, 1000);
     }
 
     function stopOTPTimer() {
-        if (otpTimerInterval) {
-            clearInterval(otpTimerInterval);
-            otpTimerInterval = null;
-        }
+        if (otpTimerInterval) { clearInterval(otpTimerInterval); otpTimerInterval = null; }
     }
 
     // ============================================================
@@ -936,295 +942,18 @@
         const log = '[' + timestamp + '] ' + message;
         diagnosticLogs.push({ message, type, timestamp });
         console.log('[DIAGNOSTIC ' + type.toUpperCase() + '] ' + message);
-        
         const logContainer = document.getElementById('diagnostic-log');
         if (logContainer) {
             const color = type === 'error' ? '#ef4444' : type === 'warn' ? '#f59e0b' : '#16a34a';
-            logContainer.innerHTML += '<div style=\"color: ' + color + '; margin-bottom:2px; border-left:2px solid ' + color + '; padding-left:4px;\">' + escHtml(log) + '</div>';
+            logContainer.innerHTML += '<div style="color: ' + color + '; margin-bottom:2px; border-left:2px solid ' + color + '; padding-left:4px;">' + escHtml(log) + '</div>';
             logContainer.scrollTop = logContainer.scrollHeight;
         }
     }
 
-    function clearDiagnostics() {
-        diagnosticLogs = [];
-        document.getElementById('diagnostic-log').innerHTML = '';
-    }
-
-    async function runDiagnostics() {
-        diagnosticLogs = [];
-        document.getElementById('diagnostic-panel').classList.remove('hidden');
-        const logContainer = document.getElementById('diagnostic-log');
-        logContainer.innerHTML = '';
-        
-        logDiagnostic('🔍 v' + APP_VERSION + ' | Site: ' + SITE_URL, 'info');
-        
-        try {
-            const start = performance.now();
-            const { data, error } = await db.from('profiles').select('count', { count: 'exact', head: true });
-            const duration = (performance.now() - start).toFixed(0);
-            
-            if (error) {
-                logDiagnostic('❌ profiles: ' + error.message, 'error');
-            } else {
-                logDiagnostic('✅ profiles OK (' + duration + ' ms)', 'info');
-            }
-        } catch (e) {
-            logDiagnostic('❌ Error: ' + e.message, 'error');
-        }
-        
-        logDiagnostic('✅ Diagnóstico completado.', 'info');
-    }
-
-    // INIT
-    window.onload = async () => {
-        try {
-            db = supabase.createClient(SB_URL, SB_ANON_KEY);
-            logDiagnostic('✅ Supabase OK | v' + APP_VERSION, 'info');
-        } catch(e) {
-            logDiagnostic('❌ Init failed: ' + e.message, 'error');
-        }
-        
-        // PRIORITY 1: OAuth Server Consent
-        const isOAuthFlow = await initOAuthConsent();
-        if (isOAuthFlow) return;
-        
-        // PRIORITY 2: OAuth Client Callback
-        await handleOAuthCallback();
-        
-        // PRIORITY 3: Regular session check
-        if (!currentUser) {
-            try {
-                const { data: { session } } = await db.auth.getSession();
-                if (session) {
-                    currentUser = session.user;
-                    logDiagnostic('✅ Sesión: ' + session.user.email, 'info');
-                    await initUserData();
-                }
-            } catch (e) {
-                logDiagnostic('❌ Session check: ' + e.message, 'error');
-            }
-        }
-    };
-
     // ============================================================
-    // AUTH: LOGIN & REGISTER WITH OTP
+    // AUTH HELPERS
     // ============================================================
     
-    async function login() {
-        const email = document.getElementById('auth-email').value.trim();
-        const pass = document.getElementById('auth-pass').value;
-        
-        if (!email || !pass) {
-            showToast('Completa email y contraseña');
-            return;
-        }
-
-        logDiagnostic('🔑 Login: ' + email, 'info');
-
-        try {
-            const { data, error } = await db.auth.signInWithPassword({ email, password: pass });
-            if (error) {
-                logDiagnostic('❌ Login: ' + error.message, 'error');
-                alert(error.message);
-                return;
-            }
-            currentUser = data.user;
-            logDiagnostic('✅ Login OK', 'info');
-            
-            const pendingAuthId = sessionStorage.getItem('pending_oauth_auth_id');
-            if (pendingAuthId) {
-                await resumeOAuthAfterLogin();
-            } else {
-                await initUserData();
-            }
-        } catch (e) {
-            logDiagnostic('❌ Login exc: ' + e.message, 'error');
-            alert('Error: ' + e.message);
-        }
-    }
-
-    async function register() {
-        const email = document.getElementById('auth-email').value.trim();
-        const pass = document.getElementById('auth-pass').value;
-        const phone = document.getElementById('auth-phone')?.value.trim();
-        
-        if (!email || !pass) {
-            showToast('Completa email y contraseña');
-            return;
-        }
-        
-        if (pass.length < 6) {
-            alert('Mínimo 6 caracteres');
-            return;
-        }
-
-        if (authMethod === 'sms') {
-            if (!phone) {
-                showToast('Ingresa tu número de teléfono');
-                return;
-            }
-            if (!phone.match(/^\+[1-9]\d{1,14}$/)) {
-                alert('Formato inválido. Usa: +57 300 123 4567 o +573001234567');
-                return;
-            }
-        }
-
-        logDiagnostic('📝 Registro ' + authMethod + ': ' + email, 'info');
-        pendingEmail = email;
-        pendingPhone = phone;
-
-        try {
-            const { data: loginData } = await db.auth.signInWithPassword({ email, password: pass });
-            if (loginData?.user) {
-                currentUser = loginData.user;
-                showToast('¡Bienvenido! 👋');
-                await initUserData();
-                return;
-            }
-        } catch (e) {}
-
-        try {
-            if (authMethod === 'email') {
-                const { data, error } = await db.auth.signUp({ 
-                    email, 
-                    password: pass,
-                    options: { data: { name: '' } }
-                });
-                
-                if (error) {
-                    logDiagnostic('❌ Signup: ' + error.message, 'error');
-                    alert('Error: ' + error.message);
-                    return;
-                }
-                
-                if (data?.user && !data?.session) {
-                    logDiagnostic('📩 OTP enviado a ' + email, 'info');
-                    showOTPScreen(email);
-                } else if (data?.session) {
-                    currentUser = data.user;
-                    logDiagnostic('✅ Usuario creado (auto-confirmed)', 'info');
-                    await createProfileAfterSignup(data.user);
-                    await initUserData();
-                }
-                
-            } else if (authMethod === 'sms') {
-                const { data, error } = await db.auth.signUp({
-                    email,
-                    password: pass,
-                    phone: phone,
-                    options: { data: { name: '' } }
-                });
-                
-                if (error) {
-                    logDiagnostic('❌ SMS Signup: ' + error.message, 'error');
-                    alert('Error: ' + error.message);
-                    return;
-                }
-                
-                if (data?.user && !data?.session) {
-                    logDiagnostic('📩 SMS OTP enviado a ' + phone, 'info');
-                    showOTPScreen(phone);
-                }
-            }
-            
-        } catch (e) {
-            logDiagnostic('❌ Registro exc: ' + e.message, 'error');
-            alert('Error: ' + e.message);
-        }
-    }
-
-    async function verifyOTP() {
-        const inputs = document.querySelectorAll('.otp-input');
-        const code = Array.from(inputs).map(i => i.value).join('');
-        
-        if (code.length !== 6) {
-            showToast('Ingresa los 6 dígitos');
-            return;
-        }
-
-        logDiagnostic('🔐 Verificando OTP: ' + code, 'info');
-
-        try {
-            let result;
-            
-            if (authMethod === 'email') {
-                result = await db.auth.verifyOtp({
-                    email: pendingEmail,
-                    token: code,
-                    type: 'signup'
-                });
-            } else {
-                result = await db.auth.verifyOtp({
-                    phone: pendingPhone,
-                    token: code,
-                    type: 'sms'
-                });
-            }
-
-            if (result.error) {
-                logDiagnostic('❌ OTP inválido: ' + result.error.message, 'error');
-                alert('Código incorrecto o expirado. Intenta de nuevo.');
-                
-                inputs.forEach(i => {
-                    i.value = '';
-                    i.classList.remove('filled');
-                });
-                inputs[0].focus();
-                return;
-            }
-
-            currentUser = result.data.user;
-            logDiagnostic('✅ OTP verificado. Usuario: ' + currentUser.id, 'info');
-            
-            hideOTPScreen();
-            showToast('¡Cuenta verificada! 🎉');
-            
-            await createProfileAfterSignup(currentUser);
-            
-            const pendingAuthId = sessionStorage.getItem('pending_oauth_auth_id');
-            if (pendingAuthId) {
-                await resumeOAuthAfterLogin();
-            } else {
-                await initUserData();
-            }
-            
-        } catch (e) {
-            logDiagnostic('❌ OTP exc: ' + e.message, 'error');
-            alert('Error: ' + e.message);
-        }
-    }
-
-    async function resendOTP() {
-        logDiagnostic('📩 Reenviando OTP ' + authMethod + '...', 'info');
-        
-        try {
-            if (authMethod === 'email') {
-                await db.auth.resend({
-                    type: 'signup',
-                    email: pendingEmail
-                });
-            } else {
-                await db.auth.signUp({
-                    email: pendingEmail,
-                    password: document.getElementById('auth-pass').value,
-                    phone: pendingPhone
-                });
-            }
-            
-            showToast('Código reenviado 📩');
-            startOTPTimer();
-            
-        } catch (e) {
-            logDiagnostic('❌ Reenvío falló: ' + e.message, 'error');
-            alert('Error al reenviar: ' + e.message);
-        }
-    }
-
-    function cancelOTP() {
-        hideOTPScreen();
-        logDiagnostic('❌ OTP cancelado por usuario', 'info');
-    }
-
     async function createProfileAfterSignup(user) {
         try {
             const { error } = await db.from('profiles').upsert({
@@ -1236,102 +965,22 @@
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
             });
-            
-            if (error) {
-                logDiagnostic('⚠️ Perfil manual: ' + error.message, 'warn');
-            } else {
-                logDiagnostic('✅ Perfil creado', 'info');
-            }
-        } catch (e) {
-            logDiagnostic('❌ Perfil exc: ' + e.message, 'error');
-        }
+            if (error) logDiagnostic('⚠️ Perfil: ' + error.message, 'warn');
+            else logDiagnostic('✅ Perfil creado', 'info');
+        } catch (e) { logDiagnostic('❌ Perfil: ' + e.message, 'error'); }
     }
-
-    // OWNER LOGIN
-    async function loginOwner() {
-        const email = document.getElementById('owner-email').value;
-        const pass = document.getElementById('owner-pass').value;
-        const masterKey = document.getElementById('owner-master-key').value;
-        
-        if (!email || !pass || !masterKey) {
-            alert('Completa todos los campos');
-            return;
-        }
-        
-        if (masterKey !== MASTER_OWNER_KEY) {
-            alert('❌ Master Key incorrecta');
-            return;
-        }
-        
-        try {
-            const { data, error } = await db.auth.signInWithPassword({ email, password: pass });
-            if (error) throw error;
-            
-            currentUser = data.user;
-            
-            const { data: profile, error: profileError } = await db
-                .from('profiles')
-                .select('role, name')
-                .eq('id', currentUser.id)
-                .single();
-                
-            if (profileError) throw profileError;
-            
-            if (profile?.role === 'owner') {
-                isOwner = true;
-                localStorage.setItem('is_owner', 'true');
-                localStorage.setItem('user_real_name', profile.name || 'Owner');
-                addLog('Owner login', email);
-                showToast('Bienvenido Owner 👑');
-                enterApp();
-            } else {
-                await db.auth.signOut();
-                currentUser = null;
-                alert('❌ No tienes permisos de Owner');
-            }
-        } catch (e) {
-            alert('Error: ' + e.message);
-        }
-    }
-
-    async function logout() {
-        addLog('Logout', currentUser?.email || 'unknown');
-        await db.auth.signOut();
-        localStorage.clear();
-        currentUser = null;
-        isOwner = false;
-        location.reload();
-    }
-
-    // ============================================================
-    // PROFILE SETUP
-    // ============================================================
 
     async function initUserData() {
         try {
             const { data: profile, error } = await db.from('profiles').select('*').eq('id', currentUser.id).single();
-            
-            if (error) {
-                if (error.code === 'PGRST116') {
-                    showProfileSetup();
-                    return;
-                }
-            }
-            
+            if (error && error.code === 'PGRST116') { showProfileSetup(); return; }
             if (profile?.name) {
                 localStorage.setItem('user_real_name', profile.name);
                 localStorage.setItem('user_unique_tag', profile.name.toLowerCase().replace(/\s+/g, '_'));
-                if (profile.role === 'owner' || localStorage.getItem('is_owner') === 'true') {
-                    isOwner = true;
-                    localStorage.setItem('is_owner', 'true');
-                }
+                if (profile.role === 'owner' || localStorage.getItem('is_owner') === 'true') { isOwner = true; localStorage.setItem('is_owner', 'true'); }
                 enterApp();
-            } else {
-                showProfileSetup();
-            }
-        } catch (e) {
-            showProfileSetup();
-        }
+            } else showProfileSetup();
+        } catch (e) { showProfileSetup(); }
     }
 
     function showProfileSetup() {
@@ -1341,60 +990,6 @@
         document.getElementById('profile-setup').classList.remove('hidden');
     }
 
-    async function saveProfileSetup() {
-        const name = document.getElementById('setup-name').value.trim();
-        const rawTag = document.getElementById('setup-tag').value.trim().replace('@', '').replace(/\s+/g, '_').toLowerCase();
-        
-        if (!name || !rawTag) { 
-            showToast('Completa tu nombre y usuario');
-            return;
-        }
-        
-        if (!currentUser) {
-            showToast('Error: No hay sesión activa');
-            return;
-        }
-
-        try {
-            const { error } = await db.from('profiles')
-                .update({ 
-                    name: name,
-                    updated_at: new Date().toISOString()
-                })
-                .eq('id', currentUser.id);
-
-            if (error) {
-                logDiagnostic('❌ Error guardando perfil: ' + error.message, 'error');
-                showToast('Error al guardar: ' + error.message);
-                return;
-            }
-            
-            logDiagnostic('✅ Perfil actualizado', 'info');
-            localStorage.setItem('user_real_name', name);
-            localStorage.setItem('user_unique_tag', '@' + rawTag);
-            
-            document.getElementById('profile-setup').classList.add('hidden');
-            enterApp();
-            
-        } catch (e) {
-            logDiagnostic('❌ Exception guardando perfil: ' + e.message, 'error');
-            showToast('Error de conexión');
-        }
-    }
-
-    function skipProfileSetup() {
-        if (!currentUser) return;
-        
-        const defaultName = currentUser.user_metadata?.full_name || 
-                           currentUser.user_metadata?.name || 
-                           currentUser.email.split('@')[0];
-        localStorage.setItem('user_real_name', defaultName);
-        localStorage.setItem('user_unique_tag', defaultName.toLowerCase());
-        
-        document.getElementById('profile-setup').classList.add('hidden');
-        enterApp();
-    }
-    
     function enterApp() {
         document.getElementById('auth-screen').classList.add('hidden');
         document.getElementById('otp-screen').classList.add('hidden');
@@ -1403,9 +998,7 @@
         document.getElementById('main-app').classList.remove('hidden');
         updateGlobalUI();
         loadHomeData();
-        if (isOwner) {
-            document.getElementById('admin-badge').classList.remove('hidden');
-        }
+        if (isOwner) document.getElementById('admin-badge').classList.remove('hidden');
     }
 
     function updateAvatar(url, fallbackText) {
@@ -1413,7 +1006,6 @@
         const pFallback = document.getElementById('p-avatar-fallback');
         const hAvatar = document.getElementById('header-avatar');
         const hFallback = document.getElementById('header-avatar-fallback');
-        
         if (url && url !== 'null' && url !== 'undefined') {
             pAvatar.src = url; pAvatar.style.display = 'block'; pFallback.style.display = 'none';
             hAvatar.src = url; hAvatar.style.display = 'block'; hFallback.style.display = 'none';
@@ -1428,15 +1020,11 @@
         const tag = localStorage.getItem('user_unique_tag') || '@usuario';
         const initial = name.charAt(0).toUpperCase();
         const dicebearUrl = 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + encodeURIComponent(tag) + '&backgroundColor=d1fae5';
-        
         if (currentUser) {
             db.from('profiles').select('avatar_url').eq('id', currentUser.id).single().then(({data}) => {
                 updateAvatar(data?.avatar_url || dicebearUrl, initial);
             }).catch(() => updateAvatar(dicebearUrl, initial));
-        } else {
-            updateAvatar(dicebearUrl, initial);
-        }
-        
+        } else updateAvatar(dicebearUrl, initial);
         document.getElementById('p-name').innerText = name;
         document.getElementById('p-tag').innerText = tag;
         document.getElementById('pub-author').innerText = name;
@@ -1450,225 +1038,189 @@
         profile: { label: 'Tu perfil', title: 'Mi Cuenta' },
     };
 
-    function changeTab(tabId, el) {
-        document.querySelectorAll('.tab-view').forEach(v => v.classList.add('hidden'));
-        document.getElementById('view-' + tabId).classList.remove('hidden');
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
-        if (el) el.classList.add('tab-active');
-        document.getElementById('section-label').innerText = TAB_META[tabId].label;
-        document.getElementById('view-title').innerText = TAB_META[tabId].title;
-        if (tabId === 'map' && !map) initMap();
-        if (tabId === 'community') loadMuro();
-        if (tabId === 'profile') loadProfileStats();
-        if (tabId === 'admin') loadAdminPanel();
-        window.scrollTo(0, 0);
-    }
-
-    // ==================== ADMIN PANEL ====================
-
-    async function loadAdminPanel() {
-        await Promise.all([
-            loadAdminStats(),
-            loadUsers(),
-            loadAdminPosts(),
-            renderLogs()
-        ]);
-    }
-
-    async function loadAdminStats() {
+    // ============================================================
+    // RETOS / ACCIONES
+    // ============================================================
+    
+    async function loadHomeData() {
         try {
-            const { count: userCount } = await db.from('profiles').select('*', { count: 'exact', head: true });
-            const { count: postCount } = await db.from('comunidad').select('*', { count: 'exact', head: true });
-            const { data: actions } = await db.from('acciones').select('impacto_co2');
-            const totalCO2 = (actions || []).reduce((a, b) => a + parseFloat(b.impacto_co2 || 0), 0);
+            var retosResult = await db.from('acciones').select('*').order('impacto_co2', { ascending: false });
+            if (retosResult.error) throw retosResult.error;
             
-            const today = new Date().toISOString().split('T')[0];
-            const { count: todayCount } = await db.from('comunidad')
-                .select('*', { count: 'exact', head: true })
-                .gte('created_at', today);
+            var completados = [];
+            var miCO2 = 0;
+            var miPuntos = 0;
             
-            document.getElementById('admin-total-users').innerText = userCount || 0;
-            document.getElementById('admin-total-posts').innerText = postCount || 0;
-            document.getElementById('admin-total-co2').innerText = totalCO2.toFixed(1);
-            document.getElementById('admin-today-activity').innerText = todayCount || 0;
-        } catch(e) {
-            console.warn('Admin stats error:', e);
-        }
-    }
-
-    function showAdminSection(section) {
-        document.querySelectorAll('.admin-section').forEach(s => s.classList.add('hidden'));
-        document.getElementById('admin-section-' + section).classList.remove('hidden');
-        
-        document.querySelectorAll('[id^="admin-tab-"]').forEach(b => b.style.opacity = '0.6');
-        document.getElementById('admin-tab-' + section).style.opacity = '1';
-    }
-
-    async function loadUsers() {
-        try {
-            const { data } = await db.from('profiles').select('*').order('created_at', { ascending: false });
-            document.getElementById('users-list').innerHTML = (data || []).map(u => 
-                '<div class=\"flex items-center justify-between p-3 bg-slate-50 rounded-xl\">' +
-                    '<div class=\"flex items-center gap-3\">' +
-                        '<div class=\"w-10 h-10 rounded-full avatar-fallback text-sm\">' + (u.name || '?').charAt(0).toUpperCase() + '</div>' +
-                        '<div>' +
-                            '<p class=\"font-bold text-sm\">' + (u.name || '—') + '</p>' +
-                            '<p class=\"text-[10px] text-slate-400\">' + (u.email || u.id.slice(0,8)) + ' • ' + (u.role || 'user') + '</p>' +
+            if (currentUser) {
+                var userRetosResult = await db.from('user_acciones')
+                    .select('accion_id, impacto_co2, puntos_ganados')
+                    .eq('user_id', currentUser.id);
+                completados = (userRetosResult.data || []).map(r => r.accion_id);
+                miCO2 = (userRetosResult.data || []).reduce((a, b) => a + parseFloat(b.impacto_co2 || 0), 0);
+                miPuntos = (userRetosResult.data || []).reduce((a, b) => a + (b.puntos_ganados || 0), 0);
+            }
+            
+            var totalCO2 = (retosResult.data || []).reduce((a, b) => a + parseFloat(b.impacto_co2 || 0), 0);
+            var co2Display = currentUser ? miCO2 : totalCO2;
+            var labelDisplay = currentUser ? 'Mi impacto · CO₂ ahorado' : 'CO₂ Evitado · Comunidad Cota';
+            
+            document.getElementById('co2-total').innerText = co2Display.toFixed(1);
+            document.getElementById('co2-label').innerText = labelDisplay;
+            document.getElementById('home-actions-count').innerText = (retosResult.data || []).length;
+            
+            var puntosBanner = document.getElementById('puntos-banner');
+            if (currentUser) { puntosBanner.innerText = '⭐ ' + miPuntos + ' puntos'; puntosBanner.classList.remove('hidden'); }
+            else puntosBanner.classList.add('hidden');
+            
+            document.getElementById('acciones-list').innerHTML = (retosResult.data || []).map(reto => {
+                var isDone = completados.indexOf(reto.id) !== -1;
+                var puntos = Math.round(reto.impacto_co2 * 2);
+                
+                return '<div class="card p-4 flex items-center gap-4 ' + (isDone ? 'opacity-60' : '') + '" style="border-left: 5px solid ' + (isDone ? '#94a3b8' : '#16a34a') + ';">' +
+                    '<div class="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center text-xl flex-shrink-0">' + (reto.emoji || '🌍') + '</div>' +
+                    '<div class="flex-1 min-w-0">' +
+                        '<h4 class="font-bold text-slate-800 text-sm leading-tight ' + (isDone ? 'line-through' : '') + '">' + reto.titulo + '</h4>' +
+                        '<div class="flex items-center gap-2 mt-1">' +
+                            '<span class="badge badge-green">' + parseFloat(reto.impacto_co2).toFixed(1) + ' kg CO₂</span>' +
+                            '<span class="badge badge-amber">+' + puntos + ' pts</span>' +
+                            (isDone ? '<span class="badge badge-blue">✓ Hecho</span>' : '') +
                         '</div>' +
                     '</div>' +
-                    '<div class=\"flex gap-1\">' +
-                        (u.role !== 'owner' ? 
-                            '<button onclick=\"makeOwner(\'' + u.id + '\')\" class=\"badge badge-purple cursor-pointer\">👑</button>' +
-                            '<button onclick=\"deleteUser(\'' + u.id + '\')\" class=\"badge badge-red cursor-pointer\">🗑️</button>' 
-                            : '<span class=\"badge badge-green\">Owner</span>') +
-                    '</div>' +
-                '</div>'
-            ).join('');
+                    '<button onclick="completarReto(\'' + reto.id + '\', ' + reto.impacto_co2 + ')" ' +
+                        'class="btn-green flex-shrink-0 ' + (isDone ? 'hidden' : '') + '" style="padding: 0.5rem 1rem; font-size: 0.75rem;">' +
+                        '✅' +
+                    '</button>' +
+                '</div>';
+            }).join('');
+            
+            var postsResult = await db.from('comunidad').select('id', { count: 'exact', head: true });
+            document.getElementById('home-posts-count').innerText = postsResult.count || '—';
+            
         } catch(e) {
-            document.getElementById('users-list').innerHTML = '<div class=\"text-center text-slate-400 py-4\">Error cargando usuarios</div>';
+            console.error('loadHomeData error:', e);
+            mostrarFallbackRetos();
         }
     }
-
-    async function makeOwner(id) {
-        if (!confirm('¿Promover a Owner?')) return;
-        await db.from('profiles').update({ role: 'owner' }).eq('id', id);
-        addLog('Promoted to owner', id);
-        showToast('Usuario promovido a Owner 👑');
-        loadUsers();
-    }
-
-    async function deleteUser(id) {
-        if (!confirm('¿Eliminar usuario permanentemente?')) return;
-        await db.from('profiles').update({ role: 'deleted', name: '[Eliminado]' }).eq('id', id);
-        addLog('User deleted', id);
-        showToast('Usuario eliminado');
-        loadUsers();
-    }
-
-    async function loadAdminPosts() {
-        try {
-            const { data } = await db.from('comunidad').select('*').order('created_at', { ascending: false }).limit(50);
-            document.getElementById('admin-posts-list').innerHTML = (data || []).map(p => 
-                '<div class=\"card p-4 post-admin relative\">' +
-                    '<button onclick=\"deletePost(\'' + p.id + '\')\" class=\"delete-btn btn-red\">🗑️ Borrar</button>' +
-                    '<div class=\"flex items-center gap-2 mb-2\">' +
-                        '<span class=\"font-bold text-sm\">' + escHtml(p.autor || 'Anónimo') + '</span>' +
-                        '<span class=\"text-[10px] text-slate-400\">' + getTimeAgo(p.created_at) + '</span>' +
-                    '</div>' +
-                    '<p class=\"text-sm text-slate-600\">' + escHtml(p.mensaje || '') + '</p>' +
-                    (p.foto_url ? '<img src=\"' + p.foto_url + '\" class=\"w-full rounded-lg mt-2 object-cover\" style=\"max-height:150px;\">' : '') +
-                '</div>'
-            ).join('');
-        } catch(e) {
-            document.getElementById('admin-posts-list').innerHTML = '<div class=\"text-center text-slate-400 py-4\">Error cargando posts</div>';
-        }
-    }
-
-    async function deletePost(id) {
-        if (!confirm('¿Eliminar esta publicación?')) return;
-        await db.from('comunidad').delete().eq('id', id);
-        addLog('Post deleted', id);
-        showToast('Publicación eliminada 🗑️');
-        loadAdminPosts();
-        loadMuro();
-    }
-
-    function addLog(action, detail) {
-        const log = {
-            time: new Date().toLocaleString('es-CO', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-            action: action,
-            detail: detail,
-            user: localStorage.getItem('user_real_name') || 'Admin'
-        };
-        adminLogs.unshift(log);
-        if (adminLogs.length > 100) adminLogs.pop();
-        renderLogs();
-    }
-
-    function renderLogs() {
-        document.getElementById('admin-logs-list').innerHTML = adminLogs.map(l => 
-            '<div class=\"log-entry\">' +
-                '<span class=\"time\">' + l.time + '</span> • ' +
-                '<span class=\"font-semibold text-slate-700\">' + l.action + '</span>' +
-                '<span class=\"text-slate-500\"> → ' + l.detail + '</span>' +
-                '<span class=\"text-[10px] text-slate-400 ml-1\">(' + l.user + ')</span>' +
-            '</div>'
-        ).join('') || '<div class=\"text-center text-slate-400 py-4\">Sin actividad reciente</div>';
-    }
-
-    // ==================== HOME DATA ====================
-    async function loadHomeData() {
-        const fallback = [
-            { titulo: 'Separar residuos en casa', impacto_co2: 2.5, categoria: 'Reciclaje' },
-            { titulo: 'Ir al trabajo en bicicleta', impacto_co2: 4.1, categoria: 'Movilidad' },
-            { titulo: 'Compostar residuos orgánicos', impacto_co2: 1.8, categoria: 'Compostaje' },
-            { titulo: 'Reducir uso de plástico de un solo uso', impacto_co2: 1.2, categoria: 'Consumo' },
-            { titulo: 'Plantar un árbol nativo', impacto_co2: 6.0, categoria: 'Reforestación' },
-            { titulo: 'Llevar residuos electrónicos al punto RAEE', impacto_co2: 3.3, categoria: 'RAEE' },
+    
+    function mostrarFallbackRetos() {
+        var fallback = [
+            { titulo: 'Separar residuos en casa', impacto_co2: 2.5, emoji: '♻️' },
+            { titulo: 'Ir al trabajo en bicicleta', impacto_co2: 4.1, emoji: '🚲' },
+            { titulo: 'Compostar residuos orgánicos', impacto_co2: 1.8, emoji: '🌱' },
+            { titulo: 'Reducir uso de plástico', impacto_co2: 1.2, emoji: '🛍️' },
+            { titulo: 'Plantar un árbol nativo', impacto_co2: 6.0, emoji: '🌳' },
+            { titulo: 'Llevar RAEE al punto de reciclaje', impacto_co2: 3.3, emoji: '⚡' },
         ];
-
-        let data = fallback;
-        try {
-            const res = await db.from('acciones').select('*').order('created_at', { ascending: false });
-            if (res.data && res.data.length > 0) data = res.data;
-        } catch(e) {}
-
-        const catIcons = { 'Reciclaje':'♻️', 'Movilidad':'🚲', 'Compostaje':'🌱', 'Consumo':'🛍️', 'Reforestación':'🌳', 'RAEE':'⚡' };
-        const total = data.reduce((a, b) => a + parseFloat(b.impacto_co2 || 0), 0);
-
-        document.getElementById('co2-total').innerText = total.toFixed(1);
-        document.getElementById('home-actions-count').innerText = data.length;
-        document.getElementById('acciones-list').innerHTML = data.map(i => 
-            '<div class=\"card p-4 flex items-center gap-4\" style=\"border-left: 5px solid #16a34a;\">' +
-                '<div class=\"w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center text-xl flex-shrink-0\">' +
-                    (catIcons[i.categoria] || '🌍') +
-                '</div>' +
-                '<div class=\"flex-1 min-w-0\">' +
-                    '<h4 class=\"font-bold text-slate-800 text-sm leading-tight\">' + i.titulo + '</h4>' +
-                    '<div class=\"flex items-center gap-2 mt-1\">' +
-                        '<span class=\"badge badge-green\">' + parseFloat(i.impacto_co2).toFixed(1) + ' kg CO₂</span>' +
-                        (i.categoria ? '<span class=\"badge badge-blue\">' + i.categoria + '</span>' : '') +
+        document.getElementById('acciones-list').innerHTML = fallback.map(i => 
+            '<div class="card p-4 flex items-center gap-4" style="border-left: 5px solid #16a34a;">' +
+                '<div class="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center text-xl flex-shrink-0">' + i.emoji + '</div>' +
+                '<div class="flex-1 min-w-0">' +
+                    '<h4 class="font-bold text-slate-800 text-sm leading-tight">' + i.titulo + '</h4>' +
+                    '<div class="flex items-center gap-2 mt-1">' +
+                        '<span class="badge badge-green">' + i.impacto_co2 + ' kg CO₂</span>' +
                     '</div>' +
                 '</div>' +
             '</div>'
         ).join('');
-
-        try {
-            const res2 = await db.from('comunidad').select('id', { count: 'exact', head: true });
-            document.getElementById('home-posts-count').innerText = res2.count || '—';
-        } catch(e) { document.getElementById('home-posts-count').innerText = '—'; }
     }
 
+    // ============================================================
+    // ADMIN PANEL
+    // ============================================================
+    
+    async function loadAdminPanel() {
+        await Promise.all([loadAdminStats(), loadUsers(), loadAdminPosts(), renderLogs()]);
+    }
+
+    async function loadAdminStats() {
+        try {
+            var usersResult = await db.from('profiles').select('*', { count: 'exact', head: true });
+            var postsResult = await db.from('comunidad').select('*', { count: 'exact', head: true });
+            var actionsResult = await db.from('acciones').select('impacto_co2');
+            var totalCO2 = (actionsResult.data || []).reduce((a, b) => a + parseFloat(b.impacto_co2 || 0), 0);
+            var today = new Date().toISOString().split('T')[0];
+            var todayResult = await db.from('comunidad').select('*', { count: 'exact', head: true }).gte('created_at', today);
+            
+            document.getElementById('admin-total-users').innerText = usersResult.count || 0;
+            document.getElementById('admin-total-posts').innerText = postsResult.count || 0;
+            document.getElementById('admin-total-co2').innerText = totalCO2.toFixed(1);
+            document.getElementById('admin-today-activity').innerText = todayResult.count || 0;
+        } catch(e) { console.warn('Admin stats error:', e); }
+    }
+
+    async function loadUsers() {
+        try {
+            var result = await db.from('profiles').select('*').order('created_at', { ascending: false });
+            document.getElementById('users-list').innerHTML = (result.data || []).map(u => 
+                '<div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl">' +
+                    '<div class="flex items-center gap-3">' +
+                        '<div class="w-10 h-10 rounded-full avatar-fallback text-sm">' + (u.name || '?').charAt(0).toUpperCase() + '</div>' +
+                        '<div><p class="font-bold text-sm">' + (u.name || '—') + '</p><p class="text-[10px] text-slate-400">' + (u.email || u.id.slice(0,8)) + ' • ' + (u.role || 'user') + '</p></div>' +
+                    '</div>' +
+                    '<div class="flex gap-1">' + (u.role !== 'owner' ? 
+                        '<button onclick="makeOwner(\'' + u.id + '\')" class="badge badge-purple cursor-pointer">👑</button>' +
+                        '<button onclick="deleteUser(\'' + u.id + '\')" class="badge badge-red cursor-pointer">🗑️</button>' 
+                        : '<span class="badge badge-green">Owner</span>') +
+                    '</div>' +
+                '</div>'
+            ).join('');
+        } catch(e) { document.getElementById('users-list').innerHTML = '<div class="text-center text-slate-400 py-4">Error cargando usuarios</div>'; }
+    }
+
+    async function loadAdminPosts() {
+        try {
+            var result = await db.from('comunidad').select('*').order('created_at', { ascending: false }).limit(50);
+            document.getElementById('admin-posts-list').innerHTML = (result.data || []).map(p => 
+                '<div class="card p-4 post-admin relative">' +
+                    '<button onclick="deletePost(\'' + p.id + '\')" class="delete-btn btn-red">🗑️ Borrar</button>' +
+                    '<div class="flex items-center gap-2 mb-2"><span class="font-bold text-sm">' + escHtml(p.autor || 'Anónimo') + '</span><span class="text-[10px] text-slate-400">' + getTimeAgo(p.created_at) + '</span></div>' +
+                    '<p class="text-sm text-slate-600">' + escHtml(p.mensaje || '') + '</p>' +
+                    (p.foto_url ? '<img src="' + p.foto_url + '" class="w-full rounded-lg mt-2 object-cover" style="max-height:150px;">' : '') +
+                '</div>'
+            ).join('');
+        } catch(e) { document.getElementById('admin-posts-list').innerHTML = '<div class="text-center text-slate-400 py-4">Error cargando posts</div>'; }
+    }
+
+    function addLog(action, detail) {
+        var log = { time: new Date().toLocaleString('es-CO', { hour: '2-digit', minute: '2-digit', second: '2-digit' }), action: action, detail: detail, user: localStorage.getItem('user_real_name') || 'Admin' };
+        adminLogs.unshift(log); if (adminLogs.length > 100) adminLogs.pop(); renderLogs();
+    }
+
+    function renderLogs() {
+        document.getElementById('admin-logs-list').innerHTML = adminLogs.map(l => 
+            '<div class="log-entry"><span class="time">' + l.time + '</span> • <span class="font-semibold text-slate-700">' + l.action + '</span><span class="text-slate-500"> → ' + l.detail + '</span><span class="text-[10px] text-slate-400 ml-1">(' + l.user + ')</span></div>'
+        ).join('') || '<div class="text-center text-slate-400 py-4">Sin actividad reciente</div>';
+    }
+
+    // ============================================================
     // MAP
+    // ============================================================
+    
     function initMap() {
         mapboxgl.accessToken = MAPBOX_TOKEN;
-        map = new mapboxgl.Map({
-            container: 'map',
-            style: 'mapbox://styles/mapbox/light-v11',
-            center: [-74.1086, 4.8105],
-            zoom: 13.8,
-            pitch: 40,
-        });
+        map = new mapboxgl.Map({ container: 'map', style: 'mapbox://styles/mapbox/light-v11', center: [-74.1086, 4.8105], zoom: 13.8, pitch: 40 });
         map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'top-right');
-
         map.on('load', () => {
             COLLECTION_POINTS.forEach(pt => {
-                const el = document.createElement('div');
+                var el = document.createElement('div');
                 el.style.cssText = 'width:38px;height:38px;border-radius:50%;background:' + pt.color + ';border:3px solid white;box-shadow:0 4px 12px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;';
                 el.innerHTML = pt.type === 'municipal' ? '🏛️' : pt.type === 'raee' ? '⚡' : '♻️';
-                const popup = new mapboxgl.Popup({ offset: 25, closeButton: false, maxWidth: '220px' })
-                    .setHTML('<div style=\"font-family:Plus Jakarta Sans,sans-serif;padding:4px;\"><p style=\"font-weight:800;font-size:13px;margin:0 0 4px;\">' + pt.name + '</p><p style=\"font-size:11px;color:#64748b;margin:0;\">' + pt.desc + '</p></div>');
+                var popup = new mapboxgl.Popup({ offset: 25, closeButton: false, maxWidth: '220px' })
+                    .setHTML('<div style="font-family:Plus Jakarta Sans,sans-serif;padding:4px;"><p style="font-weight:800;font-size:13px;margin:0 0 4px;">' + pt.name + '</p><p style="font-size:11px;color:#64748b;margin:0;">' + pt.desc + '</p></div>');
                 new mapboxgl.Marker({ element: el }).setLngLat(pt.coords).setPopup(popup).addTo(map);
             });
         });
     }
 
+    // ============================================================
     // COMMUNITY
+    // ============================================================
+    
     async function loadMuro() {
         try {
-            const { data, error } = await db.from('comunidad').select('*').order('created_at', { ascending: false }).limit(30);
-            if (error) throw error;
-            renderMuro(data || []);
+            var result = await db.from('comunidad').select('*').order('created_at', { ascending: false }).limit(30);
+            if (result.error) throw result.error;
+            renderMuro(result.data || []);
         } catch(e) {
             renderMuro([
                 { autor: 'María Gómez', mensaje: 'Hoy llevé mis residuos electrónicos al punto RAEE. ¡Fácil y rápido! 💚', created_at: new Date().toISOString() },
@@ -1678,249 +1230,238 @@
     }
 
     function renderMuro(posts) {
-        if (!posts.length) {
-            document.getElementById('comunidad-list').innerHTML = '<div class=\"card p-8 text-center text-slate-400 text-sm font-semibold\">Sé el primero en publicar 🌿</div>';
+        if (!posts || !posts.length) {
+            document.getElementById('comunidad-list').innerHTML = '<div class="card p-8 text-center text-slate-400 text-sm font-semibold">Sé el primero en publicar 🌿</div>';
             return;
         }
         document.getElementById('comunidad-list').innerHTML = posts.map(p => {
-            const seed = encodeURIComponent(p.autor || 'anon');
-            const avatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + seed + '&backgroundColor=d1fae5';
-            const timeAgo = p.created_at ? getTimeAgo(p.created_at) : '';
-            const imgHtml = p.foto_url ? '<img src=\"' + p.foto_url + '\" class=\"w-full rounded-xl mt-3 object-cover\" style=\"max-height:200px;\" onerror=\"this.remove()\">' : '';
-            return (
-                '<div class=\"card p-5\">' +
-                    '<div class=\"flex items-center gap-3 mb-3\">' +
-                        '<div class=\"w-10 h-10 rounded-full avatar-fallback text-sm flex-shrink-0\">' + (p.autor || '?').charAt(0).toUpperCase() + '</div>' +
-                        '<div>' +
-                            '<p class=\"font-extrabold text-sm text-slate-900 leading-tight\">' + escHtml(p.autor || 'Anónimo') + '</p>' +
-                            '<p class=\"text-[9px] text-slate-400 font-bold\">Cota · ' + timeAgo + '</p>' +
-                        '</div>' +
-                    '</div>' +
-                    '<p class=\"text-slate-600 text-sm leading-relaxed\">' + escHtml(p.mensaje || '') + '</p>' +
-                    imgHtml +
-                '</div>');
+            var timeAgo = p.created_at ? getTimeAgo(p.created_at) : '';
+            var imgHtml = p.foto_url ? '<img src="' + p.foto_url + '" class="w-full rounded-xl mt-3 object-cover" style="max-height:200px;" onerror="this.remove()">' : '';
+            return '<div class="card p-5">' +
+                '<div class="flex items-center gap-3 mb-3">' +
+                    '<div class="w-10 h-10 rounded-full avatar-fallback text-sm flex-shrink-0">' + (p.autor || '?').charAt(0).toUpperCase() + '</div>' +
+                    '<div><p class="font-extrabold text-sm text-slate-900 leading-tight">' + escHtml(p.autor || 'Anónimo') + '</p><p class="text-[9px] text-slate-400 font-bold">Cota · ' + timeAgo + '</p></div>' +
+                '</div>' +
+                '<p class="text-slate-600 text-sm leading-relaxed">' + escHtml(p.mensaje || '') + '</p>' + imgHtml +
+            '</div>';
         }).join('');
     }
 
-    async function postToCommunity() {
-        const msg = document.getElementById('c-mensaje').value.trim();
-        const name = localStorage.getItem('user_real_name') || 'Anónimo';
-        if (!msg) { showToast('Escribe algo antes de publicar'); return; }
-
-        const payload = { autor: name, mensaje: msg };
-        if (capturedPhotoData) payload.foto_url = capturedPhotoData;
-
-        try {
-            const { error } = await db.from('comunidad').insert([payload]);
-            if (error) throw error;
-            addLog('New post', msg.slice(0, 30) + '...');
-            showToast('¡Publicado en el muro! 🌿');
-        } catch(e) {
-            showToast('Publicado localmente (sin conexión)');
-        }
-        document.getElementById('c-mensaje').value = '';
-        capturedPhotoData = null;
-        loadMuro();
-    }
-
+    // ============================================================
     // CAMERA
-    async function openCamera() {
-        cameraMode = 'post';
-        document.getElementById('cam-title').innerText = 'Foto para el Muro';
-        startCamera();
-    }
-
-    async function openCameraForAvatar() {
-        cameraMode = 'avatar';
-        document.getElementById('cam-title').innerText = 'Foto de Perfil';
-        startCamera();
-    }
-
+    // ============================================================
+    
     async function startCamera() {
         document.getElementById('camera-modal').classList.remove('hidden');
         document.getElementById('canvas-preview').style.display = 'none';
         document.getElementById('camera-controls').classList.remove('hidden');
         document.getElementById('photo-actions').classList.add('hidden');
         document.getElementById('camera-video').style.display = 'block';
-
         try {
             cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1280 } }, audio: false });
             document.getElementById('camera-video').srcObject = cameraStream;
-        } catch(e) {
-            showToast('Cámara no disponible');
-            closeCamera();
-        }
+        } catch(e) { showToast('Cámara no disponible'); closeCamera(); }
     }
 
-    function capturePhoto() {
-        const video = document.getElementById('camera-video');
-        const canvas = document.getElementById('canvas-hidden');
-        canvas.width = video.videoWidth || 640;
-        canvas.height = video.videoHeight || 480;
-        canvas.getContext('2d').drawImage(video, 0, 0);
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+    function stopCamera() { if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; } }
 
-        document.getElementById('canvas-preview').src = dataUrl;
-        document.getElementById('canvas-preview').style.display = 'block';
-        document.getElementById('camera-video').style.display = 'none';
-        document.getElementById('camera-controls').classList.add('hidden');
-        document.getElementById('photo-actions').classList.remove('hidden');
-        stopCamera();
-    }
-
-    async function usePhoto() {
-        const dataUrl = document.getElementById('canvas-preview').src;
-        
-        if (cameraMode === 'avatar') {
-            if (currentUser) {
-                const blob = await (await fetch(dataUrl)).blob();
-                const path = 'avatars/' + currentUser.id + '.jpg';
-                await db.storage.from('avatars').upload(path, blob, { upsert: true });
-                const { data } = db.storage.from('avatars').getPublicUrl(path);
-                await db.from('profiles').update({ avatar_url: data.publicUrl }).eq('id', currentUser.id);
-                updateAvatar(data.publicUrl, (localStorage.getItem('user_real_name') || '?').charAt(0).toUpperCase());
-                showToast('Foto de perfil actualizada 📸');
-            }
-        } else {
-            capturedPhotoData = dataUrl;
-            showToast('Foto lista para publicar 📸');
-        }
-        closeCamera();
-    }
-
-    function retakePhoto() {
-        capturedPhotoData = null;
-        startCamera();
-    }
-
-    function closeCamera(e) {
-        if (e && e.target !== document.getElementById('camera-modal')) return;
-        stopCamera();
-        document.getElementById('camera-modal').classList.add('hidden');
-    }
-
-    function stopCamera() {
-        if (cameraStream) {
-            cameraStream.getTracks().forEach(t => t.stop());
-            cameraStream = null;
-        }
-    }
-
+    // ============================================================
     // PROFILE STATS
+    // ============================================================
+    
     async function loadProfileStats() {
-        const name = localStorage.getItem('user_real_name') || 'Anónimo';
+        if (!currentUser) return;
         try {
-            const [res1, res2] = await Promise.all([
-                db.from('acciones').select('impacto_co2'),
-                db.from('comunidad').select('id', { count: 'exact', head: true }).eq('autor', name),
-            ]);
-            const total = (res1.data || []).reduce((a, b) => a + parseFloat(b.impacto_co2 || 0), 0);
-            const posts = res2.count || 0;
-            const nivel = Math.floor(total / 10) + 1;
-            document.getElementById('p-co2').innerText = total.toFixed(1);
-            document.getElementById('p-posts').innerText = posts;
+            var result = await db.from('user_acciones')
+                .select('impacto_co2, puntos_ganados')
+                .eq('user_id', currentUser.id);
+            
+            if (result.error) throw result.error;
+            
+            var totalCO2 = (result.data || []).reduce((a, b) => a + parseFloat(b.impacto_co2 || 0), 0);
+            var totalPuntos = (result.data || []).reduce((a, b) => a + (b.puntos_ganados || 0), 0);
+            var retosCount = (result.data || []).length;
+            var nivel = Math.max(1, Math.floor(totalPuntos / 100) + 1);
+            var siguienteNivel = nivel * 100;
+            var progresoActual = totalPuntos % 100;
+            var progresoPct = Math.round((progresoActual / 100) * 100);
+            
+            document.getElementById('p-co2').innerText = totalCO2.toFixed(1);
+            document.getElementById('p-puntos').innerText = totalPuntos;
+            document.getElementById('p-retos').innerText = retosCount;
             document.getElementById('p-nivel').innerText = nivel;
-        } catch(e) {}
+            document.getElementById('p-progreso').innerText = progresoActual;
+            document.getElementById('p-sig-nivel').innerText = siguienteNivel;
+            
+            var barra = document.getElementById('barra-progreso');
+            if (barra) barra.style.width = progresoPct + '%';
+            
+        } catch(e) {
+            console.error('loadProfileStats error:', e);
+            document.getElementById('p-co2').innerText = '0.0';
+            document.getElementById('p-puntos').innerText = '0';
+            document.getElementById('p-retos').innerText = '0';
+            document.getElementById('p-nivel').innerText = '1';
+        }
     }
 
-    // MODALS
-    function toggleGuide(e) {
-        if (e && e.target !== document.getElementById('guide-modal')) return;
-        document.getElementById('guide-modal').classList.toggle('hidden');
-    }
-
+    // ============================================================
     // HELPERS
-    function escHtml(str) {
-        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-
+    // ============================================================
+    
+    function escHtml(str) { return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
     function getTimeAgo(iso) {
-        const diff = (Date.now() - new Date(iso).getTime()) / 1000;
+        var diff = (Date.now() - new Date(iso).getTime()) / 1000;
         if (diff < 60) return 'ahora';
         if (diff < 3600) return Math.floor(diff/60) + 'm';
         if (diff < 86400) return Math.floor(diff/3600) + 'h';
         return Math.floor(diff/86400) + 'd';
     }
 
-    let toastTimeout;
+    var toastTimeout;
     function showToast(msg) {
         clearTimeout(toastTimeout);
-        const existing = document.querySelector('.toast');
+        var existing = document.querySelector('.toast');
         if (existing) existing.remove();
-        const t = document.createElement('div');
-        t.className = 'toast';
-        t.innerText = msg;
+        var t = document.createElement('div');
+        t.className = 'toast'; t.innerText = msg;
         document.body.appendChild(t);
         toastTimeout = setTimeout(() => t.remove(), 3000);
     }
 
     // ============================================================
-    // EVENT LISTENERS (AGREGAR AL FINAL)
+    // INIT
     // ============================================================
     
-    document.addEventListener('DOMContentLoaded', () => {
-        // OAuth consent buttons
-        const btnApprove = document.getElementById('btn-approve-oauth');
-        const btnDeny = document.getElementById('btn-deny-oauth');
+    window.onload = async function() {
+        try {
+            db = supabase.createClient(SB_URL, SB_ANON_KEY);
+            logDiagnostic('✅ Supabase OK | v' + APP_VERSION, 'info');
+        } catch(e) { 
+            logDiagnostic('❌ Init: ' + e.message, 'error'); 
+            return; 
+        }
+        
+        var hash = window.location.hash;
+        var hasOAuthTokens = hash.indexOf('access_token') !== -1 || hash.indexOf('refresh_token') !== -1;
+        
+        if (hasOAuthTokens) {
+            logDiagnostic('🔍 Hash con tokens detectado, procesando OAuth...', 'info');
+            
+            try {
+                var sessionResult = await db.auth.getSession();
+                
+                if (sessionResult.data?.session) {
+                    currentUser = sessionResult.data.session.user;
+                    logDiagnostic('✅ OAuth login: ' + currentUser.email, 'info');
+                    showToast('¡Bienvenido! 🎉');
+                    window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+                    await createProfileAfterSignup(currentUser);
+                    await initUserData();
+                    return;
+                    
+                } else {
+                    logDiagnostic('⚠️ getSession no devolvió sesión, intentando manual...', 'warn');
+                    var hashParams = new URLSearchParams(hash.substring(1));
+                    var accessToken = hashParams.get('access_token');
+                    var refreshToken = hashParams.get('refresh_token');
+                    
+                    if (accessToken) {
+                        var result = await db.auth.setSession({
+                            access_token: accessToken,
+                            refresh_token: refreshToken || ''
+                        });
+                        
+                        if (result.data?.session) {
+                            currentUser = result.data.session.user;
+                            showToast('¡Bienvenido! 🎉');
+                            window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+                            await createProfileAfterSignup(currentUser);
+                            await initUserData();
+                            return;
+                        }
+                    }
+                }
+            } catch (e) {
+                logDiagnostic('❌ OAuth error: ' + e.message, 'error');
+            }
+        }
+        
+        var isOAuthFlow = await initOAuthConsent();
+        if (isOAuthFlow) return;
+        
+        db.auth.onAuthStateChange(async function(event, session) {
+            if (event === 'SIGNED_IN' && session && !currentUser) {
+                currentUser = session.user;
+                await createProfileAfterSignup(currentUser);
+                await initUserData();
+            }
+        });
+        
+        if (!currentUser) {
+            try {
+                var sessionResult = await db.auth.getSession();
+                if (sessionResult.data?.session) {
+                    currentUser = sessionResult.data.session.user;
+                    logDiagnostic('✅ Sesión existente: ' + currentUser.email, 'info');
+                    await initUserData();
+                }
+            } catch (e) { 
+                logDiagnostic('❌ Session check: ' + e.message, 'error'); 
+            }
+        }
+    };
+
+    // ============================================================
+    // EVENT LISTENERS (DOMContentLoaded)
+    // ============================================================
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        var btnApprove = document.getElementById('btn-approve-oauth');
+        var btnDeny = document.getElementById('btn-deny-oauth');
         
         if (btnApprove) {
-            btnApprove.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                approveOAuthConsent();
+            btnApprove.addEventListener('click', function(e) { 
+                e.preventDefault(); 
+                approveOAuthConsent(); 
             });
         }
         if (btnDeny) {
-            btnDeny.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                denyOAuthConsent();
+            btnDeny.addEventListener('click', function(e) { 
+                e.preventDefault(); 
+                denyOAuthConsent(); 
             });
         }
         
-        // OTP inputs
-        const otpInputs = document.querySelectorAll('.otp-input');
-        otpInputs.forEach((input, index) => {
-            input.addEventListener('keydown', (e) => {
-                if (e.key === 'Backspace' && !input.value && index > 0) {
-                    otpInputs[index - 1].focus();
-                }
-            });
-            
-            input.addEventListener('input', (e) => {
-                const val = e.target.value.replace(/\D/g, '');
-                e.target.value = val;
-                
-                if (val) {
-                    e.target.classList.add('filled');
-                    if (index < 5) {
-                        otpInputs[index + 1].focus();
-                    } else {
-                        setTimeout(() => verifyOTP(), 200);
-                    }
-                } else {
-                    e.target.classList.remove('filled');
-                }
-            });
-            
-            input.addEventListener('paste', (e) => {
-                e.preventDefault();
-                const pasteData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
-                
-                pasteData.split('').forEach((char, i) => {
-                    if (otpInputs[i]) {
-                        otpInputs[i].value = char;
-                        otpInputs[i].classList.add('filled');
-                    }
+        var otpInputs = document.querySelectorAll('.otp-input');
+        if (otpInputs.length > 0) {
+            otpInputs.forEach(function(input, index) {
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && !input.value && index > 0) otpInputs[index - 1].focus();
                 });
-                
-                if (pasteData.length === 6) {
-                    setTimeout(() => verifyOTP(), 200);
-                } else if (otpInputs[pasteData.length]) {
-                    otpInputs[pasteData.length].focus();
-                }
+                input.addEventListener('input', function(e) {
+                    var val = e.target.value.replace(/\D/g, '');
+                    e.target.value = val;
+                    if (val) {
+                        e.target.classList.add('filled');
+                        if (index < 5) otpInputs[index + 1].focus();
+                        else setTimeout(verifyOTP, 200);
+                    } else e.target.classList.remove('filled');
+                });
+                input.addEventListener('paste', function(e) {
+                    e.preventDefault();
+                    var pasteData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+                    pasteData.split('').forEach(function(char, i) {
+                        if (otpInputs[i]) { 
+                            otpInputs[i].value = char; 
+                            otpInputs[i].classList.add('filled'); 
+                        }
+                    });
+                    if (pasteData.length === 6) setTimeout(verifyOTP, 200);
+                    else if (otpInputs[pasteData.length]) otpInputs[pasteData.length].focus();
+                });
             });
-        });
+        }
     });
 </script>
 </body>
