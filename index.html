@@ -639,25 +639,22 @@
     // OAUTH CLIENT: GOOGLE / GITHUB
     // ============================================================
     
-    async function signInWithOAuth(provider) {
-        logDiagnostic('🔐 OAuth ' + provider + ' iniciado...', 'info');
-        showToast('Conectando con ' + provider + '...');
-        
+    window.signInWithOAuth = async function(provider) {
+        console.log("Iniciando sesión con:", provider);
         try {
-            const { data, error } = await db.auth.signInWithOAuth({
+            const { data, error } = await _supabase.auth.signInWithOAuth({
                 provider: provider,
                 options: {
-                    redirectTo: SITE_URL,
-                    queryParams: provider === 'google' ? { access_type: 'offline', prompt: 'consent' } : {}
+                    redirectTo: window.location.origin
                 }
             });
             if (error) throw error;
-            if (data?.url) window.location.href = data.url;
-        } catch (e) {
-            logDiagnostic('❌ OAuth ' + provider + ': ' + e.message, 'error');
-            alert('Error: ' + e.message);
+        } catch (error) {
+            console.error('Error en OAuth:', error.message);
+            showToast("No se pudo conectar con " + provider)
+            alert("No se pudo conectar con " + provider);
         }
-    }
+    };
 
     async function handleOAuthCallback() {
         const hash = window.location.hash;
