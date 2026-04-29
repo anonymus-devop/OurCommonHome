@@ -68,16 +68,12 @@
         .post-admin { position: relative; }
         .post-admin .delete-btn { position: absolute; top: 0.5rem; right: 0.5rem; opacity: 0; transition: opacity 0.2s; }
         .post-admin:hover .delete-btn { opacity: 1; }
-        
-        /* OTP */
         .otp-container { display: flex; gap: 0.5rem; justify-content: center; margin: 1.5rem 0; }
         .otp-input { width: 3rem; height: 3.5rem; text-align: center; font-size: 1.5rem; font-weight: 800; border: 2px solid #e2e8f0; border-radius: 1rem; background: #f8fafc; outline: none; transition: all 0.2s; }
         .otp-input:focus { border-color: #16a34a; background: #f0fdf4; transform: scale(1.05); }
         .otp-input.filled { border-color: #16a34a; background: #dcfce7; color: #15803d; }
         .otp-timer { font-size: 0.75rem; color: #94a3b8; font-weight: 600; }
         .otp-timer.expired { color: #ef4444; }
-        
-        /* OAuth */
         .oauth-divider { display: flex; align-items: center; gap: 1rem; margin: 1rem 0; color: #94a3b8; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
         .oauth-divider::before, .oauth-divider::after { content: ''; flex: 1; height: 1px; background: #e2e8f0; }
         .oauth-btn { width: 100%; padding: 1rem; border-radius: 1rem; border: 2px solid #e2e8f0; background: white; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.75rem; margin-bottom: 0.5rem; }
@@ -86,8 +82,6 @@
         .oauth-btn-google:hover { background: #f8fafc; }
         .oauth-btn-github { border-color: #24292f; background: #24292f; color: white; }
         .oauth-btn-github:active { background: #1a1e22; }
-        
-        /* Consent */
         .consent-screen { background: white; min-height: 100vh; padding: 2rem 1.5rem; }
         .consent-header { text-align: center; margin-bottom: 2rem; }
         .consent-app-icon { width: 64px; height: 64px; border-radius: 1.5rem; background: linear-gradient(135deg, #16a34a, #22c55e); display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 1rem; }
@@ -101,8 +95,6 @@
         .consent-buttons .btn-deny:active { transform: scale(0.97); background: #f8fafc; }
         .consent-user-info { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: #f0fdf4; border-radius: 1rem; margin-bottom: 1.5rem; }
         .consent-user-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #16a34a, #22c55e); display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; }
-        
-        /* Barra progreso nivel */
         .barra-progreso-container { width: 100%; height: 8px; background: #e2e8f0; border-radius: 999px; overflow: hidden; margin-top: 0.5rem; }
         .barra-progreso-fill { height: 100%; background: linear-gradient(90deg, #16a34a, #22c55e); border-radius: 999px; transition: width 0.5s ease; }
     </style>
@@ -146,9 +138,8 @@
     <div class="w-28 h-28 bg-green-50 rounded-[2.5rem] mb-6 flex items-center justify-center text-6xl shadow-inner">🌿</div>
     <h1 class="text-3xl font-black mb-2 tracking-tight">Nuestro Hogar Común</h1>
     <p class="text-slate-500 font-medium text-sm mb-2 text-center max-w-xs">Comunidad ecológica de Cota. Retos, mapa y muro verde.</p>
-    <p id="version-tag" class="text-[10px] text-slate-400 font-mono mb-4">v2.4.0-Retos</p>
+    <p id="version-tag" class="text-[10px] text-slate-400 font-mono mb-4">v2.4.1-OAuthFix</p>
     
-    <!-- OTP SCREEN -->
     <div id="otp-screen" class="hidden w-full max-w-sm">
         <div class="login-card text-center">
             <div class="w-16 h-16 bg-blue-50 rounded-2xl mx-auto mb-4 flex items-center justify-center text-3xl">🔐</div>
@@ -169,7 +160,6 @@
         </div>
     </div>
     
-    <!-- DIAGNOSTIC PANEL -->
     <div id="diagnostic-panel" class="diagnostic-panel hidden w-full max-w-sm">
         <h4>🔧 Diagnóstico de Conexión</h4>
         <div id="diagnostic-log" class="diagnostic-log"></div>
@@ -179,10 +169,7 @@
         </div>
     </div>
     
-    <!-- MAIN AUTH FORM -->
     <div id="auth-form" class="login-card w-full max-w-sm space-y-3">
-        
-        <!-- OAUTH BUTTONS -->
         <button class="oauth-btn oauth-btn-google" onclick="signInWithOAuth('google')">
             <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
             Continuar con Google
@@ -251,9 +238,7 @@
     </header>
 
     <main class="px-5 space-y-0">
-        <!-- HOME -->
         <div id="view-home" class="tab-view space-y-5">
-            <!-- Banner CO₂ personal -->
             <div class="bg-gradient-to-br from-green-600 to-emerald-800 p-7 rounded-[2rem] text-white shadow-lg">
                 <p class="text-[10px] font-black opacity-75 uppercase tracking-widest mb-1" id="co2-label">Mi impacto · CO₂ ahorado</p>
                 <div class="flex items-baseline gap-2">
@@ -273,7 +258,6 @@
                 </div>
             </div>
 
-            <!-- Admin badge -->
             <div id="admin-badge" class="hidden">
                 <div class="card p-4 flex items-center justify-between bg-gradient-to-r from-purple-50 to-white border-purple-100">
                     <div class="flex items-center gap-3">
@@ -287,7 +271,6 @@
                 </div>
             </div>
 
-            <!-- Retos -->
             <div>
                 <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Retos Verificados</h3>
                 <div id="acciones-list" class="space-y-3">
@@ -299,7 +282,6 @@
             </div>
         </div>
 
-        <!-- MAP -->
         <div id="view-map" class="tab-view hidden space-y-4">
             <div id="map"></div>
             <div class="card p-5">
@@ -312,7 +294,6 @@
             </div>
         </div>
 
-        <!-- COMMUNITY -->
         <div id="view-community" class="tab-view hidden space-y-4">
             <div class="card p-5">
                 <p class="text-[10px] font-black text-green-600 uppercase tracking-widest mb-3">Publicar como <span id="pub-author">...</span></p>
@@ -327,7 +308,6 @@
             <div id="comunidad-list" class="space-y-3"></div>
         </div>
 
-        <!-- ADMIN -->
         <div id="view-admin" class="tab-view hidden space-y-4">
             <div class="grid grid-cols-2 gap-3">
                 <div class="admin-stat admin-stat-purple">
@@ -370,7 +350,6 @@
             </div>
         </div>
 
-        <!-- PROFILE -->
         <div id="view-profile" class="tab-view hidden space-y-4">
             <div class="card p-6 text-center">
                 <div class="w-24 h-24 rounded-[2rem] mx-auto mb-4 border-4 border-green-50 overflow-hidden shadow-md relative">
@@ -381,7 +360,6 @@
                 <h3 id="p-name" class="text-xl font-black">—</h3>
                 <p id="p-tag" class="text-green-600 font-bold text-sm mb-4">@usuario</p>
                 
-                <!-- Stats mejorados -->
                 <div class="space-y-3">
                     <div class="bg-green-50 rounded-xl p-3 flex items-center gap-3">
                         <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center text-xl">🌍</div>
@@ -407,7 +385,6 @@
                         </div>
                     </div>
                     
-                    <!-- Nivel con barra -->
                     <div class="bg-amber-50 rounded-xl p-3">
                         <div class="flex justify-between items-center mb-2">
                             <div class="flex items-center gap-2">
@@ -490,7 +467,7 @@
     // ============================================================
     // CONFIG
     // ============================================================
-    const APP_VERSION = '2.4.0-Retos';
+    const APP_VERSION = '2.4.1-OAuthFix';
     const SITE_URL = 'https://anonymus-devop.github.io/OurCommonHome/';
     
     const MAPBOX_TOKEN = 'pk.eyJ1IjoiamVyaXhkZXZlbG9waW5naSIsImEiOiJjbWhiZHU0YngxNjF2MmtwdXAxaWtydjR5In0.0Xx724Epn3x3nJ8hAYC1dA';
@@ -516,6 +493,289 @@
         { name: 'Centro de Acopio Rozo', coords: [-74.1115, 4.8088], type: 'municipal', color: '#16a34a', desc: 'Vereda Rozo, Cota. Jue y Sáb 7am-1pm' },
         { name: 'Punto Verde Siberia', coords: [-74.1023, 4.8155], type: 'verde', color: '#3b82f6', desc: 'Vía Siberia, cerca al portón. 24 horas' },
     ];
+
+    // ============================================================
+    // FUNCIONES GLOBALES (expuestas a window para onclick inline)
+    // ============================================================
+    
+    // OAUTH CLIENT - Google / GitHub
+    window.signInWithOAuth = async function(provider) {
+        console.log("🔐 OAuth iniciado:", provider);
+        showToast('Conectando con ' + provider + '...');
+        
+        try {
+            const { data, error } = await db.auth.signInWithOAuth({
+                provider: provider,
+                options: {
+                    redirectTo: SITE_URL,
+                    queryParams: provider === 'google' ? {
+                        access_type: 'offline',
+                        prompt: 'consent'
+                    } : {}
+                }
+            });
+            
+            if (error) {
+                console.error('❌ OAuth error:', error.message);
+                showToast('Error: ' + error.message);
+                return;
+            }
+            
+            if (data?.url) {
+                window.location.href = data.url;
+            }
+            
+        } catch (e) {
+            console.error('❌ OAuth exc:', e.message);
+            showToast('Error: ' + e.message);
+        }
+    };
+
+    // LOGIN
+    window.login = async function() {
+        const email = document.getElementById('auth-email').value.trim();
+        const pass = document.getElementById('auth-pass').value;
+        if (!email || !pass) { showToast('Completa email y contraseña'); return; }
+
+        logDiagnostic('🔑 Login: ' + email, 'info');
+        try {
+            const { data, error } = await db.auth.signInWithPassword({ email, password: pass });
+            if (error) { alert(error.message); return; }
+            currentUser = data.user;
+            const pendingAuthId = sessionStorage.getItem('pending_oauth_auth_id');
+            if (pendingAuthId) await resumeOAuthAfterLogin();
+            else await initUserData();
+        } catch (e) { alert('Error: ' + e.message); }
+    };
+
+    // REGISTER
+    window.register = async function() {
+        const email = document.getElementById('auth-email').value.trim();
+        const pass = document.getElementById('auth-pass').value;
+        if (!email || !pass) { showToast('Completa email y contraseña'); return; }
+        if (pass.length < 6) { alert('Mínimo 6 caracteres'); return; }
+
+        logDiagnostic('📝 Registro: ' + email, 'info');
+        pendingEmail = email;
+
+        try {
+            const { data: loginData } = await db.auth.signInWithPassword({ email, password: pass });
+            if (loginData?.user) { currentUser = loginData.user; showToast('¡Bienvenido! 👋'); await initUserData(); return; }
+        } catch (e) {}
+
+        try {
+            const { data, error } = await db.auth.signUp({ email, password: pass, options: { data: { name: '' } } });
+            if (error) { alert('Error: ' + error.message); return; }
+            if (data?.user && !data?.session) { showOTPScreen(email); }
+            else if (data?.session) { currentUser = data.user; await createProfileAfterSignup(data.user); await initUserData(); }
+        } catch (e) { alert('Error: ' + e.message); }
+    };
+
+    // OTP
+    window.verifyOTP = async function() {
+        const inputs = document.querySelectorAll('.otp-input');
+        const code = Array.from(inputs).map(i => i.value).join('');
+        if (code.length !== 6) { showToast('Ingresa los 6 dígitos'); return; }
+
+        try {
+            const result = await db.auth.verifyOtp({ email: pendingEmail, token: code, type: 'signup' });
+            if (result.error) {
+                alert('Código incorrecto'); inputs.forEach(i => { i.value = ''; i.classList.remove('filled'); }); inputs[0].focus(); return;
+            }
+            currentUser = result.data.user;
+            hideOTPScreen();
+            await createProfileAfterSignup(currentUser);
+            await initUserData();
+        } catch (e) { alert('Error: ' + e.message); }
+    };
+
+    window.resendOTP = async function() {
+        try {
+            await db.auth.resend({ type: 'signup', email: pendingEmail });
+            showToast('Código reenviado 📩'); startOTPTimer();
+        } catch (e) { alert('Error: ' + e.message); }
+    };
+
+    window.cancelOTP = function() { hideOTPScreen(); };
+
+    // OWNER
+    window.loginOwner = async function() {
+        const email = document.getElementById('owner-email').value;
+        const pass = document.getElementById('owner-pass').value;
+        const masterKey = document.getElementById('owner-master-key').value;
+        if (!email || !pass || !masterKey) { alert('Completa todos los campos'); return; }
+        if (masterKey !== MASTER_OWNER_KEY) { alert('❌ Master Key incorrecta'); return; }
+        
+        try {
+            const { data, error } = await db.auth.signInWithPassword({ email, password: pass });
+            if (error) throw error;
+            currentUser = data.user;
+            const { data: profile } = await db.from('profiles').select('role, name').eq('id', currentUser.id).single();
+            if (profile?.role === 'owner') {
+                isOwner = true; localStorage.setItem('is_owner', 'true'); localStorage.setItem('user_real_name', profile.name || 'Owner');
+                addLog('Owner login', email); showToast('Bienvenido Owner 👑'); enterApp();
+            } else { await db.auth.signOut(); currentUser = null; alert('❌ No tienes permisos'); }
+        } catch (e) { alert('Error: ' + e.message); }
+    };
+
+    window.logout = async function() {
+        addLog('Logout', currentUser?.email || 'unknown');
+        await db.auth.signOut(); localStorage.clear(); currentUser = null; isOwner = false; location.reload();
+    };
+
+    // PROFILE SETUP
+    window.saveProfileSetup = async function() {
+        const name = document.getElementById('setup-name').value.trim();
+        const rawTag = document.getElementById('setup-tag').value.trim().replace('@', '').replace(/\s+/g, '_').toLowerCase();
+        if (!name || !rawTag) { showToast('Completa nombre y usuario'); return; }
+        if (!currentUser) { showToast('Error: No hay sesión'); return; }
+        
+        try {
+            const { error } = await db.from('profiles').update({ name: name, updated_at: new Date().toISOString() }).eq('id', currentUser.id);
+            if (error) { showToast('Error: ' + error.message); return; }
+            localStorage.setItem('user_real_name', name);
+            localStorage.setItem('user_unique_tag', '@' + rawTag);
+            document.getElementById('profile-setup').classList.add('hidden');
+            enterApp();
+        } catch (e) { showToast('Error de conexión'); }
+    };
+
+    window.skipProfileSetup = function() {
+        if (!currentUser) return;
+        const defaultName = currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || currentUser.email.split('@')[0];
+        localStorage.setItem('user_real_name', defaultName);
+        localStorage.setItem('user_unique_tag', defaultName.toLowerCase());
+        document.getElementById('profile-setup').classList.add('hidden');
+        enterApp();
+    };
+
+    // TABS
+    window.changeTab = function(tabId, el) {
+        document.querySelectorAll('.tab-view').forEach(v => v.classList.add('hidden'));
+        document.getElementById('view-' + tabId).classList.remove('hidden');
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
+        if (el) el.classList.add('tab-active');
+        document.getElementById('section-label').innerText = TAB_META[tabId].label;
+        document.getElementById('view-title').innerText = TAB_META[tabId].title;
+        if (tabId === 'map' && !map) initMap();
+        if (tabId === 'community') loadMuro();
+        if (tabId === 'profile') loadProfileStats();
+        if (tabId === 'admin') loadAdminPanel();
+        window.scrollTo(0, 0);
+    };
+
+    // RETOS
+    window.completarReto = async function(accionId, co2) {
+        if (!currentUser) { showToast('Inicia sesión para completar retos'); return; }
+        
+        var puntos = Math.round(co2 * 2);
+        showToast('+' + puntos + ' pts 🌿');
+        
+        try {
+            var result = await db.from('user_acciones').insert({
+                user_id: currentUser.id,
+                accion_id: accionId,
+                impacto_co2: co2,
+                puntos_ganados: puntos
+            });
+            
+            if (result.error) {
+                if (result.error.code === '23505') { showToast('¡Ya completaste este reto! 🎉'); return; }
+                throw result.error;
+            }
+            
+            showToast('¡Reto completado! +' + puntos + ' pts 🎉');
+            addLog('Reto completado', accionId);
+            setTimeout(() => { loadHomeData(); loadProfileStats(); }, 500);
+            
+        } catch (e) {
+            console.error('completarReto error:', e);
+            showToast('Error: ' + e.message);
+        }
+    };
+
+    // COMMUNITY
+    window.postToCommunity = async function() {
+        var msg = document.getElementById('c-mensaje').value.trim();
+        var name = localStorage.getItem('user_real_name') || 'Anónimo';
+        if (!msg) { showToast('Escribe algo antes de publicar'); return; }
+        var payload = { autor: name, mensaje: msg };
+        if (capturedPhotoData) payload.foto_url = capturedPhotoData;
+        try {
+            var result = await db.from('comunidad').insert([payload]);
+            if (result.error) throw result.error;
+            addLog('New post', msg.slice(0, 30) + '...');
+            showToast('¡Publicado en el muro! 🌿');
+        } catch(e) { showToast('Publicado localmente (sin conexión)'); }
+        document.getElementById('c-mensaje').value = '';
+        capturedPhotoData = null;
+        loadMuro();
+    };
+
+    // CAMERA
+    window.openCamera = async function() { cameraMode = 'post'; document.getElementById('cam-title').innerText = 'Foto para el Muro'; startCamera(); };
+    window.openCameraForAvatar = async function() { cameraMode = 'avatar'; document.getElementById('cam-title').innerText = 'Foto de Perfil'; startCamera(); };
+    window.capturePhoto = function() {
+        var video = document.getElementById('camera-video');
+        var canvas = document.getElementById('canvas-hidden');
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 480;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        var dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        document.getElementById('canvas-preview').src = dataUrl;
+        document.getElementById('canvas-preview').style.display = 'block';
+        document.getElementById('camera-video').style.display = 'none';
+        document.getElementById('camera-controls').classList.add('hidden');
+        document.getElementById('photo-actions').classList.remove('hidden');
+        stopCamera();
+    };
+    window.usePhoto = async function() {
+        var dataUrl = document.getElementById('canvas-preview').src;
+        if (cameraMode === 'avatar') {
+            if (currentUser) {
+                var blob = await (await fetch(dataUrl)).blob();
+                var path = 'avatars/' + currentUser.id + '.jpg';
+                await db.storage.from('avatars').upload(path, blob, { upsert: true });
+                var result = db.storage.from('avatars').getPublicUrl(path);
+                await db.from('profiles').update({ avatar_url: result.data.publicUrl }).eq('id', currentUser.id);
+                updateAvatar(result.data.publicUrl, (localStorage.getItem('user_real_name') || '?').charAt(0).toUpperCase());
+                showToast('Foto de perfil actualizada 📸');
+            }
+        } else { capturedPhotoData = dataUrl; showToast('Foto lista para publicar 📸'); }
+        closeCamera();
+    };
+    window.retakePhoto = function() { capturedPhotoData = null; startCamera(); };
+    window.closeCamera = function(e) { if (e && e.target !== document.getElementById('camera-modal')) return; stopCamera(); document.getElementById('camera-modal').classList.add('hidden'); };
+
+    // ADMIN
+    window.showAdminSection = function(section) {
+        document.querySelectorAll('.admin-section').forEach(s => s.classList.add('hidden'));
+        document.getElementById('admin-section-' + section).classList.remove('hidden');
+        document.querySelectorAll('[id^="admin-tab-"]').forEach(b => b.style.opacity = '0.6');
+        document.getElementById('admin-tab-' + section).style.opacity = '1';
+    };
+    window.makeOwner = async function(id) { if (!confirm('¿Promover a Owner?')) return; await db.from('profiles').update({ role: 'owner' }).eq('id', id); addLog('Promoted to owner', id); showToast('Usuario promovido 👑'); loadUsers(); };
+    window.deleteUser = async function(id) { if (!confirm('¿Eliminar usuario?')) return; await db.from('profiles').update({ role: 'deleted', name: '[Eliminado]' }).eq('id', id); addLog('User deleted', id); showToast('Usuario eliminado'); loadUsers(); };
+    window.deletePost = async function(id) { if (!confirm('¿Eliminar esta publicación?')) return; await db.from('comunidad').delete().eq('id', id); addLog('Post deleted', id); showToast('Publicación eliminada 🗑️'); loadAdminPosts(); loadMuro(); };
+
+    // MODALS
+    window.toggleGuide = function(e) { if (e && e.target !== document.getElementById('guide-modal')) return; document.getElementById('guide-modal').classList.toggle('hidden'); };
+    window.runDiagnostics = async function() {
+        diagnosticLogs = [];
+        document.getElementById('diagnostic-panel').classList.remove('hidden');
+        const logContainer = document.getElementById('diagnostic-log');
+        logContainer.innerHTML = '';
+        logDiagnostic('🔍 v' + APP_VERSION + ' | Site: ' + SITE_URL, 'info');
+        try {
+            const start = performance.now();
+            const { data, error } = await db.from('profiles').select('count', { count: 'exact', head: true });
+            const duration = (performance.now() - start).toFixed(0);
+            if (error) logDiagnostic('❌ profiles: ' + error.message, 'error');
+            else logDiagnostic('✅ profiles OK (' + duration + ' ms)', 'info');
+        } catch (e) { logDiagnostic('❌ Error: ' + e.message, 'error'); }
+        logDiagnostic('✅ Diagnóstico completado.', 'info');
+    };
+    window.clearDiagnostics = function() { diagnosticLogs = []; document.getElementById('diagnostic-log').innerHTML = ''; };
 
     // ============================================================
     // OAUTH SERVER: CONSENT SCREEN
@@ -636,52 +896,7 @@
     }
 
     // ============================================================
-    // OAUTH CLIENT: GOOGLE / GITHUB
-    // ============================================================
-    
-    async function signInWithOAuth(provider) {
-        logDiagnostic('🔐 OAuth ' + provider + ' iniciado...', 'info');
-        showToast('Conectando con ' + provider + '...');
-        
-        try {
-            const { data, error } = await db.auth.signInWithOAuth({
-                provider: provider,
-                options: {
-                    redirectTo: SITE_URL,
-                    queryParams: provider === 'google' ? { access_type: 'offline', prompt: 'consent' } : {}
-                }
-            });
-            if (error) throw error;
-            if (data?.url) window.location.href = data.url;
-        } catch (e) {
-            logDiagnostic('❌ OAuth ' + provider + ': ' + e.message, 'error');
-            alert('Error: ' + e.message);
-        }
-    }
-
-    async function handleOAuthCallback() {
-        const hash = window.location.hash;
-        const query = new URLSearchParams(window.location.search);
-        
-        if (hash.includes('access_token') || hash.includes('refresh_token') || query.get('code')) {
-            logDiagnostic('🔍 OAuth callback detectado', 'info');
-            try {
-                const { data: { session }, error } = await db.auth.getSession();
-                if (error) throw error;
-                if (session) {
-                    currentUser = session.user;
-                    window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
-                    await createProfileAfterSignup(currentUser);
-                    await initUserData();
-                }
-            } catch (e) {
-                logDiagnostic('❌ OAuth callback: ' + e.message, 'error');
-            }
-        }
-    }
-
-    // ============================================================
-    // OTP
+    // OTP HELPERS
     // ============================================================
     
     function showOTPScreen(target) {
@@ -735,92 +950,10 @@
         }
     }
 
-    function clearDiagnostics() { diagnosticLogs = []; document.getElementById('diagnostic-log').innerHTML = ''; }
-
-    async function runDiagnostics() {
-        diagnosticLogs = [];
-        document.getElementById('diagnostic-panel').classList.remove('hidden');
-        const logContainer = document.getElementById('diagnostic-log');
-        logContainer.innerHTML = '';
-        logDiagnostic('🔍 v' + APP_VERSION + ' | Site: ' + SITE_URL, 'info');
-        try {
-            const start = performance.now();
-            const { data, error } = await db.from('profiles').select('count', { count: 'exact', head: true });
-            const duration = (performance.now() - start).toFixed(0);
-            if (error) logDiagnostic('❌ profiles: ' + error.message, 'error');
-            else logDiagnostic('✅ profiles OK (' + duration + ' ms)', 'info');
-        } catch (e) { logDiagnostic('❌ Error: ' + e.message, 'error'); }
-        logDiagnostic('✅ Diagnóstico completado.', 'info');
-    }
-
     // ============================================================
-    // AUTH: LOGIN & REGISTER
+    // AUTH HELPERS
     // ============================================================
     
-    async function login() {
-        const email = document.getElementById('auth-email').value.trim();
-        const pass = document.getElementById('auth-pass').value;
-        if (!email || !pass) { showToast('Completa email y contraseña'); return; }
-
-        logDiagnostic('🔑 Login: ' + email, 'info');
-        try {
-            const { data, error } = await db.auth.signInWithPassword({ email, password: pass });
-            if (error) { alert(error.message); return; }
-            currentUser = data.user;
-            const pendingAuthId = sessionStorage.getItem('pending_oauth_auth_id');
-            if (pendingAuthId) await resumeOAuthAfterLogin();
-            else await initUserData();
-        } catch (e) { alert('Error: ' + e.message); }
-    }
-
-    async function register() {
-        const email = document.getElementById('auth-email').value.trim();
-        const pass = document.getElementById('auth-pass').value;
-        if (!email || !pass) { showToast('Completa email y contraseña'); return; }
-        if (pass.length < 6) { alert('Mínimo 6 caracteres'); return; }
-
-        logDiagnostic('📝 Registro: ' + email, 'info');
-        pendingEmail = email;
-
-        try {
-            const { data: loginData } = await db.auth.signInWithPassword({ email, password: pass });
-            if (loginData?.user) { currentUser = loginData.user; showToast('¡Bienvenido! 👋'); await initUserData(); return; }
-        } catch (e) {}
-
-        try {
-            const { data, error } = await db.auth.signUp({ email, password: pass, options: { data: { name: '' } } });
-            if (error) { alert('Error: ' + error.message); return; }
-            if (data?.user && !data?.session) { showOTPScreen(email); }
-            else if (data?.session) { currentUser = data.user; await createProfileAfterSignup(data.user); await initUserData(); }
-        } catch (e) { alert('Error: ' + e.message); }
-    }
-
-    async function verifyOTP() {
-        const inputs = document.querySelectorAll('.otp-input');
-        const code = Array.from(inputs).map(i => i.value).join('');
-        if (code.length !== 6) { showToast('Ingresa los 6 dígitos'); return; }
-
-        try {
-            const result = await db.auth.verifyOtp({ email: pendingEmail, token: code, type: 'signup' });
-            if (result.error) {
-                alert('Código incorrecto'); inputs.forEach(i => { i.value = ''; i.classList.remove('filled'); }); inputs[0].focus(); return;
-            }
-            currentUser = result.data.user;
-            hideOTPScreen();
-            await createProfileAfterSignup(currentUser);
-            await initUserData();
-        } catch (e) { alert('Error: ' + e.message); }
-    }
-
-    async function resendOTP() {
-        try {
-            await db.auth.resend({ type: 'signup', email: pendingEmail });
-            showToast('Código reenviado 📩'); startOTPTimer();
-        } catch (e) { alert('Error: ' + e.message); }
-    }
-
-    function cancelOTP() { hideOTPScreen(); }
-
     async function createProfileAfterSignup(user) {
         try {
             const { error } = await db.from('profiles').upsert({
@@ -836,35 +969,6 @@
             else logDiagnostic('✅ Perfil creado', 'info');
         } catch (e) { logDiagnostic('❌ Perfil: ' + e.message, 'error'); }
     }
-
-    // OWNER LOGIN
-    async function loginOwner() {
-        const email = document.getElementById('owner-email').value;
-        const pass = document.getElementById('owner-pass').value;
-        const masterKey = document.getElementById('owner-master-key').value;
-        if (!email || !pass || !masterKey) { alert('Completa todos los campos'); return; }
-        if (masterKey !== MASTER_OWNER_KEY) { alert('❌ Master Key incorrecta'); return; }
-        
-        try {
-            const { data, error } = await db.auth.signInWithPassword({ email, password: pass });
-            if (error) throw error;
-            currentUser = data.user;
-            const { data: profile } = await db.from('profiles').select('role, name').eq('id', currentUser.id).single();
-            if (profile?.role === 'owner') {
-                isOwner = true; localStorage.setItem('is_owner', 'true'); localStorage.setItem('user_real_name', profile.name || 'Owner');
-                addLog('Owner login', email); showToast('Bienvenido Owner 👑'); enterApp();
-            } else { await db.auth.signOut(); currentUser = null; alert('❌ No tienes permisos'); }
-        } catch (e) { alert('Error: ' + e.message); }
-    }
-
-    async function logout() {
-        addLog('Logout', currentUser?.email || 'unknown');
-        await db.auth.signOut(); localStorage.clear(); currentUser = null; isOwner = false; location.reload();
-    }
-
-    // ============================================================
-    // PROFILE SETUP
-    // ============================================================
 
     async function initUserData() {
         try {
@@ -886,31 +990,6 @@
         document.getElementById('profile-setup').classList.remove('hidden');
     }
 
-    async function saveProfileSetup() {
-        const name = document.getElementById('setup-name').value.trim();
-        const rawTag = document.getElementById('setup-tag').value.trim().replace('@', '').replace(/\s+/g, '_').toLowerCase();
-        if (!name || !rawTag) { showToast('Completa nombre y usuario'); return; }
-        if (!currentUser) { showToast('Error: No hay sesión'); return; }
-        
-        try {
-            const { error } = await db.from('profiles').update({ name: name, updated_at: new Date().toISOString() }).eq('id', currentUser.id);
-            if (error) { showToast('Error: ' + error.message); return; }
-            localStorage.setItem('user_real_name', name);
-            localStorage.setItem('user_unique_tag', '@' + rawTag);
-            document.getElementById('profile-setup').classList.add('hidden');
-            enterApp();
-        } catch (e) { showToast('Error de conexión'); }
-    }
-
-    function skipProfileSetup() {
-        if (!currentUser) return;
-        const defaultName = currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || currentUser.email.split('@')[0];
-        localStorage.setItem('user_real_name', defaultName);
-        localStorage.setItem('user_unique_tag', defaultName.toLowerCase());
-        document.getElementById('profile-setup').classList.add('hidden');
-        enterApp();
-    }
-    
     function enterApp() {
         document.getElementById('auth-screen').classList.add('hidden');
         document.getElementById('otp-screen').classList.add('hidden');
@@ -959,22 +1038,8 @@
         profile: { label: 'Tu perfil', title: 'Mi Cuenta' },
     };
 
-    function changeTab(tabId, el) {
-        document.querySelectorAll('.tab-view').forEach(v => v.classList.add('hidden'));
-        document.getElementById('view-' + tabId).classList.remove('hidden');
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
-        if (el) el.classList.add('tab-active');
-        document.getElementById('section-label').innerText = TAB_META[tabId].label;
-        document.getElementById('view-title').innerText = TAB_META[tabId].title;
-        if (tabId === 'map' && !map) initMap();
-        if (tabId === 'community') loadMuro();
-        if (tabId === 'profile') loadProfileStats();
-        if (tabId === 'admin') loadAdminPanel();
-        window.scrollTo(0, 0);
-    }
-
     // ============================================================
-    // RETOS / ACCIONES (DINÁMICOS)
+    // RETOS / ACCIONES
     // ============================================================
     
     async function loadHomeData() {
@@ -996,8 +1061,6 @@
             }
             
             var totalCO2 = (retosResult.data || []).reduce((a, b) => a + parseFloat(b.impacto_co2 || 0), 0);
-            
-            // Mostrar personal o comunidad
             var co2Display = currentUser ? miCO2 : totalCO2;
             var labelDisplay = currentUser ? 'Mi impacto · CO₂ ahorado' : 'CO₂ Evitado · Comunidad Cota';
             
@@ -1005,12 +1068,10 @@
             document.getElementById('co2-label').innerText = labelDisplay;
             document.getElementById('home-actions-count').innerText = (retosResult.data || []).length;
             
-            // Puntos en banner
             var puntosBanner = document.getElementById('puntos-banner');
             if (currentUser) { puntosBanner.innerText = '⭐ ' + miPuntos + ' puntos'; puntosBanner.classList.remove('hidden'); }
             else puntosBanner.classList.add('hidden');
             
-            // Renderizar retos
             document.getElementById('acciones-list').innerHTML = (retosResult.data || []).map(reto => {
                 var isDone = completados.indexOf(reto.id) !== -1;
                 var puntos = Math.round(reto.impacto_co2 * 2);
@@ -1038,35 +1099,6 @@
         } catch(e) {
             console.error('loadHomeData error:', e);
             mostrarFallbackRetos();
-        }
-    }
-    
-    async function completarReto(accionId, co2) {
-        if (!currentUser) { showToast('Inicia sesión para completar retos'); return; }
-        
-        var puntos = Math.round(co2 * 2);
-        showToast('+' + puntos + ' pts 🌿');
-        
-        try {
-            var result = await db.from('user_acciones').insert({
-                user_id: currentUser.id,
-                accion_id: accionId,
-                impacto_co2: co2,
-                puntos_ganados: puntos
-            });
-            
-            if (result.error) {
-                if (result.error.code === '23505') { showToast('¡Ya completaste este reto! 🎉'); return; }
-                throw result.error;
-            }
-            
-            showToast('¡Reto completado! +' + puntos + ' pts 🎉');
-            addLog('Reto completado', accionId);
-            setTimeout(() => { loadHomeData(); loadProfileStats(); }, 500);
-            
-        } catch (e) {
-            console.error('completarReto error:', e);
-            showToast('Error: ' + e.message);
         }
     }
     
@@ -1116,13 +1148,6 @@
         } catch(e) { console.warn('Admin stats error:', e); }
     }
 
-    function showAdminSection(section) {
-        document.querySelectorAll('.admin-section').forEach(s => s.classList.add('hidden'));
-        document.getElementById('admin-section-' + section).classList.remove('hidden');
-        document.querySelectorAll('[id^="admin-tab-"]').forEach(b => b.style.opacity = '0.6');
-        document.getElementById('admin-tab-' + section).style.opacity = '1';
-    }
-
     async function loadUsers() {
         try {
             var result = await db.from('profiles').select('*').order('created_at', { ascending: false });
@@ -1142,9 +1167,6 @@
         } catch(e) { document.getElementById('users-list').innerHTML = '<div class="text-center text-slate-400 py-4">Error cargando usuarios</div>'; }
     }
 
-    async function makeOwner(id) { if (!confirm('¿Promover a Owner?')) return; await db.from('profiles').update({ role: 'owner' }).eq('id', id); addLog('Promoted to owner', id); showToast('Usuario promovido 👑'); loadUsers(); }
-    async function deleteUser(id) { if (!confirm('¿Eliminar usuario?')) return; await db.from('profiles').update({ role: 'deleted', name: '[Eliminado]' }).eq('id', id); addLog('User deleted', id); showToast('Usuario eliminado'); loadUsers(); }
-
     async function loadAdminPosts() {
         try {
             var result = await db.from('comunidad').select('*').order('created_at', { ascending: false }).limit(50);
@@ -1158,8 +1180,6 @@
             ).join('');
         } catch(e) { document.getElementById('admin-posts-list').innerHTML = '<div class="text-center text-slate-400 py-4">Error cargando posts</div>'; }
     }
-
-    async function deletePost(id) { if (!confirm('¿Eliminar esta publicación?')) return; await db.from('comunidad').delete().eq('id', id); addLog('Post deleted', id); showToast('Publicación eliminada 🗑️'); loadAdminPosts(); loadMuro(); }
 
     function addLog(action, detail) {
         var log = { time: new Date().toLocaleString('es-CO', { hour: '2-digit', minute: '2-digit', second: '2-digit' }), action: action, detail: detail, user: localStorage.getItem('user_real_name') || 'Admin' };
@@ -1227,30 +1247,10 @@
         }).join('');
     }
 
-    async function postToCommunity() {
-        var msg = document.getElementById('c-mensaje').value.trim();
-        var name = localStorage.getItem('user_real_name') || 'Anónimo';
-        if (!msg) { showToast('Escribe algo antes de publicar'); return; }
-        var payload = { autor: name, mensaje: msg };
-        if (capturedPhotoData) payload.foto_url = capturedPhotoData;
-        try {
-            var result = await db.from('comunidad').insert([payload]);
-            if (result.error) throw result.error;
-            addLog('New post', msg.slice(0, 30) + '...');
-            showToast('¡Publicado en el muro! 🌿');
-        } catch(e) { showToast('Publicado localmente (sin conexión)'); }
-        document.getElementById('c-mensaje').value = '';
-        capturedPhotoData = null;
-        loadMuro();
-    }
-
     // ============================================================
     // CAMERA
     // ============================================================
     
-    async function openCamera() { cameraMode = 'post'; document.getElementById('cam-title').innerText = 'Foto para el Muro'; startCamera(); }
-    async function openCameraForAvatar() { cameraMode = 'avatar'; document.getElementById('cam-title').innerText = 'Foto de Perfil'; startCamera(); }
-
     async function startCamera() {
         document.getElementById('camera-modal').classList.remove('hidden');
         document.getElementById('canvas-preview').style.display = 'none';
@@ -1263,39 +1263,6 @@
         } catch(e) { showToast('Cámara no disponible'); closeCamera(); }
     }
 
-    function capturePhoto() {
-        var video = document.getElementById('camera-video');
-        var canvas = document.getElementById('canvas-hidden');
-        canvas.width = video.videoWidth || 640;
-        canvas.height = video.videoHeight || 480;
-        canvas.getContext('2d').drawImage(video, 0, 0);
-        var dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-        document.getElementById('canvas-preview').src = dataUrl;
-        document.getElementById('canvas-preview').style.display = 'block';
-        document.getElementById('camera-video').style.display = 'none';
-        document.getElementById('camera-controls').classList.add('hidden');
-        document.getElementById('photo-actions').classList.remove('hidden');
-        stopCamera();
-    }
-
-    async function usePhoto() {
-        var dataUrl = document.getElementById('canvas-preview').src;
-        if (cameraMode === 'avatar') {
-            if (currentUser) {
-                var blob = await (await fetch(dataUrl)).blob();
-                var path = 'avatars/' + currentUser.id + '.jpg';
-                await db.storage.from('avatars').upload(path, blob, { upsert: true });
-                var result = db.storage.from('avatars').getPublicUrl(path);
-                await db.from('profiles').update({ avatar_url: result.data.publicUrl }).eq('id', currentUser.id);
-                updateAvatar(result.data.publicUrl, (localStorage.getItem('user_real_name') || '?').charAt(0).toUpperCase());
-                showToast('Foto de perfil actualizada 📸');
-            }
-        } else { capturedPhotoData = dataUrl; showToast('Foto lista para publicar 📸'); }
-        closeCamera();
-    }
-
-    function retakePhoto() { capturedPhotoData = null; startCamera(); }
-    function closeCamera(e) { if (e && e.target !== document.getElementById('camera-modal')) return; stopCamera(); document.getElementById('camera-modal').classList.add('hidden'); }
     function stopCamera() { if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; } }
 
     // ============================================================
@@ -1339,10 +1306,9 @@
     }
 
     // ============================================================
-    // MODALS & HELPERS
+    // HELPERS
     // ============================================================
     
-    function toggleGuide(e) { if (e && e.target !== document.getElementById('guide-modal')) return; document.getElementById('guide-modal').classList.toggle('hidden'); }
     function escHtml(str) { return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
     function getTimeAgo(iso) {
         var diff = (Date.now() - new Date(iso).getTime()) / 1000;
@@ -1368,138 +1334,134 @@
     // ============================================================
     
     window.onload = async function() {
-    try {
-        db = supabase.createClient(SB_URL, SB_ANON_KEY);
-        logDiagnostic('✅ Supabase OK | v' + APP_VERSION, 'info');
-    } catch(e) { 
-        logDiagnostic('❌ Init: ' + e.message, 'error'); 
-        return; 
-    }
-    
-    // ============================================================
-    // PRIORIDAD 1: Procesar OAuth callback PRIMERO (antes de limpiar nada)
-    // ============================================================
-    
-    // Verificar si hay tokens en el hash
-    var hash = window.location.hash;
-    var hasOAuthTokens = hash.indexOf('access_token') !== -1 || hash.indexOf('refresh_token') !== -1;
-    
-    if (hasOAuthTokens) {
-        logDiagnostic('🔍 Hash con tokens detectado, procesando OAuth...', 'info');
-        
         try {
-            // Supabase lee el hash automáticamente
-            var sessionResult = await db.auth.getSession();
+            db = supabase.createClient(SB_URL, SB_ANON_KEY);
+            logDiagnostic('✅ Supabase OK | v' + APP_VERSION, 'info');
+        } catch(e) { 
+            logDiagnostic('❌ Init: ' + e.message, 'error'); 
+            return; 
+        }
+        
+        var hash = window.location.hash;
+        var hasOAuthTokens = hash.indexOf('access_token') !== -1 || hash.indexOf('refresh_token') !== -1;
+        
+        if (hasOAuthTokens) {
+            logDiagnostic('🔍 Hash con tokens detectado, procesando OAuth...', 'info');
             
-            if (sessionResult.data?.session) {
-                currentUser = sessionResult.data.session.user;
-                logDiagnostic('✅ OAuth login: ' + currentUser.email, 'info');
-                showToast('¡Bienvenido! 🎉');
+            try {
+                var sessionResult = await db.auth.getSession();
                 
-                // ✅ AHORA sí limpiar el hash
-                window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
-                
-                await createProfileAfterSignup(currentUser);
-                await initUserData();
-                return; // Salir, ya estamos logueados
-                
-            } else {
-                logDiagnostic('⚠️ getSession no devolvió sesión, intentando manual...', 'warn');
-                
-                // Fallback: parsear hash manualmente
-                var hashParams = new URLSearchParams(hash.substring(1));
-                var accessToken = hashParams.get('access_token');
-                var refreshToken = hashParams.get('refresh_token');
-                
-                if (accessToken) {
-                    var result = await db.auth.setSession({
-                        access_token: accessToken,
-                        refresh_token: refreshToken || ''
-                    });
+                if (sessionResult.data?.session) {
+                    currentUser = sessionResult.data.session.user;
+                    logDiagnostic('✅ OAuth login: ' + currentUser.email, 'info');
+                    showToast('¡Bienvenido! 🎉');
+                    window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+                    await createProfileAfterSignup(currentUser);
+                    await initUserData();
+                    return;
                     
-                    if (result.data?.session) {
-                        currentUser = result.data.session.user;
-                        showToast('¡Bienvenido! 🎉');
-                        window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
-                        await createProfileAfterSignup(currentUser);
-                        await initUserData();
-                        return;
+                } else {
+                    logDiagnostic('⚠️ getSession no devolvió sesión, intentando manual...', 'warn');
+                    var hashParams = new URLSearchParams(hash.substring(1));
+                    var accessToken = hashParams.get('access_token');
+                    var refreshToken = hashParams.get('refresh_token');
+                    
+                    if (accessToken) {
+                        var result = await db.auth.setSession({
+                            access_token: accessToken,
+                            refresh_token: refreshToken || ''
+                        });
+                        
+                        if (result.data?.session) {
+                            currentUser = result.data.session.user;
+                            showToast('¡Bienvenido! 🎉');
+                            window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+                            await createProfileAfterSignup(currentUser);
+                            await initUserData();
+                            return;
+                        }
                     }
                 }
+            } catch (e) {
+                logDiagnostic('❌ OAuth error: ' + e.message, 'error');
             }
-        } catch (e) {
-            logDiagnostic('❌ OAuth error: ' + e.message, 'error');
         }
-    }
-    
-    // ============================================================
-    // PRIORIDAD 2: OAuth Server Consent (si no hubo tokens)
-    // ============================================================
-    
-    var isOAuthFlow = await initOAuthConsent();
-    if (isOAuthFlow) return;
-    
-    // ============================================================
-    // PRIORIDAD 3: Sesión normal (si no hubo OAuth)
-    // ============================================================
-    
-    // Auth state listener
-    db.auth.onAuthStateChange(async function(event, session) {
-        if (event === 'SIGNED_IN' && session && !currentUser) {
-            currentUser = session.user;
-            await createProfileAfterSignup(currentUser);
-            await initUserData();
-        }
-    });
-    
-    if (!currentUser) {
-        try {
-            var sessionResult = await db.auth.getSession();
-            if (sessionResult.data?.session) {
-                currentUser = sessionResult.data.session.user;
-                logDiagnostic('✅ Sesión existente: ' + currentUser.email, 'info');
+        
+        var isOAuthFlow = await initOAuthConsent();
+        if (isOAuthFlow) return;
+        
+        db.auth.onAuthStateChange(async function(event, session) {
+            if (event === 'SIGNED_IN' && session && !currentUser) {
+                currentUser = session.user;
+                await createProfileAfterSignup(currentUser);
                 await initUserData();
             }
-        } catch (e) { 
-            logDiagnostic('❌ Session check: ' + e.message, 'error'); 
+        });
+        
+        if (!currentUser) {
+            try {
+                var sessionResult = await db.auth.getSession();
+                if (sessionResult.data?.session) {
+                    currentUser = sessionResult.data.session.user;
+                    logDiagnostic('✅ Sesión existente: ' + currentUser.email, 'info');
+                    await initUserData();
+                }
+            } catch (e) { 
+                logDiagnostic('❌ Session check: ' + e.message, 'error'); 
+            }
         }
     };
+
     // ============================================================
-    // EVENT LISTENERS
+    // EVENT LISTENERS (DOMContentLoaded)
     // ============================================================
     
     document.addEventListener('DOMContentLoaded', function() {
-        // OAuth consent buttons
         var btnApprove = document.getElementById('btn-approve-oauth');
         var btnDeny = document.getElementById('btn-deny-oauth');
-        if (btnApprove) btnApprove.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); approveOAuthConsent(); });
-        if (btnDeny) btnDeny.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); denyOAuthConsent(); });
         
-        // OTP inputs
+        if (btnApprove) {
+            btnApprove.addEventListener('click', function(e) { 
+                e.preventDefault(); 
+                approveOAuthConsent(); 
+            });
+        }
+        if (btnDeny) {
+            btnDeny.addEventListener('click', function(e) { 
+                e.preventDefault(); 
+                denyOAuthConsent(); 
+            });
+        }
+        
         var otpInputs = document.querySelectorAll('.otp-input');
-        otpInputs.forEach(function(input, index) {
-            input.addEventListener('keydown', function(e) {
-                if (e.key === 'Backspace' && !input.value && index > 0) otpInputs[index - 1].focus();
-            });
-            input.addEventListener('input', function(e) {
-                var val = e.target.value.replace(/\D/g, '');
-                e.target.value = val;
-                if (val) {
-                    e.target.classList.add('filled');
-                    if (index < 5) otpInputs[index + 1].focus();
-                    else setTimeout(verifyOTP, 200);
-                } else e.target.classList.remove('filled');
-            });
-            input.addEventListener('paste', function(e) {
-                e.preventDefault();
-                var pasteData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
-                pasteData.split('').forEach(function(char, i) {
-                    if (otpInputs[i]) { otpInputs[i].value = char; otpInputs[i].classList.add('filled'); }
+        if (otpInputs.length > 0) {
+            otpInputs.forEach(function(input, index) {
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && !input.value && index > 0) otpInputs[index - 1].focus();
                 });
-                if (pasteData.length === 6) setTimeout(verifyOTP, 200);
-                else if (otpInputs[pasteData.length]) otpInputs[pasteData.length].focus();
+                input.addEventListener('input', function(e) {
+                    var val = e.target.value.replace(/\D/g, '');
+                    e.target.value = val;
+                    if (val) {
+                        e.target.classList.add('filled');
+                        if (index < 5) otpInputs[index + 1].focus();
+                        else setTimeout(verifyOTP, 200);
+                    } else e.target.classList.remove('filled');
+                });
+                input.addEventListener('paste', function(e) {
+                    e.preventDefault();
+                    var pasteData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+                    pasteData.split('').forEach(function(char, i) {
+                        if (otpInputs[i]) { 
+                            otpInputs[i].value = char; 
+                            otpInputs[i].classList.add('filled'); 
+                        }
+                    });
+                    if (pasteData.length === 6) setTimeout(verifyOTP, 200);
+                    else if (otpInputs[pasteData.length]) otpInputs[pasteData.length].focus();
+                });
             });
-        });
+        }
     });
 </script>
 </body>
