@@ -137,7 +137,7 @@
     <div class="w-28 h-28 bg-green-50 rounded-[2.5rem] mb-6 flex items-center justify-center text-6xl shadow-inner">🌿</div>
     <h1 class="text-3xl font-black mb-2 tracking-tight">Nuestro Hogar Común</h1>
     <p class="text-slate-500 font-medium text-sm mb-2 text-center max-w-xs">Comunidad ecológica de Cota. Retos, mapa y muro verde.</p>
-    <p id="version-tag" class="text-[10px] text-slate-400 font-mono mb-4">v2.5.1-CSID-Bridge</p>
+    <p id="version-tag" class="text-[10px] text-slate-400 font-mono mb-4">v2.5.2-CSID-Direct</p>
     
     <div id="otp-screen" class="hidden w-full max-w-sm">
         <div class="login-card text-center">
@@ -440,14 +440,14 @@
             <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">OAuth Server</p><p>Tu app es ahora un Authorization Server OAuth 2.1.</p></div>
             <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">Google OAuth</p><p>Dashboard → Auth → Providers → Google.</p></div>
             <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">GitHub OAuth</p><p>Dashboard → Auth → Providers → GitHub.</p></div>
-            <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">CSID Bridge</p><p>Login con Coki Studios vía Edge Function bridge.</p></div>
+            <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">CSID Direct</p><p>Login con Coki Studios sin bridge.</p></div>
             <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">Retos</p><p>Se suman puntos, nivel y CO₂ al completar.</p></div>
         </div>
     </div>
 </div>
 
 <script>
-    const APP_VERSION = '2.5.1-CSID-Bridge';
+    const APP_VERSION = '2.5.2-CSID-Direct';
     const SITE_URL = 'https://anonymus-devop.github.io/OurCommonHome/';
     const MAPBOX_TOKEN = 'pk.eyJ1IjoiamVyaXhkZXZlbG9waW5naSIsImEiOiJjbWhiZHU0YngxNjF2MmtwdXAxaWtydjR5In0.0Xx724Epn3x3nJ8hAYC1dA';
     const SB_URL = 'https://oamlsuhtozbindompgpl.supabase.co';
@@ -471,13 +471,12 @@
     const CSID_CONFIG = {
         authUrl: 'https://cokistudios.github.io/coki-authorize.html',
         tokenUrl: 'https://dwtqcvixrzmgdsetrzbm.supabase.co/functions/v1/coki-token',
-        bridgeUrl: 'https://oamlsuhtozbindompgpl.supabase.co/functions/v1/csid-bridge',
         clientId: 'ourcommonhome',
         redirectUri: 'https://anonymus-devop.github.io/OurCommonHome/',
         scope: 'openid profile email'
     };
 
-    function generatePKCE(length = 32) {
+    function generatePKCE(length) {
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
         let result = '';
         const randomValues = new Uint8Array(length);
@@ -531,90 +530,52 @@
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
         const error = urlParams.get('error');
-        
-        if (error) {
-            showToast('Error CSID: ' + (urlParams.get('error_description') || error));
-            return false;
-        }
+        if (error) { showToast('Error CSID: ' + (urlParams.get('error_description') || error)); return false; }
         if (!code) return false;
-        
+        console.log('🔄 CSID callback con code:', code);
         const codeVerifier = sessionStorage.getItem('csid_code_verifier');
         if (!codeVerifier) { showToast('Error: Sesión expirada'); return false; }
         sessionStorage.removeItem('csid_code_verifier');
-        
         try {
-            // Paso 1: Obtener token de Coki Studios
             const tokenResponse = await fetch(CSID_CONFIG.tokenUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    grant_type: 'authorization_code',
-                    code: code,
-                    redirect_uri: CSID_CONFIG.redirectUri,
-                    code_verifier: codeVerifier,
-                    client_id: CSID_CONFIG.clientId
-                })
+                body: JSON.stringify({ grant_type: 'authorization_code', code: code, redirect_uri: CSID_CONFIG.redirectUri, code_verifier: codeVerifier, client_id: CSID_CONFIG.clientId })
             });
             const tokenData = await tokenResponse.json();
+            console.log('📥 Token response:', tokenData);
             if (tokenData.error) throw new Error(tokenData.error_description || tokenData.error);
-            
-            // Decodificar ID token
             const idPayload = JSON.parse(atob(tokenData.id_token.split('.')[1]));
             console.log('📥 Datos de Coki:', idPayload);
-            
-            // 🔥 PASO 2: Crear usuario directamente en OurCommonHome con signUp
             const email = idPayload.email;
             const tempPassword = 'csid_' + Math.random().toString(36).substring(2, 15);
-            
             console.log('📝 Creando usuario en OurCommonHome:', email);
-            
             const { data: signUpData, error: signUpError } = await db.auth.signUp({
                 email: email,
                 password: tempPassword,
-                options: {
-                    data: {
-                        full_name: idPayload.name,
-                        avatar_url: idPayload.picture,
-                        provider: 'coki-studios',
-                        coki_user_id: idPayload.sub
-                    }
-                }
+                options: { data: { full_name: idPayload.name, avatar_url: idPayload.picture, provider: 'coki-studios', coki_user_id: idPayload.sub } }
             });
-            
             if (signUpData?.user) {
                 console.log('✅ Usuario creado:', signUpData.user.id);
                 currentUser = signUpData.user;
-            } else if (signUpError?.message?.includes('already registered') || signUpError?.code === 'user_already_exists') {
-                // Usuario ya existe → hacer login con email/pass temporal
-                console.log('ℹ️ Usuario ya existe, intentando login...');
-                
-                // Como no sabemos la contraseña, enviamos magic link
-                const { error: otpError } = await db.auth.signInWithOtp({
-                    email: email,
-                    options: { emailRedirectTo: SITE_URL }
-                });
-                
+            } else if (signUpError && (signUpError.message?.includes('already registered') || signUpError.code === 'user_already_exists')) {
+                console.log('ℹ️ Usuario ya existe, enviando magic link...');
+                const { error: otpError } = await db.auth.signInWithOtp({ email: email, options: { emailRedirectTo: SITE_URL } });
                 if (otpError) throw otpError;
-                
                 showToast('📧 Revisa tu email para confirmar el login');
                 window.history.replaceState({}, document.title, window.location.pathname);
                 return false;
             } else {
                 throw new Error(signUpError?.message || 'Error creando usuario');
             }
-            
-            // Guardar datos
             localStorage.setItem('csid_access_token', tokenData.access_token);
             localStorage.setItem('csid_id_token', tokenData.id_token);
             localStorage.setItem('auth_provider', 'csid');
             window.history.replaceState({}, document.title, window.location.pathname);
-            
-            // Crear perfil y entrar
             await createProfileAfterSignup(currentUser);
             await initUserData();
             showToast('✅ Bienvenido desde Coki Studios!');
             return true;
-            
         } catch (e) {
             console.error('❌ Error CSID:', e);
             showToast('Error: ' + e.message);
@@ -701,8 +662,6 @@
         addLog('Logout', currentUser?.email || 'unknown');
         localStorage.removeItem('csid_access_token');
         localStorage.removeItem('csid_id_token');
-        localStorage.removeItem('csid_user_id');
-        localStorage.removeItem('csid_user');
         localStorage.removeItem('auth_provider');
         await db.auth.signOut(); localStorage.clear(); currentUser = null; isOwner = false; location.reload();
     };
@@ -711,38 +670,15 @@
         const name = document.getElementById('setup-name').value.trim();
         const rawTag = document.getElementById('setup-tag').value.trim().replace('@', '').replace(/\s+/g, '_').toLowerCase();
         if (!name || !rawTag) { showToast('Completa nombre y usuario'); return; }
-        
-        // 🔥 OBTENER ID correctamente
-        let userId = currentUser?.id;
-        
-        if (!userId) {
-            console.error('❌ currentUser.id es undefined');
-            showToast('Error: No hay sesión activa. Recarga la página.');
-            return;
-        }
-        
-        console.log('📝 Guardando perfil para:', userId);
-        
+        if (!currentUser || !currentUser.id) { showToast('Error: No hay sesión'); console.error('currentUser:', currentUser); return; }
         try {
-            const { error } = await db.from('profiles').update({ 
-                name: name, 
-                updated_at: new Date().toISOString() 
-            }).eq('id', userId);
-            
-            if (error) { 
-                console.error('Error update:', error);
-                showToast('Error: ' + error.message); 
-                return; 
-            }
-            
+            const { error } = await db.from('profiles').update({ name: name, updated_at: new Date().toISOString() }).eq('id', currentUser.id);
+            if (error) { showToast('Error: ' + error.message); return; }
             localStorage.setItem('user_real_name', name);
             localStorage.setItem('user_unique_tag', '@' + rawTag);
             document.getElementById('profile-setup').classList.add('hidden');
             enterApp();
-        } catch (e) { 
-            console.error('Exception:', e);
-            showToast('Error de conexión'); 
-        }
+        } catch (e) { showToast('Error de conexión'); }
     };
 
     window.skipProfileSetup = function() {
@@ -1009,6 +945,7 @@
 
     async function createProfileAfterSignup(user) {
         try {
+            console.log('📝 Creando perfil para:', user.id, user.email);
             const { error } = await db.from('profiles').upsert({
                 id: user.id,
                 name: user.user_metadata?.full_name || user.user_metadata?.name || '',
@@ -1018,45 +955,29 @@
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
             });
-            if (error) logDiagnostic('⚠️ Perfil: ' + error.message, 'warn');
-            else logDiagnostic('✅ Perfil creado', 'info');
-        } catch (e) { logDiagnostic('❌ Perfil: ' + e.message, 'error'); }
+            if (error) { console.error('⚠️ Perfil error:', error); logDiagnostic('⚠️ Perfil: ' + error.message, 'warn'); }
+            else { console.log('✅ Perfil creado'); logDiagnostic('✅ Perfil creado', 'info'); }
+        } catch (e) { console.error('❌ Perfil exception:', e); logDiagnostic('❌ Perfil: ' + e.message, 'error'); }
     }
 
-    aasync function initUserData() {
+    async function initUserData() {
         console.log('🔍 initUserData, currentUser:', currentUser);
-        
         if (!currentUser || !currentUser.id) {
-            console.error('❌ currentUser o currentUser.id es null/undefined');
+            console.error('❌ currentUser o currentUser.id es null');
             showProfileSetup();
             return;
         }
-        
         try {
             const { data: profile, error } = await db.from('profiles').select('*').eq('id', currentUser.id).single();
             console.log('📋 Perfil:', profile, 'Error:', error);
-            
-            if (error && error.code === 'PGRST116') { 
-                console.log('ℹ️ Perfil no existe, mostrando setup');
-                showProfileSetup(); 
-                return; 
-            }
-            
+            if (error && error.code === 'PGRST116') { console.log('ℹ️ Perfil no existe, mostrando setup'); showProfileSetup(); return; }
             if (profile?.name) {
                 localStorage.setItem('user_real_name', profile.name);
                 localStorage.setItem('user_unique_tag', profile.name.toLowerCase().replace(/\s+/g, '_'));
-                if (profile.role === 'owner' || localStorage.getItem('is_owner') === 'true') { 
-                    isOwner = true; 
-                    localStorage.setItem('is_owner', 'true'); 
-                }
+                if (profile.role === 'owner' || localStorage.getItem('is_owner') === 'true') { isOwner = true; localStorage.setItem('is_owner', 'true'); }
                 enterApp();
-            } else {
-                showProfileSetup();
-            }
-        } catch (e) { 
-            console.error('❌ initUserData error:', e);
-            showProfileSetup(); 
-        }
+            } else { showProfileSetup(); }
+        } catch (e) { console.error('❌ initUserData error:', e); showProfileSetup(); }
     }
 
     function showProfileSetup() {
@@ -1355,7 +1276,7 @@
         } catch(e) { logDiagnostic('❌ Init: ' + e.message, 'error'); return; }
         
         var csidHandled = await handleCSIDCallback();
-        if (csidHandled) { console.log('✅ CSID login completado vía Bridge'); return; }
+        if (csidHandled) { console.log('✅ CSID login completado'); return; }
         
         var hash = window.location.hash;
         var hasOAuthTokens = hash.indexOf('access_token') !== -1 || hash.indexOf('refresh_token') !== -1;
