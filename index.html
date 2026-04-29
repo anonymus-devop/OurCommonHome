@@ -8,12 +8,10 @@
     <title>Nuestro Hogar Común | Cota</title>
     <link rel="manifest" href="https://progressier.app/hQyav6ks3OF7F1YbtQ5s/progressier.json"/>
     <script defer src="https://progressier.app/hQyav6ks3OF7F1YbtQ5s/script.js"></script>
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
     <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
-    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
         :root { --green: #16a34a; }
@@ -82,21 +80,9 @@
         .oauth-btn-google:hover { background: #f8fafc; }
         .oauth-btn-github { border-color: #24292f; background: #24292f; color: white; }
         .oauth-btn-github:active { background: #1a1e22; }
-        
-        /* 🔵 CSID (Coki Studios ID) — NUEVO */
-        .oauth-btn-csid { 
-            border-color: #0077e6; 
-            color: #0077e6; 
-            background: linear-gradient(135deg, #f0f7ff, #e0efff);
-        }
-        .oauth-btn-csid:hover { 
-            background: linear-gradient(135deg, #e0efff, #d0e7ff);
-            box-shadow: 0 4px 12px rgba(0,119,230,0.15);
-        }
-        .oauth-btn-csid:active { 
-            background: #d0e7ff; 
-        }
-        
+        .oauth-btn-csid { border-color: #0077e6; color: #0077e6; background: linear-gradient(135deg, #f0f7ff, #e0efff); }
+        .oauth-btn-csid:hover { background: linear-gradient(135deg, #e0efff, #d0e7ff); box-shadow: 0 4px 12px rgba(0,119,230,0.15); }
+        .oauth-btn-csid:active { background: #d0e7ff; }
         .consent-screen { background: white; min-height: 100vh; padding: 2rem 1.5rem; }
         .consent-header { text-align: center; margin-bottom: 2rem; }
         .consent-app-icon { width: 64px; height: 64px; border-radius: 1.5rem; background: linear-gradient(135deg, #16a34a, #22c55e); display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 1rem; }
@@ -116,7 +102,6 @@
 </head>
 <body class="text-slate-900 pb-32">
 
-<!-- OAUTH CONSENT SCREEN -->
 <div id="oauth-consent-screen" class="consent-screen hidden">
     <div class="max-w-sm mx-auto pt-12">
         <div class="consent-header">
@@ -148,12 +133,11 @@
     </div>
 </div>
 
-<!-- AUTH SCREEN -->
 <div id="auth-screen" class="fixed inset-0 bg-[#F0F4F0] z-[100] flex flex-col items-center justify-center p-6 overflow-y-auto">
     <div class="w-28 h-28 bg-green-50 rounded-[2.5rem] mb-6 flex items-center justify-center text-6xl shadow-inner">🌿</div>
     <h1 class="text-3xl font-black mb-2 tracking-tight">Nuestro Hogar Común</h1>
     <p class="text-slate-500 font-medium text-sm mb-2 text-center max-w-xs">Comunidad ecológica de Cota. Retos, mapa y muro verde.</p>
-    <p id="version-tag" class="text-[10px] text-slate-400 font-mono mb-4">v2.5.0-CSID</p>
+    <p id="version-tag" class="text-[10px] text-slate-400 font-mono mb-4">v2.5.1-CSID-Bridge</p>
     
     <div id="otp-screen" class="hidden w-full max-w-sm">
         <div class="login-card text-center">
@@ -189,32 +173,22 @@
             <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
             Continuar con Google
         </button>
-        
         <button class="oauth-btn oauth-btn-github" onclick="signInWithOAuth('github')">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
             Continuar con GitHub
         </button>
-        
-        <!-- 🔵 CSID (Coki Studios ID) — NUEVO -->
         <button class="oauth-btn oauth-btn-csid" onclick="signInWithCSID()">
             <div class="w-5 h-5 bg-blue-600 rounded flex items-center justify-center mr-1">
                 <span class="text-white font-bold text-xs">C</span>
             </div>
             Continuar con Coki Studios
         </button>
-        
         <div class="oauth-divider">o usa email</div>
-        
         <input id="auth-email" type="email" placeholder="Email" class="input-field" value="raulortiz11@gmail.com">
         <input id="auth-pass" type="password" placeholder="Contraseña (mín. 6 caracteres)" class="input-field" value="Diciembre07">
-        
         <button class="btn-primary" onclick="login()">Entrar</button>
         <button class="btn-primary" style="background:#16a34a;" onclick="register()">Crear cuenta</button>
-        
-        <button onclick="runDiagnostics()" class="w-full p-3 rounded-xl border-2 border-amber-200 text-amber-600 font-bold text-xs active:scale-95 transition-transform bg-amber-50">
-            🔍 Diagnosticar Supabase
-        </button>
-        
+        <button onclick="runDiagnostics()" class="w-full p-3 rounded-xl border-2 border-amber-200 text-amber-600 font-bold text-xs active:scale-95 transition-transform bg-amber-50">🔍 Diagnosticar Supabase</button>
         <div class="owner-section">
             <p class="text-center text-xs font-black text-purple-600 uppercase tracking-widest mb-3">🔐 Acceso Owner</p>
             <div class="space-y-2">
@@ -225,11 +199,9 @@
             </div>
         </div>
     </div>
-    
     <button onclick="toggleGuide()" class="mt-6 text-xs font-bold text-slate-400 uppercase tracking-widest">Guía Supabase ⚙️</button>
 </div>
 
-<!-- PROFILE SETUP -->
 <div id="profile-setup" class="fixed inset-0 bg-white z-[100] flex flex-col hidden">
     <div class="flex-1 flex flex-col items-center justify-center px-8 text-center">
         <div class="w-28 h-28 bg-green-50 rounded-[2.5rem] mb-8 flex items-center justify-center text-6xl shadow-inner">👤</div>
@@ -247,7 +219,6 @@
     </div>
 </div>
 
-<!-- MAIN APP -->
 <div id="main-app" class="hidden">
     <header class="pt-12 pb-4 px-6 sticky top-0 bg-[#F0F4F0]/92 backdrop-blur-md z-30 flex justify-between items-center">
         <div>
@@ -280,7 +251,6 @@
                     </div>
                 </div>
             </div>
-
             <div id="admin-badge" class="hidden">
                 <div class="card p-4 flex items-center justify-between bg-gradient-to-r from-purple-50 to-white border-purple-100">
                     <div class="flex items-center gap-3">
@@ -293,7 +263,6 @@
                     <button onclick="changeTab('admin', document.querySelectorAll('.tab-btn')[0])" class="badge badge-purple cursor-pointer">Admin</button>
                 </div>
             </div>
-
             <div>
                 <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Retos Verificados</h3>
                 <div id="acciones-list" class="space-y-3">
@@ -350,23 +319,19 @@
                     <p class="text-[9px] font-black text-green-500 uppercase">Hoy</p>
                 </div>
             </div>
-
             <div class="flex gap-2 overflow-x-auto pb-2">
                 <button onclick="showAdminSection('users')" class="btn-green flex-1 text-xs" id="admin-tab-users">👥 Usuarios</button>
                 <button onclick="showAdminSection('posts')" class="btn-green flex-1 text-xs" style="background:#3b82f6" id="admin-tab-posts">📝 Posts</button>
                 <button onclick="showAdminSection('logs')" class="btn-green flex-1 text-xs" style="background:#7c3aed" id="admin-tab-logs">📊 Logs</button>
             </div>
-
             <div id="admin-section-users" class="admin-section">
                 <h3 class="font-black text-sm mb-3 text-slate-700">Gestión de Usuarios</h3>
                 <div id="users-list" class="space-y-2"></div>
             </div>
-
             <div id="admin-section-posts" class="admin-section hidden">
                 <h3 class="font-black text-sm mb-3 text-slate-700">Moderar Publicaciones</h3>
                 <div id="admin-posts-list" class="space-y-3"></div>
             </div>
-
             <div id="admin-section-logs" class="admin-section hidden">
                 <h3 class="font-black text-sm mb-3 text-slate-700">Actividad Reciente</h3>
                 <div id="admin-logs-list" class="space-y-2 max-h-96 overflow-y-auto"></div>
@@ -382,7 +347,6 @@
                 </div>
                 <h3 id="p-name" class="text-xl font-black">—</h3>
                 <p id="p-tag" class="text-green-600 font-bold text-sm mb-4">@usuario</p>
-                
                 <div class="space-y-3">
                     <div class="bg-green-50 rounded-xl p-3 flex items-center gap-3">
                         <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center text-xl">🌍</div>
@@ -391,7 +355,6 @@
                             <p class="text-[9px] font-black text-green-500 uppercase">kg CO₂ ahorados</p>
                         </div>
                     </div>
-                    
                     <div class="bg-blue-50 rounded-xl p-3 flex items-center gap-3">
                         <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-xl">⭐</div>
                         <div class="text-left">
@@ -399,7 +362,6 @@
                             <p class="text-[9px] font-black text-blue-500 uppercase">puntos totales</p>
                         </div>
                     </div>
-                    
                     <div class="bg-purple-50 rounded-xl p-3 flex items-center gap-3">
                         <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center text-xl">🎯</div>
                         <div class="text-left">
@@ -407,7 +369,6 @@
                             <p class="text-[9px] font-black text-purple-500 uppercase">retos completados</p>
                         </div>
                     </div>
-                    
                     <div class="bg-amber-50 rounded-xl p-3">
                         <div class="flex justify-between items-center mb-2">
                             <div class="flex items-center gap-2">
@@ -446,7 +407,6 @@
     </nav>
 </div>
 
-<!-- CAMERA MODAL -->
 <div id="camera-modal" class="modal-overlay hidden" onclick="closeCamera(event)">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
         <div class="flex justify-between items-center mb-4">
@@ -470,7 +430,6 @@
     </div>
 </div>
 
-<!-- GUIDE MODAL -->
 <div id="guide-modal" class="modal-overlay hidden" onclick="toggleGuide(event)">
     <div class="modal-sheet" onclick="event.stopPropagation()" style="max-height:90vh;overflow-y:auto;">
         <div class="flex justify-between items-center mb-4">
@@ -481,33 +440,24 @@
             <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">OAuth Server</p><p>Tu app es ahora un Authorization Server OAuth 2.1.</p></div>
             <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">Google OAuth</p><p>Dashboard → Auth → Providers → Google.</p></div>
             <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">GitHub OAuth</p><p>Dashboard → Auth → Providers → GitHub.</p></div>
-            <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">CSID</p><p>Login con Coki Studios OAuth 2.1 + PKCE.</p></div>
+            <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">CSID Bridge</p><p>Login con Coki Studios vía Edge Function bridge.</p></div>
             <div class="card p-4"><p class="font-bold text-xs text-slate-400 uppercase mb-1">Retos</p><p>Se suman puntos, nivel y CO₂ al completar.</p></div>
         </div>
     </div>
 </div>
 
 <script>
-    // ============================================================
-    // CONFIG
-    // ============================================================
-    const APP_VERSION = '2.5.0-CSID';
+    const APP_VERSION = '2.5.1-CSID-Bridge';
     const SITE_URL = 'https://anonymus-devop.github.io/OurCommonHome/';
-    
     const MAPBOX_TOKEN = 'pk.eyJ1IjoiamVyaXhkZXZlbG9waW5naSIsImEiOiJjbWhiZHU0YngxNjF2MmtwdXAxaWtydjR5In0.0Xx724Epn3x3nJ8hAYC1dA';
     const SB_URL = 'https://oamlsuhtozbindompgpl.supabase.co';
     const SB_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9hbWxzdWh0b3piaW5kb21wZ3BsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2OTkyMTUsImV4cCI6MjA5MTI3NTIxNX0.nYCJeJT2riBaXGRvaDiOxaIwGEt2o-Dl4Gn-ZrLtT3U';
     const MASTER_OWNER_KEY = 'CotaOwner2024**';
 
     let db, map, cameraStream, capturedPhotoData, cameraMode = 'post';
-    let currentUser = null;
-    let isOwner = false;
-    let adminLogs = [];
-    let diagnosticLogs = [];
-    let pendingEmail = null;
-    let otpTimerInterval = null;
-    let oauthAuthorizationId = null;
-    let oauthClientInfo = null;
+    let currentUser = null, isOwner = false, adminLogs = [], diagnosticLogs = [];
+    let pendingEmail = null, otpTimerInterval = null;
+    let oauthAuthorizationId = null, oauthClientInfo = null;
 
     const COLLECTION_POINTS = [
         { name: 'Centro de Acopio Municipal', coords: [-74.1086, 4.8105], type: 'municipal', color: '#16a34a', desc: 'Cra. 3 #5-20, Cota. Lun-Vie 8am-5pm' },
@@ -518,30 +468,21 @@
         { name: 'Punto Verde Siberia', coords: [-74.1023, 4.8155], type: 'verde', color: '#3b82f6', desc: 'Vía Siberia, cerca al portón. 24 horas' },
     ];
 
-    // ═══════════════════════════════════════════════════════════════
-    // 🔵 CSID (Coki Studios ID) — Configuración NUEVA
-    // ═══════════════════════════════════════════════════════════════
-
     const CSID_CONFIG = {
         authUrl: 'https://cokistudios.github.io/coki-authorize.html',
         tokenUrl: 'https://dwtqcvixrzmgdsetrzbm.supabase.co/functions/v1/coki-token',
+        bridgeUrl: 'https://oamlsuhtozbindompgpl.supabase.co/functions/v1/csid-bridge',
         clientId: 'ourcommonhome',
         redirectUri: 'https://anonymus-devop.github.io/OurCommonHome/',
         scope: 'openid profile email'
     };
-
-    // ═══════════════════════════════════════════════════════════════
-    // 🔵 UTILIDADES PKCE para CSID
-    // ═══════════════════════════════════════════════════════════════
 
     function generatePKCE(length = 32) {
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
         let result = '';
         const randomValues = new Uint8Array(length);
         crypto.getRandomValues(randomValues);
-        for (let i = 0; i < length; i++) {
-            result += chars[randomValues[i] % chars.length];
-        }
+        for (let i = 0; i < length; i++) result += chars[randomValues[i] % chars.length];
         return result;
     }
 
@@ -550,63 +491,29 @@
         const data = encoder.encode(plain);
         const hashBuffer = await crypto.subtle.digest('SHA-256', data);
         const hashArray = Array.from(new Uint8Array(hashBuffer));
-        return btoa(String.fromCharCode(...hashArray))
-            .replace(/\+/g, '-')
-            .replace(/\//g, '_')
-            .replace(/=+$/, '');
+        return btoa(String.fromCharCode(...hashArray)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     }
 
-    // ============================================================
-    // FUNCIONES GLOBALES (expuestas a window para onclick inline)
-    // ============================================================
-    
-    // OAUTH CLIENT - Google / GitHub
     window.signInWithOAuth = async function(provider) {
         console.log("🔐 OAuth iniciado:", provider);
         showToast('Conectando con ' + provider + '...');
-        
         try {
             const { data, error } = await db.auth.signInWithOAuth({
                 provider: provider,
-                options: {
-                    redirectTo: SITE_URL,
-                    queryParams: provider === 'google' ? {
-                        access_type: 'offline',
-                        prompt: 'consent'
-                    } : {}
-                }
+                options: { redirectTo: SITE_URL, queryParams: provider === 'google' ? { access_type: 'offline', prompt: 'consent' } : {} }
             });
-            
-            if (error) {
-                console.error('❌ OAuth error:', error.message);
-                showToast('Error: ' + error.message);
-                return;
-            }
-            
-            if (data?.url) {
-                window.location.href = data.url;
-            }
-            
-        } catch (e) {
-            console.error('❌ OAuth exc:', e.message);
-            showToast('Error: ' + e.message);
-        }
+            if (error) { showToast('Error: ' + error.message); return; }
+            if (data?.url) window.location.href = data.url;
+        } catch (e) { showToast('Error: ' + e.message); }
     };
-
-    // ═══════════════════════════════════════════════════════════════
-    // 🔵 INICIAR LOGIN CON CSID (PKCE)
-    // ═══════════════════════════════════════════════════════════════
 
     window.signInWithCSID = async function() {
         console.log("🔐 CSID iniciado");
         showToast('Conectando con Coki Studios...');
-        
         try {
             const codeVerifier = generatePKCE(128);
             const codeChallenge = await sha256PKCE(codeVerifier);
-            
             sessionStorage.setItem('csid_code_verifier', codeVerifier);
-            
             const authUrl = new URL(CSID_CONFIG.authUrl);
             authUrl.searchParams.set('client_id', CSID_CONFIG.clientId);
             authUrl.searchParams.set('redirect_uri', CSID_CONFIG.redirectUri);
@@ -615,104 +522,60 @@
             authUrl.searchParams.set('code_challenge', codeChallenge);
             authUrl.searchParams.set('code_challenge_method', 'S256');
             authUrl.searchParams.set('state', generatePKCE(16));
-            
             console.log('🔗 CSID Auth URL:', authUrl.toString());
             window.location.href = authUrl.toString();
-            
-        } catch (e) {
-            console.error('❌ CSID error:', e.message);
-            showToast('Error: ' + e.message);
-        }
+        } catch (e) { showToast('Error: ' + e.message); }
     };
-
-    // ═══════════════════════════════════════════════════════════════
-    // 🔄 PROCESAR CALLBACK DE CSID
-    // ═══════════════════════════════════════════════════════════════
 
     async function handleCSIDCallback() {
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
         const error = urlParams.get('error');
-        
-        if (error) {
-            const desc = urlParams.get('error_description') || error;
-            showToast('Error CSID: ' + desc);
-            return false;
-        }
-        
+        if (error) { showToast('Error CSID: ' + (urlParams.get('error_description') || error)); return false; }
         if (!code) return false;
-        
-        console.log('🔄 CSID callback con code');
-        
+        console.log('🔄 CSID callback con code:', code);
         const codeVerifier = sessionStorage.getItem('csid_code_verifier');
-        if (!codeVerifier) {
-            showToast('Error: Sesión de autorización expirada');
-            return false;
-        }
-        
+        if (!codeVerifier) { showToast('Error: Sesión de autorización expirada'); return false; }
         sessionStorage.removeItem('csid_code_verifier');
-        
         try {
-            const response = await fetch(CSID_CONFIG.tokenUrl, {
+            console.log('📤 Paso 1: Intercambiando code por token en Coki Studios...');
+            const tokenResponse = await fetch(CSID_CONFIG.tokenUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    grant_type: 'authorization_code',
-                    code: code,
-                    redirect_uri: CSID_CONFIG.redirectUri,
-                    code_verifier: codeVerifier,
-                    client_id: CSID_CONFIG.clientId
-                })
+                body: JSON.stringify({ grant_type: 'authorization_code', code: code, redirect_uri: CSID_CONFIG.redirectUri, code_verifier: codeVerifier, client_id: CSID_CONFIG.clientId })
             });
-            
-            const data = await response.json();
-            
-            if (data.error) {
-                throw new Error(data.error_description || data.error);
-            }
-            
-            console.log('✅ CSID tokens recibidos');
-            
-            localStorage.setItem('csid_access_token', data.access_token);
-            localStorage.setItem('csid_id_token', data.id_token);
-            
-            const idPayload = JSON.parse(atob(data.id_token.split('.')[1]));
-            
-            const csidUser = {
-                id: idPayload.sub,
-                email: idPayload.email,
-                user_metadata: {
-                    full_name: idPayload.name,
-                    avatar_url: idPayload.picture,
-                    provider: 'coki-studios'
-                }
-            };
-            
-            localStorage.setItem('csid_user', JSON.stringify(csidUser));
+            const tokenData = await tokenResponse.json();
+            console.log('📥 Token response:', tokenData);
+            if (tokenData.error) throw new Error(tokenData.error_description || tokenData.error);
+            console.log('📤 Paso 2: Llamando bridge de OurCommonHome...');
+            const bridgeResponse = await fetch(CSID_CONFIG.bridgeUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ coki_access_token: tokenData.access_token, coki_id_token: tokenData.id_token })
+            });
+            const bridgeData = await bridgeResponse.json();
+            console.log('📥 Bridge response:', bridgeData);
+            if (bridgeData.error) throw new Error(bridgeData.error);
+            console.log('✅ Bridge OK. User ID:', bridgeData.user_id);
+            localStorage.setItem('csid_access_token', tokenData.access_token);
+            localStorage.setItem('csid_id_token', tokenData.id_token);
+            localStorage.setItem('csid_user_id', bridgeData.user_id);
             localStorage.setItem('auth_provider', 'csid');
-            
+            const csidUser = { id: bridgeData.user_id, email: bridgeData.email, user_metadata: { full_name: bridgeData.name, avatar_url: bridgeData.picture, provider: 'coki-studios' } };
+            localStorage.setItem('csid_user', JSON.stringify(csidUser));
             window.history.replaceState({}, document.title, window.location.pathname);
-            
             currentUser = csidUser;
             await createProfileAfterSignup(csidUser);
             await initUserData();
-            
             showToast('✅ Bienvenido desde Coki Studios!');
             return true;
-            
-        } catch (e) {
-            console.error('❌ Error intercambiando code:', e);
-            showToast('Error de conexión con Coki Studios: ' + e.message);
-            return false;
-        }
+        } catch (e) { console.error('❌ Error CSID:', e); showToast('Error de conexión con Coki Studios: ' + e.message); return false; }
     }
 
-    // LOGIN
     window.login = async function() {
         const email = document.getElementById('auth-email').value.trim();
         const pass = document.getElementById('auth-pass').value;
         if (!email || !pass) { showToast('Completa email y contraseña'); return; }
-
         logDiagnostic('🔑 Login: ' + email, 'info');
         try {
             const { data, error } = await db.auth.signInWithPassword({ email, password: pass });
@@ -724,35 +587,29 @@
         } catch (e) { alert('Error: ' + e.message); }
     };
 
-    // REGISTER
     window.register = async function() {
         const email = document.getElementById('auth-email').value.trim();
         const pass = document.getElementById('auth-pass').value;
         if (!email || !pass) { showToast('Completa email y contraseña'); return; }
         if (pass.length < 6) { alert('Mínimo 6 caracteres'); return; }
-
         logDiagnostic('📝 Registro: ' + email, 'info');
         pendingEmail = email;
-
         try {
             const { data: loginData } = await db.auth.signInWithPassword({ email, password: pass });
             if (loginData?.user) { currentUser = loginData.user; showToast('¡Bienvenido! 👋'); await initUserData(); return; }
         } catch (e) {}
-
         try {
             const { data, error } = await db.auth.signUp({ email, password: pass, options: { data: { name: '' } } });
             if (error) { alert('Error: ' + error.message); return; }
-            if (data?.user && !data?.session) { showOTPScreen(email); }
+            if (data?.user && !data?.session) showOTPScreen(email);
             else if (data?.session) { currentUser = data.user; await createProfileAfterSignup(data.user); await initUserData(); }
         } catch (e) { alert('Error: ' + e.message); }
     };
 
-    // OTP
     window.verifyOTP = async function() {
         const inputs = document.querySelectorAll('.otp-input');
         const code = Array.from(inputs).map(i => i.value).join('');
         if (code.length !== 6) { showToast('Ingresa los 6 dígitos'); return; }
-
         try {
             const result = await db.auth.verifyOtp({ email: pendingEmail, token: code, type: 'signup' });
             if (result.error) {
@@ -766,22 +623,18 @@
     };
 
     window.resendOTP = async function() {
-        try {
-            await db.auth.resend({ type: 'signup', email: pendingEmail });
-            showToast('Código reenviado 📩'); startOTPTimer();
-        } catch (e) { alert('Error: ' + e.message); }
+        try { await db.auth.resend({ type: 'signup', email: pendingEmail }); showToast('Código reenviado 📩'); startOTPTimer(); }
+        catch (e) { alert('Error: ' + e.message); }
     };
 
     window.cancelOTP = function() { hideOTPScreen(); };
 
-    // OWNER
     window.loginOwner = async function() {
         const email = document.getElementById('owner-email').value;
         const pass = document.getElementById('owner-pass').value;
         const masterKey = document.getElementById('owner-master-key').value;
         if (!email || !pass || !masterKey) { alert('Completa todos los campos'); return; }
         if (masterKey !== MASTER_OWNER_KEY) { alert('❌ Master Key incorrecta'); return; }
-        
         try {
             const { data, error } = await db.auth.signInWithPassword({ email, password: pass });
             if (error) throw error;
@@ -796,23 +649,19 @@
 
     window.logout = async function() {
         addLog('Logout', currentUser?.email || 'unknown');
-        
-        // 🔵 Limpiar CSID también (NUEVO)
         localStorage.removeItem('csid_access_token');
         localStorage.removeItem('csid_id_token');
+        localStorage.removeItem('csid_user_id');
         localStorage.removeItem('csid_user');
         localStorage.removeItem('auth_provider');
-        
         await db.auth.signOut(); localStorage.clear(); currentUser = null; isOwner = false; location.reload();
     };
 
-    // PROFILE SETUP
     window.saveProfileSetup = async function() {
         const name = document.getElementById('setup-name').value.trim();
         const rawTag = document.getElementById('setup-tag').value.trim().replace('@', '').replace(/\s+/g, '_').toLowerCase();
         if (!name || !rawTag) { showToast('Completa nombre y usuario'); return; }
         if (!currentUser) { showToast('Error: No hay sesión'); return; }
-        
         try {
             const { error } = await db.from('profiles').update({ name: name, updated_at: new Date().toISOString() }).eq('id', currentUser.id);
             if (error) { showToast('Error: ' + error.message); return; }
@@ -832,7 +681,6 @@
         enterApp();
     };
 
-    // TABS
     window.changeTab = function(tabId, el) {
         document.querySelectorAll('.tab-view').forEach(v => v.classList.add('hidden'));
         document.getElementById('view-' + tabId).classList.remove('hidden');
@@ -847,37 +695,22 @@
         window.scrollTo(0, 0);
     };
 
-    // RETOS
     window.completarReto = async function(accionId, co2) {
         if (!currentUser) { showToast('Inicia sesión para completar retos'); return; }
-        
         var puntos = Math.round(co2 * 2);
         showToast('+' + puntos + ' pts 🌿');
-        
         try {
-            var result = await db.from('user_acciones').insert({
-                user_id: currentUser.id,
-                accion_id: accionId,
-                impacto_co2: co2,
-                puntos_ganados: puntos
-            });
-            
+            var result = await db.from('user_acciones').insert({ user_id: currentUser.id, accion_id: accionId, impacto_co2: co2, puntos_ganados: puntos });
             if (result.error) {
                 if (result.error.code === '23505') { showToast('¡Ya completaste este reto! 🎉'); return; }
                 throw result.error;
             }
-            
             showToast('¡Reto completado! +' + puntos + ' pts 🎉');
             addLog('Reto completado', accionId);
             setTimeout(() => { loadHomeData(); loadProfileStats(); }, 500);
-            
-        } catch (e) {
-            console.error('completarReto error:', e);
-            showToast('Error: ' + e.message);
-        }
+        } catch (e) { showToast('Error: ' + e.message); }
     };
 
-    // COMMUNITY
     window.postToCommunity = async function() {
         var msg = document.getElementById('c-mensaje').value.trim();
         var name = localStorage.getItem('user_real_name') || 'Anónimo';
@@ -895,7 +728,6 @@
         loadMuro();
     };
 
-    // CAMERA
     window.openCamera = async function() { cameraMode = 'post'; document.getElementById('cam-title').innerText = 'Foto para el Muro'; startCamera(); };
     window.openCameraForAvatar = async function() { cameraMode = 'avatar'; document.getElementById('cam-title').innerText = 'Foto de Perfil'; startCamera(); };
     window.capturePhoto = function() {
@@ -930,7 +762,6 @@
     window.retakePhoto = function() { capturedPhotoData = null; startCamera(); };
     window.closeCamera = function(e) { if (e && e.target !== document.getElementById('camera-modal')) return; stopCamera(); document.getElementById('camera-modal').classList.add('hidden'); };
 
-    // ADMIN
     window.showAdminSection = function(section) {
         document.querySelectorAll('.admin-section').forEach(s => s.classList.add('hidden'));
         document.getElementById('admin-section-' + section).classList.remove('hidden');
@@ -941,7 +772,6 @@
     window.deleteUser = async function(id) { if (!confirm('¿Eliminar usuario?')) return; await db.from('profiles').update({ role: 'deleted', name: '[Eliminado]' }).eq('id', id); addLog('User deleted', id); showToast('Usuario eliminado'); loadUsers(); };
     window.deletePost = async function(id) { if (!confirm('¿Eliminar esta publicación?')) return; await db.from('comunidad').delete().eq('id', id); addLog('Post deleted', id); showToast('Publicación eliminada 🗑️'); loadAdminPosts(); loadMuro(); };
 
-    // MODALS
     window.toggleGuide = function(e) { if (e && e.target !== document.getElementById('guide-modal')) return; document.getElementById('guide-modal').classList.toggle('hidden'); };
     window.runDiagnostics = async function() {
         diagnosticLogs = [];
@@ -960,18 +790,12 @@
     };
     window.clearDiagnostics = function() { diagnosticLogs = []; document.getElementById('diagnostic-log').innerHTML = ''; };
 
-    // ============================================================
-    // OAUTH SERVER: CONSENT SCREEN
-    // ============================================================
-    
     async function initOAuthConsent() {
         const urlParams = new URLSearchParams(window.location.search);
         const authId = urlParams.get('authorization_id');
         if (!authId) return false;
-        
         oauthAuthorizationId = authId;
         logDiagnostic('🔐 OAuth consent iniciado: ' + authId, 'info');
-        
         try {
             const { data: { session } } = await db.auth.getSession();
             if (!session) {
@@ -979,12 +803,10 @@
                 showToast('Inicia sesión para autorizar');
                 return false;
             }
-            
             currentUser = session.user;
             const { data, error } = await db.auth.oauth.getAuthorizationDetails(authId);
             if (error) throw new Error(error.message);
             if (!data) throw new Error('No se recibieron datos');
-            
             oauthClientInfo = data;
             renderConsentScreen(data, session.user);
             return true;
@@ -993,32 +815,27 @@
             return true;
         }
     }
-    
+
     function renderConsentScreen(details, user) {
         document.getElementById('auth-screen').classList.add('hidden');
         document.getElementById('main-app').classList.add('hidden');
         document.getElementById('oauth-consent-screen').classList.remove('hidden');
-        
         document.getElementById('consent-app-name').innerText = details.client?.name || 'Aplicación externa';
         document.getElementById('consent-app-icon').innerText = details.client?.icon || '🔐';
-        
         const userName = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Usuario';
         document.getElementById('consent-user-name').innerText = userName;
         document.getElementById('consent-user-email').innerText = user.email || '';
         document.getElementById('consent-user-avatar').innerText = userName.charAt(0).toUpperCase();
-        
         const scopesList = document.getElementById('consent-scopes-list');
         const scopeString = details.scope || '';
         const scopes = scopeString.split(' ').filter(s => s.trim());
         if (scopes.length === 0) scopes.push('openid', 'email', 'profile');
-        
         const scopeLabels = {
             'openid': { icon: '🔓', label: 'Identidad básica', desc: 'Acceso a tu ID' },
             'email': { icon: '📧', label: 'Correo', desc: 'Ver tu email' },
             'profile': { icon: '👤', label: 'Perfil', desc: 'Ver tu nombre y foto' },
             'phone': { icon: '📱', label: 'Teléfono', desc: 'Ver tu número' }
         };
-        
         scopesList.innerHTML = scopes.map(scope => {
             const info = scopeLabels[scope] || { icon: '🔒', label: scope, desc: 'Acceso' };
             return '<div class="consent-scope-item"><div class="consent-scope-icon">' + info.icon + '</div><div><p class="font-bold text-sm text-slate-800">' + info.label + '</p><p class="text-xs text-slate-500">' + info.desc + '</p></div></div>';
@@ -1028,17 +845,13 @@
     function showConsentError(message) {
         const errorDiv = document.getElementById('consent-error');
         const errorText = document.getElementById('consent-error-text');
-        if (errorDiv && errorText) {
-            errorText.innerText = message;
-            errorDiv.classList.remove('hidden');
-        }
+        if (errorDiv && errorText) { errorText.innerText = message; errorDiv.classList.remove('hidden'); }
     }
 
     async function approveOAuthConsent() {
         if (!oauthAuthorizationId) return;
         const btn = document.getElementById('btn-approve-oauth');
         if (btn) { btn.disabled = true; document.getElementById('btn-approve-text').innerText = 'Autorizando...'; }
-        
         try {
             const { data, error } = await db.auth.oauth.approveAuthorization(oauthAuthorizationId);
             if (error) throw error;
@@ -1078,17 +891,11 @@
         await initOAuthConsent();
     }
 
-    // ============================================================
-    // OTP HELPERS
-    // ============================================================
-    
     function showOTPScreen(target) {
         document.getElementById('auth-form').classList.add('hidden');
         document.getElementById('otp-screen').classList.remove('hidden');
         document.getElementById('otp-target').innerText = target;
-        document.querySelectorAll('.otp-input').forEach(input => {
-            input.value = ''; input.classList.remove('filled');
-        });
+        document.querySelectorAll('.otp-input').forEach(input => { input.value = ''; input.classList.remove('filled'); });
         document.querySelector('.otp-input[data-index="0"]').focus();
         startOTPTimer();
     }
@@ -1112,14 +919,8 @@
         }, 1000);
     }
 
-    function stopOTPTimer() {
-        if (otpTimerInterval) { clearInterval(otpTimerInterval); otpTimerInterval = null; }
-    }
+    function stopOTPTimer() { if (otpTimerInterval) { clearInterval(otpTimerInterval); otpTimerInterval = null; } }
 
-    // ============================================================
-    // DIAGNÓSTICO
-    // ============================================================
-    
     function logDiagnostic(message, type) {
         const timestamp = new Date().toLocaleTimeString();
         const log = '[' + timestamp + '] ' + message;
@@ -1133,10 +934,6 @@
         }
     }
 
-    // ============================================================
-    // AUTH HELPERS
-    // ============================================================
-    
     async function createProfileAfterSignup(user) {
         try {
             const { error } = await db.from('profiles').upsert({
@@ -1221,44 +1018,29 @@
         profile: { label: 'Tu perfil', title: 'Mi Cuenta' },
     };
 
-    // ============================================================
-    // RETOS / ACCIONES
-    // ============================================================
-    
     async function loadHomeData() {
         try {
             var retosResult = await db.from('acciones').select('*').order('impacto_co2', { ascending: false });
             if (retosResult.error) throw retosResult.error;
-            
-            var completados = [];
-            var miCO2 = 0;
-            var miPuntos = 0;
-            
+            var completados = [], miCO2 = 0, miPuntos = 0;
             if (currentUser) {
-                var userRetosResult = await db.from('user_acciones')
-                    .select('accion_id, impacto_co2, puntos_ganados')
-                    .eq('user_id', currentUser.id);
+                var userRetosResult = await db.from('user_acciones').select('accion_id, impacto_co2, puntos_ganados').eq('user_id', currentUser.id);
                 completados = (userRetosResult.data || []).map(r => r.accion_id);
                 miCO2 = (userRetosResult.data || []).reduce((a, b) => a + parseFloat(b.impacto_co2 || 0), 0);
                 miPuntos = (userRetosResult.data || []).reduce((a, b) => a + (b.puntos_ganados || 0), 0);
             }
-            
             var totalCO2 = (retosResult.data || []).reduce((a, b) => a + parseFloat(b.impacto_co2 || 0), 0);
             var co2Display = currentUser ? miCO2 : totalCO2;
             var labelDisplay = currentUser ? 'Mi impacto · CO₂ ahorado' : 'CO₂ Evitado · Comunidad Cota';
-            
             document.getElementById('co2-total').innerText = co2Display.toFixed(1);
             document.getElementById('co2-label').innerText = labelDisplay;
             document.getElementById('home-actions-count').innerText = (retosResult.data || []).length;
-            
             var puntosBanner = document.getElementById('puntos-banner');
             if (currentUser) { puntosBanner.innerText = '⭐ ' + miPuntos + ' puntos'; puntosBanner.classList.remove('hidden'); }
             else puntosBanner.classList.add('hidden');
-            
             document.getElementById('acciones-list').innerHTML = (retosResult.data || []).map(reto => {
                 var isDone = completados.indexOf(reto.id) !== -1;
                 var puntos = Math.round(reto.impacto_co2 * 2);
-                
                 return '<div class="card p-4 flex items-center gap-4 ' + (isDone ? 'opacity-60' : '') + '" style="border-left: 5px solid ' + (isDone ? '#94a3b8' : '#16a34a') + ';">' +
                     '<div class="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center text-xl flex-shrink-0">' + (reto.emoji || '🌍') + '</div>' +
                     '<div class="flex-1 min-w-0">' +
@@ -1269,22 +1051,17 @@
                             (isDone ? '<span class="badge badge-blue">✓ Hecho</span>' : '') +
                         '</div>' +
                     '</div>' +
-                    '<button onclick="completarReto(\'' + reto.id + '\', ' + reto.impacto_co2 + ')" ' +
-                        'class="btn-green flex-shrink-0 ' + (isDone ? 'hidden' : '') + '" style="padding: 0.5rem 1rem; font-size: 0.75rem;">' +
-                        '✅' +
-                    '</button>' +
+                    '<button onclick="completarReto(\'' + reto.id + '\', ' + reto.impacto_co2 + ')" class="btn-green flex-shrink-0 ' + (isDone ? 'hidden' : '') + '" style="padding: 0.5rem 1rem; font-size: 0.75rem;">✅</button>' +
                 '</div>';
             }).join('');
-            
             var postsResult = await db.from('comunidad').select('id', { count: 'exact', head: true });
             document.getElementById('home-posts-count').innerText = postsResult.count || '—';
-            
         } catch(e) {
             console.error('loadHomeData error:', e);
             mostrarFallbackRetos();
         }
     }
-    
+
     function mostrarFallbackRetos() {
         var fallback = [
             { titulo: 'Separar residuos en casa', impacto_co2: 2.5, emoji: '♻️' },
@@ -1299,21 +1076,13 @@
                 '<div class="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center text-xl flex-shrink-0">' + i.emoji + '</div>' +
                 '<div class="flex-1 min-w-0">' +
                     '<h4 class="font-bold text-slate-800 text-sm leading-tight">' + i.titulo + '</h4>' +
-                    '<div class="flex items-center gap-2 mt-1">' +
-                        '<span class="badge badge-green">' + i.impacto_co2 + ' kg CO₂</span>' +
-                    '</div>' +
+                    '<div class="flex items-center gap-2 mt-1"><span class="badge badge-green">' + i.impacto_co2 + ' kg CO₂</span></div>' +
                 '</div>' +
             '</div>'
         ).join('');
     }
 
-    // ============================================================
-    // ADMIN PANEL
-    // ============================================================
-    
-    async function loadAdminPanel() {
-        await Promise.all([loadAdminStats(), loadUsers(), loadAdminPosts(), renderLogs()]);
-    }
+    async function loadAdminPanel() { await Promise.all([loadAdminStats(), loadUsers(), loadAdminPosts(), renderLogs()]); }
 
     async function loadAdminStats() {
         try {
@@ -1323,7 +1092,6 @@
             var totalCO2 = (actionsResult.data || []).reduce((a, b) => a + parseFloat(b.impacto_co2 || 0), 0);
             var today = new Date().toISOString().split('T')[0];
             var todayResult = await db.from('comunidad').select('*', { count: 'exact', head: true }).gte('created_at', today);
-            
             document.getElementById('admin-total-users').innerText = usersResult.count || 0;
             document.getElementById('admin-total-posts').innerText = postsResult.count || 0;
             document.getElementById('admin-total-co2').innerText = totalCO2.toFixed(1);
@@ -1375,10 +1143,6 @@
         ).join('') || '<div class="text-center text-slate-400 py-4">Sin actividad reciente</div>';
     }
 
-    // ============================================================
-    // MAP
-    // ============================================================
-    
     function initMap() {
         mapboxgl.accessToken = MAPBOX_TOKEN;
         map = new mapboxgl.Map({ container: 'map', style: 'mapbox://styles/mapbox/light-v11', center: [-74.1086, 4.8105], zoom: 13.8, pitch: 40 });
@@ -1395,10 +1159,6 @@
         });
     }
 
-    // ============================================================
-    // COMMUNITY
-    // ============================================================
-    
     async function loadMuro() {
         try {
             var result = await db.from('comunidad').select('*').order('created_at', { ascending: false }).limit(30);
@@ -1430,10 +1190,6 @@
         }).join('');
     }
 
-    // ============================================================
-    // CAMERA
-    // ============================================================
-    
     async function startCamera() {
         document.getElementById('camera-modal').classList.remove('hidden');
         document.getElementById('canvas-preview').style.display = 'none';
@@ -1448,19 +1204,11 @@
 
     function stopCamera() { if (cameraStream) { cameraStream.getTracks().forEach(t => t.stop()); cameraStream = null; } }
 
-    // ============================================================
-    // PROFILE STATS
-    // ============================================================
-    
     async function loadProfileStats() {
         if (!currentUser) return;
         try {
-            var result = await db.from('user_acciones')
-                .select('impacto_co2, puntos_ganados')
-                .eq('user_id', currentUser.id);
-            
+            var result = await db.from('user_acciones').select('impacto_co2, puntos_ganados').eq('user_id', currentUser.id);
             if (result.error) throw result.error;
-            
             var totalCO2 = (result.data || []).reduce((a, b) => a + parseFloat(b.impacto_co2 || 0), 0);
             var totalPuntos = (result.data || []).reduce((a, b) => a + (b.puntos_ganados || 0), 0);
             var retosCount = (result.data || []).length;
@@ -1468,19 +1216,15 @@
             var siguienteNivel = nivel * 100;
             var progresoActual = totalPuntos % 100;
             var progresoPct = Math.round((progresoActual / 100) * 100);
-            
             document.getElementById('p-co2').innerText = totalCO2.toFixed(1);
             document.getElementById('p-puntos').innerText = totalPuntos;
             document.getElementById('p-retos').innerText = retosCount;
             document.getElementById('p-nivel').innerText = nivel;
             document.getElementById('p-progreso').innerText = progresoActual;
             document.getElementById('p-sig-nivel').innerText = siguienteNivel;
-            
             var barra = document.getElementById('barra-progreso');
             if (barra) barra.style.width = progresoPct + '%';
-            
         } catch(e) {
-            console.error('loadProfileStats error:', e);
             document.getElementById('p-co2').innerText = '0.0';
             document.getElementById('p-puntos').innerText = '0';
             document.getElementById('p-retos').innerText = '0';
@@ -1488,10 +1232,6 @@
         }
     }
 
-    // ============================================================
-    // HELPERS
-    // ============================================================
-    
     function escHtml(str) { return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
     function getTimeAgo(iso) {
         var diff = (Date.now() - new Date(iso).getTime()) / 1000;
@@ -1512,42 +1252,22 @@
         toastTimeout = setTimeout(() => t.remove(), 3000);
     }
 
-    // ============================================================
-    // INIT
-    // ============================================================
-    
     window.onload = async function() {
         try {
             db = supabase.createClient(SB_URL, SB_ANON_KEY);
             logDiagnostic('✅ Supabase OK | v' + APP_VERSION, 'info');
-        } catch(e) { 
-            logDiagnostic('❌ Init: ' + e.message, 'error'); 
-            return; 
-        }
-        
-        // ═══════════════════════════════════════════════════════════════
-        // 🔵 VERIFICAR CALLBACK DE CSID PRIMERO (NUEVO)
-        // ═══════════════════════════════════════════════════════════════
+        } catch(e) { logDiagnostic('❌ Init: ' + e.message, 'error'); return; }
         
         var csidHandled = await handleCSIDCallback();
-        if (csidHandled) {
-            console.log('✅ CSID login completado');
-            return;
-        }
-        
-        // ═══════════════════════════════════════════════════════════════
-        // DESPUÉS continúa tu lógica normal de Supabase...
-        // ═══════════════════════════════════════════════════════════════
+        if (csidHandled) { console.log('✅ CSID login completado vía Bridge'); return; }
         
         var hash = window.location.hash;
         var hasOAuthTokens = hash.indexOf('access_token') !== -1 || hash.indexOf('refresh_token') !== -1;
         
         if (hasOAuthTokens) {
             logDiagnostic('🔍 Hash con tokens detectado, procesando OAuth...', 'info');
-            
             try {
                 var sessionResult = await db.auth.getSession();
-                
                 if (sessionResult.data?.session) {
                     currentUser = sessionResult.data.session.user;
                     logDiagnostic('✅ OAuth login: ' + currentUser.email, 'info');
@@ -1556,19 +1276,13 @@
                     await createProfileAfterSignup(currentUser);
                     await initUserData();
                     return;
-                    
                 } else {
                     logDiagnostic('⚠️ getSession no devolvió sesión, intentando manual...', 'warn');
                     var hashParams = new URLSearchParams(hash.substring(1));
                     var accessToken = hashParams.get('access_token');
                     var refreshToken = hashParams.get('refresh_token');
-                    
                     if (accessToken) {
-                        var result = await db.auth.setSession({
-                            access_token: accessToken,
-                            refresh_token: refreshToken || ''
-                        });
-                        
+                        var result = await db.auth.setSession({ access_token: accessToken, refresh_token: refreshToken || '' });
                         if (result.data?.session) {
                             currentUser = result.data.session.user;
                             showToast('¡Bienvenido! 🎉');
@@ -1579,9 +1293,7 @@
                         }
                     }
                 }
-            } catch (e) {
-                logDiagnostic('❌ OAuth error: ' + e.message, 'error');
-            }
+            } catch (e) { logDiagnostic('❌ OAuth error: ' + e.message, 'error'); }
         }
         
         var isOAuthFlow = await initOAuthConsent();
@@ -1603,32 +1315,15 @@
                     logDiagnostic('✅ Sesión existente: ' + currentUser.email, 'info');
                     await initUserData();
                 }
-            } catch (e) { 
-                logDiagnostic('❌ Session check: ' + e.message, 'error'); 
-            }
+            } catch (e) { logDiagnostic('❌ Session check: ' + e.message, 'error'); }
         }
     };
 
-    // ============================================================
-    // EVENT LISTENERS (DOMContentLoaded)
-    // ============================================================
-    
     document.addEventListener('DOMContentLoaded', function() {
         var btnApprove = document.getElementById('btn-approve-oauth');
         var btnDeny = document.getElementById('btn-deny-oauth');
-        
-        if (btnApprove) {
-            btnApprove.addEventListener('click', function(e) { 
-                e.preventDefault(); 
-                approveOAuthConsent(); 
-            });
-        }
-        if (btnDeny) {
-            btnDeny.addEventListener('click', function(e) { 
-                e.preventDefault(); 
-                denyOAuthConsent(); 
-            });
-        }
+        if (btnApprove) btnApprove.addEventListener('click', function(e) { e.preventDefault(); approveOAuthConsent(); });
+        if (btnDeny) btnDeny.addEventListener('click', function(e) { e.preventDefault(); denyOAuthConsent(); });
         
         var otpInputs = document.querySelectorAll('.otp-input');
         if (otpInputs.length > 0) {
@@ -1649,10 +1344,7 @@
                     e.preventDefault();
                     var pasteData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
                     pasteData.split('').forEach(function(char, i) {
-                        if (otpInputs[i]) { 
-                            otpInputs[i].value = char; 
-                            otpInputs[i].classList.add('filled'); 
-                        }
+                        if (otpInputs[i]) { otpInputs[i].value = char; otpInputs[i].classList.add('filled'); }
                     });
                     if (pasteData.length === 6) setTimeout(verifyOTP, 200);
                     else if (otpInputs[pasteData.length]) otpInputs[pasteData.length].focus();
