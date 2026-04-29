@@ -1469,6 +1469,16 @@
     // ============================================================
     
     document.addEventListener('DOMContentLoaded', function() {
+        // Dentro de tu DOMContentLoaded
+        window.signInWithOAuth = async function(provider) {
+            const { data, error } = await supabase.auth.signInWithOAuth({
+                provider: provider,
+                options: {
+                    redirectTo: window.location.origin
+                }
+            });
+            if (error) console.error('Error:', error.message);
+        };
         // OAuth consent buttons
         var btnApprove = document.getElementById('btn-approve-oauth');
         var btnDeny = document.getElementById('btn-deny-oauth');
