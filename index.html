@@ -1468,49 +1468,73 @@
     // EVENT LISTENERS
     // ============================================================
     
-    document.addEventListener('DOMContentLoaded', function() {
-        // Dentro de tu DOMContentLoaded
-        window.signInWithOAuth = async function(provider) {
+// Define las funciones fuera para que sean globales
+    window.signInWithOAuth = async function(provider) {
+        try {
             const { data, error } = await supabase.auth.signInWithOAuth({
                 provider: provider,
-                options: {
-                    redirectTo: window.location.origin
-                }
+                options: { redirectTo: window.location.origin }
             });
-            if (error) console.error('Error:', error.message);
-        };
-        // OAuth consent buttons
+            if (error) throw error;
+        } catch (error) {
+            console.error('Error en OAuth:', error.message);
+        }
+    };
+
+    // Asegúrate de que login también sea global
+    window.login = function() {
+        console.log("Iniciando proceso de login...");
+        // Tu lógica aquí
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // OAuth consent buttons - Verificación de existencia
         var btnApprove = document.getElementById('btn-approve-oauth');
         var btnDeny = document.getElementById('btn-deny-oauth');
-        if (btnApprove) btnApprove.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); approveOAuthConsent(); });
-        if (btnDeny) btnDeny.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); denyOAuthConsent(); });
         
-        // OTP inputs
+        if (btnApprove) {
+            btnApprove.addEventListener('click', function(e) { 
+                e.preventDefault(); 
+                if (typeof approveOAuthConsent === "function") approveOAuthConsent(); 
+            });
+        }
+        if (btnDeny) {
+            btnDeny.addEventListener('click', function(e) { 
+                e.preventDefault(); 
+                if (typeof denyOAuthConsent === "function") denyOAuthConsent(); 
+            });
+        }
+        
+        // OTP inputs - Verificación de existencia para evitar TypeError
         var otpInputs = document.querySelectorAll('.otp-input');
-        otpInputs.forEach(function(input, index) {
-            input.addEventListener('keydown', function(e) {
-                if (e.key === 'Backspace' && !input.value && index > 0) otpInputs[index - 1].focus();
-            });
-            input.addEventListener('input', function(e) {
-                var val = e.target.value.replace(/\D/g, '');
-                e.target.value = val;
-                if (val) {
-                    e.target.classList.add('filled');
-                    if (index < 5) otpInputs[index + 1].focus();
-                    else setTimeout(verifyOTP, 200);
-                } else e.target.classList.remove('filled');
-            });
-            input.addEventListener('paste', function(e) {
-                e.preventDefault();
-                var pasteData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
-                pasteData.split('').forEach(function(char, i) {
-                    if (otpInputs[i]) { otpInputs[i].value = char; otpInputs[i].classList.add('filled'); }
+        if (otpInputs.length > 0) {
+            otpInputs.forEach(function(input, index) {
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && !input.value && index > 0) otpInputs[index - 1].focus();
                 });
-                if (pasteData.length === 6) setTimeout(verifyOTP, 200);
-                else if (otpInputs[pasteData.length]) otpInputs[pasteData.length].focus();
+                input.addEventListener('input', function(e) {
+                    var val = e.target.value.replace(/\D/g, '');
+                    e.target.value = val;
+                    if (val) {
+                        e.target.classList.add('filled');
+                        if (index < 5) otpInputs[index + 1].focus();
+                        else if (typeof verifyOTP === "function") setTimeout(verifyOTP, 200);
+                    } else e.target.classList.remove('filled');
+                });
+                input.addEventListener('paste', function(e) {
+                    e.preventDefault();
+                    var pasteData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+                    pasteData.split('').forEach(function(char, i) {
+                        if (otpInputs[i]) { 
+                            otpInputs[i].value = char; 
+                            otpInputs[i].classList.add('filled'); 
+                        }
+                    });
+                    if (pasteData.length === 6 && typeof verifyOTP === "function") setTimeout(verifyOTP, 200);
+                });
             });
-        });
-    });
+        }
+    }); // Cierre correcto de DOMContentLoaded
 </script>
 </body>
 </html>
