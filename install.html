@@ -1,103 +1,212 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Instalar App | Nuestro Hogar Común</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instalar App | Nuestro Hogar Común</title>
 
-<script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
-<style>
-body {
-    font-family: system-ui;
-    background: #f0f4f0;
-}
-.card {
-    background: white;
-    border-radius: 1.5rem;
-    padding: 1.5rem;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-}
-.btn {
-    background: #16a34a;
-    color: white;
-    padding: 1rem;
-    border-radius: 1rem;
-    font-weight: bold;
-    width: 100%;
-}
-</style>
+    <!-- Fuente Inter (más moderna y limpia) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* Slate 50 */
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            box-shadow: 0 4px 14px 0 rgba(34, 197, 94, 0.39);
+            transition: all 0.2s ease-in-out;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(34, 197, 94, 0.23);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        /* Animación del anillo de progreso */
+        @keyframes shrink {
+            from { stroke-dashoffset: 0; }
+            to   { stroke-dashoffset: 113; }
+        }
+        .progress-ring {
+            animation: shrink 3s linear forwards;
+        }
+
+        .step-number {
+            background: #f0fdf4;
+            color: #16a34a;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-weight: 800;
+            font-size: 0.875rem;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+    </style>
 </head>
 
-<body class="p-5">
+<body class="min-h-screen p-6 flex flex-col items-center">
 
-<div class="max-w-md mx-auto space-y-4">
+    <div class="w-full max-w-md space-y-6">
 
-    <!-- HEADER -->
-    <div class="text-center">
-        <h1 class="text-2xl font-black">Instalar la App 🌿</h1>
-        <p class="text-sm text-gray-500">Guía fácil paso a paso</p>
-    </div>
+        <!-- HEADER -->
+        <div class="text-center space-y-2 mb-8">
+            <div class="inline-block p-3 bg-green-100 rounded-2xl mb-2">
+                <span class="text-3xl">🌿</span>
+            </div>
+            <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Instalar la App</h1>
+            <p class="text-slate-500 font-medium">Nuestro Hogar Común</p>
+        </div>
 
-    <!-- PASO 1 -->
-    <div class="card">
-        <h2 class="font-black mb-2">1. Descargar la app</h2>
-        <p class="text-sm text-gray-600 mb-3">
-            Presiona el botón para descargar la aplicación en tu celular.
+        <!-- CONTAINER TIMEOUT (ESTILO MODERNO) -->
+        <div class="glass-card rounded-3xl p-5 flex items-center gap-5 border-l-4 border-l-green-500">
+            <!-- Anillo de cuenta regresiva -->
+            <div class="relative flex-shrink-0 w-14 h-14">
+                <svg class="w-14 h-14 -rotate-90" viewBox="0 0 40 40">
+                    <circle cx="20" cy="20" r="18" fill="none" stroke="#f1f5f9" stroke-width="4"/>
+                    <circle cx="20" cy="20" r="18" fill="none" stroke="#22c55e" stroke-width="4"
+                        stroke-dasharray="113" stroke-dashoffset="0" stroke-linecap="round"
+                        class="progress-ring" id="ring-path"/>
+                </svg>
+                <span id="countdown" class="absolute inset-0 flex items-center justify-center text-lg font-extrabold text-slate-800">3</span>
+            </div>
+
+            <div class="flex-1">
+                <p class="font-bold text-slate-800 text-sm">Iniciando descarga...</p>
+                <p class="text-xs text-slate-500 leading-relaxed">
+                    Serás redirigido en <span id="countdown-text" class="font-bold text-green-600">3</span> segundos.
+                </p>
+                <button onclick="cancelRedirect()" id="cancel-btn" class="mt-2 text-[10px] uppercase tracking-wider font-bold text-slate-400 hover:text-red-500 transition-colors">
+                    Detener Auto-Redirect
+                </button>
+            </div>
+        </div>
+
+        <!-- PASOS -->
+        <div class="space-y-4">
+            <!-- PASO 1 -->
+            <div class="glass-card rounded-2xl p-5 transition-all hover:scale-[1.01]">
+                <div class="flex items-start mb-4">
+                    <div class="step-number">1</div>
+                    <h2 class="font-bold text-slate-800 pt-0.5">Descargar APK</h2>
+                </div>
+                <p class="text-sm text-slate-600 leading-relaxed mb-5">
+                    Presiona el botón para obtener el archivo de instalación oficial.
+                </p>
+                <button onclick="downloadApp()" class="btn-primary w-full py-4 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2">
+                    Descargar Ahora 📥
+                </button>
+            </div>
+
+            <!-- PASO 2 -->
+            <div class="glass-card rounded-2xl p-5">
+                <div class="flex items-start mb-3">
+                    <div class="step-number">2</div>
+                    <h2 class="font-bold text-slate-800 pt-0.5">Permitir Instalación</h2>
+                </div>
+                <div class="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                    <p class="text-xs text-slate-600 leading-loose">
+                        Si el sistema te pregunta por seguridad:<br>
+                        <span class="flex items-center gap-2 mt-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                            Pulsa <b>"Configuración"</b>
+                        </span>
+                        <span class="flex items-center gap-2">
+                            <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                            Activa <b>"Permitir desde esta fuente"</b>
+                        </span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- PASO 3 Y 4 (COMBINADOS PARA LIMPIEZA) -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="glass-card rounded-2xl p-4">
+                    <div class="flex items-center mb-2">
+                        <div class="step-number !mr-2">3</div>
+                        <h2 class="font-bold text-slate-800 text-xs">Instalar</h2>
+                    </div>
+                    <p class="text-[11px] text-slate-500 leading-tight">
+                        Abre el archivo y pulsa <b>"Instalar"</b>.
+                    </p>
+                </div>
+                <div class="glass-card rounded-2xl p-4">
+                    <div class="flex items-center mb-2">
+                        <div class="step-number !mr-2">4</div>
+                        <h2 class="font-bold text-slate-800 text-xs">¡Listo!</h2>
+                    </div>
+                    <p class="text-[11px] text-slate-500 leading-tight">
+                        Pulsa <b>"Abrir"</b> para comenzar 🎉
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER INFO -->
+        <p class="text-center text-[10px] text-slate-400 font-medium pt-4">
+            Versión estable 2.4 • Desarrollado por Nuestro Hogar Común
         </p>
 
-        <button onclick="downloadApp()" class="btn">
-            Descargar APK 📥
-        </button>
     </div>
 
-    <!-- PASO 2 -->
-    <div class="card">
-        <h2 class="font-black mb-2">2. Permitir instalación</h2>
-        <p class="text-sm text-gray-600">
-            Si aparece un mensaje de seguridad:
-            <br><br>
-            👉 Pulsa <b>"Configuración"</b><br>
-            👉 Activa <b>"Permitir desde esta fuente"</b><br>
-            👉 Regresa
-        </p>
-    </div>
+    <script>
+        const APK_URL = "https://github.com/anonymus-devop/OurCommonHome/releases/tag/2.4";
 
-    <!-- PASO 3 -->
-    <div class="card">
-        <h2 class="font-black mb-2">3. Instalar</h2>
-        <p class="text-sm text-gray-600">
-            Abre el archivo descargado y pulsa <b>"Instalar"</b>.
-        </p>
-    </div>
+        function downloadApp() {
+            window.location.href = APK_URL;
+        }
 
-    <!-- PASO 4 -->
-    <div class="card">
-        <h2 class="font-black mb-2">4. Abrir la app</h2>
-        <p class="text-sm text-gray-600">
-            Una vez instalada, pulsa <b>"Abrir"</b> y listo 🎉
-        </p>
-    </div>
+        /* ── Lógica del Timer ── */
+        let secondsLeft = 3;
+        let redirectTimer = null;
+        let cancelled = false;
 
-    <!-- BOTÓN FINAL -->
-    <button onclick="downloadApp()" class="btn">
-        Descargar ahora 🚀
-    </button>
+        function tick() {
+            secondsLeft--;
+            document.getElementById("countdown").textContent = secondsLeft;
+            document.getElementById("countdown-text").textContent = secondsLeft;
 
-</div>
+            if (secondsLeft <= 0 && !cancelled) {
+                downloadApp();
+            }
+        }
 
-<script>
-const APK_URL = "https://github.com/jortizgomez-rooter/OurCommonHome/releases/download/1.1/OurCommonHome_1.1.apk";
+        redirectTimer = setInterval(tick, 1000);
 
-function downloadApp() {
-    window.location.href = APK_URL;
-}
+        function cancelRedirect() {
+            cancelled = true;
+            clearInterval(redirectTimer);
 
-// redirección automática después de 3 segundos
-setTimeout(() => {
-    window.location.href = APK_URL;
-}, 3000);
-</script>
+            // UI Feedback
+            document.getElementById("countdown").textContent = "✕";
+            document.getElementById("countdown-text").parentElement.innerHTML = "Redirección <span class='text-red-500 font-bold uppercase ml-1'>cancelada</span>.";
+            document.getElementById("cancel-btn").classList.add('hidden');
+            document.getElementById("ring-path").style.animationPlayState = "paused";
+            document.getElementById("ring-path").style.stroke = "#ef4444"; // Cambiar a rojo
+        }
+    </script>
 
 </body>
 </html>
